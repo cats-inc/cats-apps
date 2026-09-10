@@ -1,0 +1,23 @@
+{
+  "name": "@cats-inc/cats-apps",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Official utility app workspace for Cats Desktop.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Cats Inc",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cats-inc/cats-apps.git"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "check:docs": "node scripts/check-docs.mjs"
+  }
+}

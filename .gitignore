@@ -1,0 +1,39 @@
+# Agent-local discovery and configuration
+.claude/
+.gemini/
+.agents/
+.codex/
+.cursor/
+
+# Node and build artifacts
+node_modules/
+dist/
+build/
+coverage/
+.npm/
+*.tgz
+*.zip
+
+# Local state and environment
+.env
+.env.local
+.env.*.local
+*.log
+logs/
+.context/
+.bootstrap-init-*/
+tmp/
+temp/
+*.tmp
+
+# Editors and operating systems
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
