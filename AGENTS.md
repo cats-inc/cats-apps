@@ -32,8 +32,9 @@
   inputs, not production install references.
 - Keep the workspace root private. Individual app versions need not match Desktop.
 - Never populate the user's real app registry or provider accounts with test data.
-- Keep planning state truthful: passive quota/current usage are implemented;
-  active account collectors, account linkage, catalog updates and history are deferred.
+- Keep planning state truthful: passive quota/current usage and explicit native
+  Codex CLI quota queries are implemented. Other collectors, scheduled account
+  polling, verified account linkage, catalog updates and history remain deferred.
 - Document filenames follow sibling Cats repos: NNN-title.md for ADRs,
   SPEC-NNN-title.md for specifications, and PLAN-NNN-title.md for plans.
 

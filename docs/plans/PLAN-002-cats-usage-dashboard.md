@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | U1 and passive quota presentation implemented; active U2/U3 deferred |
+| Status | U1/passive windows and native Codex explicit query implemented; remaining U2/U3 deferred |
 | Owner | cats-apps |
 | Related spec | SPEC-002 |
 | Cross-repository dependencies | Platform PLAN-106; runtime PLAN-038 |
@@ -47,6 +47,19 @@ U1 release gate: a packaged app renders truthful existing data; registry navigat
 or an exported HTML file alone is insufficient.
 
 ### Phase 3: U2 Provider Account Quotas
+
+- [x] Add Codex-only `查詢最新額度` through SDK 1.1, with distinct refresh permission.
+- [x] Render actual window duration, remaining percentage, reset and observation time.
+- [x] Show pending/cooldown/auth-required/unsupported/error states without inventing zero.
+- [x] Keep last values on failure, suppress concurrent clicks, and leave polling passive.
+- [x] Increment immutable App version to 0.1.1 and require SDK ^1.1.0.
+- [ ] Publish and validate this new package in the user's updated Desktop.
+
+Local validation (2026-09-11): five App tests and docs/build checks passed. The built
+0.1.1 archive was staged offline and exercised in headless Edge with a temporary
+authenticated Platform profile and actual native Codex CLI. The displayed window
+and percentage matched Runtime's real response; no model turn or execution usage
+record was created. The user explicitly deferred publication and installed updates.
 
 - [x] Present existing passive Claude/Codex percentage/reset reports with explicit
       unverified account linkage and no cross-target quota sum. This is not an active collector.

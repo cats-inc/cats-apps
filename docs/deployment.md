@@ -2,16 +2,18 @@
 
 ## Current State
 
-Usage 0.1.0 builds a `.catsapp` artifact, exact-version lock and source provenance.
+Usage 0.1.1 builds a `.catsapp` artifact, exact-version lock and source provenance.
+It requires App SDK ^1.1.0 for explicit Codex quota refresh. This follow-up is
+locally verified only; publishing/updating Desktop was explicitly deferred.
 CI runs docs/unit/build checks and uploads artifacts. The shared App-tag workflow
 publishes a utility only when a matching `<slug>-v<version>` tag is pushed; it never
 overwrites a released version. No release was published by implementing this workflow.
 
 ```powershell
 # cats-apps
-npm run build -- --version 0.1.0
+npm run build -- --version 0.1.1
 # cats-platform
-npm run desktop:package:windows -- --apps-lock ../cats-apps/dist/usage-0.1.0.lock.json --skip-mobile
+npm run desktop:package:windows -- --apps-lock ../cats-apps/dist/usage-0.1.1.lock.json --skip-mobile
 ```
 
 The lock, not a moving latest release, selects the App version. See the host
