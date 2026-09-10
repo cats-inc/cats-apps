@@ -8,10 +8,11 @@
 `cats-platform` owns the App SDK, installation, loading, Lobby integration, and
 Desktop packaging. `cats-runtime` owns provider execution and usage/quota facts.
 
-The first app is **Usage** (`cats.usage`, 0.1.0): a read-only dashboard
+The first app is **Usage** (`cats.usage`, 0.1.1): a read-only dashboard
 for execution usage, provider-account quotas, reset windows, and cooldowns.
 Its specification distinguishes data already reported by runtime from quota
-collectors that still need implementation.
+collectors that still need implementation. Codex now has an explicit CLI-only
+quota query through SDK 1.1; other active collectors remain future work.
 
 ## Current Status
 
@@ -33,12 +34,12 @@ git clone https://github.com/cats-inc/cats-apps.git
 cd cats-apps
 npm run check:docs
 npm test
-npm run build -- --version 0.1.0
+npm run build -- --version 0.1.1
 ```
 
 The documentation check uses Node built-ins and needs no dependency installation.
 Build and tests also use Node built-ins. There is no standalone app server.
-The output includes `usage-0.1.0.catsapp`, its exact-version lock and build provenance.
+The output includes `usage-0.1.1.catsapp`, its exact-version lock and build provenance.
 See [deployment](docs/deployment.md) for Desktop version selection.
 
 ## Workspace Layout

@@ -5,7 +5,7 @@
 ```sh
 npm run check:docs
 npm test
-npm run build -- --version 0.1.0
+npm run build -- --version 0.1.1
 ```
 
 This dependency-free Node check validates root workspace metadata and local

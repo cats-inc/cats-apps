@@ -38,7 +38,7 @@ Account observations shared by several provider instances must not be summed twi
 
 ## Current Implementation Boundary
 
-Usage 0.1.0 and the shared builder are implemented. The `.catsapp` v1 archive is
+Usage 0.1.1 and the shared builder are implemented. The `.catsapp` v1 archive is
 gzip-compressed JSON containing a manifest and base64 payload files; the first
 renderer is a self-contained HTML document. Host-injected SDK v1 is implemented in
 cats-platform, not copied into this repository. The host owns the opaque-origin
@@ -47,8 +47,10 @@ server/worker/action executors still return unsupported; see
 [cats-platform PLAN-106](../../cats-platform/docs/plans/PLAN-106-official-app-package-hosting.md).
 
 Runtime exposes authenticated `/usage/snapshot`, preserving quota-only reports,
-passive Claude/Codex windows, per-currency cost, epoch and truncation. Account quota polling
-and durable time-series data require
+passive Claude/Codex windows, per-currency cost, epoch and truncation. Explicit
+native Codex reads use the separately authorized SDK 1.1 quota-refresh operation;
+Runtime owns CLI execution and authentication stays entirely in the CLI. Automatic
+account polling, other collectors and durable time-series data still require
 [cats-runtime PLAN-038](../../cats-runtime/docs/plans/PLAN-038-provider-account-quota-and-usage-snapshots.md).
 
 ## Planning References

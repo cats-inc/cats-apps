@@ -2,15 +2,15 @@
   "schemaVersion": 1,
   "id": "cats.usage",
   "displayName": "Usage",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "用量總覽 · Runtime usage and provider-reported quota",
   "category": "user-app",
   "trustTier": "local-user",
   "publisher": { "name": "Cats Inc", "homepage": "https://github.com/cats-inc/cats-apps" },
-  "compatibility": { "catsPlatform": "^0.2.1", "appSdk": "1.x" },
+  "compatibility": { "catsPlatform": "^0.2.3", "appSdk": "^1.1.0" },
   "entrypoints": { "renderer": "renderer/index.html" },
   "contributions": {
     "lobbyApps": [{ "id": "usage", "title": "Usage", "subtitle": "用量總覽 · Usage & quota", "routePath": "/apps/cats.usage", "icon": "gauge", "maturity": "preview" }]
   },
-  "permissions": ["ui.route", "ui.lobby", "runtime.telemetry.read"]
+  "permissions": ["ui.route", "ui.lobby", "runtime.telemetry.read", "runtime.telemetry.refresh"]
 }
