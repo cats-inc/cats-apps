@@ -7,7 +7,7 @@
 | [ADR-001](decisions/001-own-official-utility-apps-and-coordinate-desktop-distribution.md) | Accepted | Official utility monorepo, individual packages, coordinated Desktop distribution |
 | [SPEC-001](specs/SPEC-001-official-utility-app-packages.md) | v1 implemented | Package outputs, workspace boundaries, and delivery requirements |
 | [PLAN-001](plans/PLAN-001-official-app-package-foundation.md) | Implemented; publication/catalog deferred | Repository, SDK consumption, package production, and Desktop handoff |
-| [SPEC-002](specs/SPEC-002-cats-usage-dashboard.md) | Multi-CLI queries implemented, unreleased | Usage identity, native quantities, data truth, and staged scope |
+| [SPEC-002](specs/SPEC-002-cats-usage-dashboard.md) | Usage 0.2.0 published | Usage identity, native quantities, data truth, and staged scope |
 | [PLAN-002](plans/PLAN-002-cats-usage-dashboard.md) | Kiro verification/history deferred | Usage MVP, account quotas, persistence, and installed validation |
 
 ## Project Guides
@@ -34,4 +34,4 @@ Protocol examples remain optional; [A2A](a2a/README.md) is a bootstrap pointer.
 Root state: [README](../README.md), [PROGRESS](../PROGRESS.md),
 [ROADMAP](../ROADMAP.md), and [CONTRIBUTING](../CONTRIBUTING.md).
 
-*Last updated: 2026-09-10*
+*Last updated: 2026-09-11*

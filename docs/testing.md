@@ -33,12 +33,15 @@ and disable revocation. See the host [package guide](../../cats-platform/docs/ap
 - Kiro authenticated quota success and verified unit/window mapping.
 - Scheduled account polling, verified shared-account linking, durable history and gaps.
 - Native live query verification on macOS/Linux and WSL/Docker query transports.
-- A separately authorized coordinated release of Usage 0.2.0, SDK 1.2 and matching
-  Runtime code; current Desktop release pins and the user's installation are unchanged.
+- Desktop 0.2.5 PR/CI and three-OS package gates for the now-authorized coordinated
+  selection of Usage 0.2.0, SDK 1.2 and matching Runtime code; installed acceptance
+  remains separate and the user's installation is unchanged.
 
 Native Codex/Copilot/Claude/Antigravity query integration, isolated built-package
 browser checks and independent implementation review are complete. Usage 0.1.1
-was previously published and bundled; the new 0.2.0 package remains unreleased.
+was previously published and bundled. Usage 0.2.0 is now published: its release
+workflow passed docs/tests/build, and downloaded digest/lock/provenance plus
+decoded payload comparisons passed. See [deployment](deployment.md) for exact pins.
 
 Use isolated temporary app registries, runtime roots, and fixture data. Never
 install test apps into the user's actual Desktop profile or spend provider quota

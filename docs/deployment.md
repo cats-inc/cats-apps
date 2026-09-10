@@ -2,23 +2,25 @@
 
 ## Current State
 
-Usage 0.1.1 is published as an immutable `.catsapp` artifact, exact-version lock
-and source provenance in the [Usage 0.1.1 release](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.1.1).
-It requires App SDK ^1.1.0 for explicit native Codex CLI quota refresh.
+Usage 0.2.0 is published as an immutable `.catsapp` artifact, exact-version lock
+and source provenance in the [Usage 0.2.0 release](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.2.0).
+It requires App SDK ^1.2.0 for explicit Codex/Copilot/Claude/Antigravity queries,
+native quantities and per-provider cooldowns.
 
-The current source is Usage 0.2.0 (unreleased), requiring SDK ^1.2.0 for explicit
-Copilot/Claude/Antigravity queries, native quantities and per-provider cooldowns.
-Its local build does not replace the published 0.1.1 artifact or Desktop 0.2.4 lock.
-When separately authorized, publish a new immutable App artifact, pin its exact
-version/hash plus the matching Runtime revision in Desktop, and run each OS's
-resource/offline-activation gates before releasing installers.
-Published 0.1.1 provenance: source revision
-`1a06d51523e0175f65a3a062be3581a659ada2ef`; the published
-archive SHA-256 is `2334a33c059502cf1209aa399e1ad7ce7123c6fc4c2c54173ec271c60a5803fd`.
-Desktop 0.2.4 selects those exact 0.1.1 release bytes. That prior publication was
-authorized; the current 0.2.0 follow-up does not authorize publication or an
-installed update. Native Windows was live-verified; macOS/Linux live checks
-and WSL/Docker query transport support remain separate work.
+Published provenance: source revision
+`1affcf38e427f636e1eedb45bf3d1ac4e78eeb4f`; archive SHA-256
+`7d5455bb6b484b731becbc69b469e649fbfc433cf015586e0022c3045974c04e`.
+The release workflow passed docs/tests/build. The downloaded archive, GitHub
+asset digest, release lock and provenance agree; decoded payloads match the
+locally tested build. Use the published hash, not a different OS's gzip hash.
+
+The owner authorized the coordinated Desktop 0.2.5 unsigned preview with this
+archive, SDK 1.2.0 and Runtime revision
+`91bba98e2e621ec3124130b7c79fdc6c3ab7ca19`. Platform owns the exact release
+selection, PR/CI and each OS's resource/offline-activation gates. Existing Desktop
+0.2.4 installers retain Usage 0.1.1 unchanged. This task does not update the
+operator's installed Desktop. Native Windows CLI queries were live-verified;
+macOS/Linux live checks and WSL/Docker query support remain separate work.
 CI runs docs/unit/build checks and uploads artifacts. The shared App-tag workflow
 publishes a utility only when a matching `<slug>-v<version>` tag is pushed; it never
 overwrites a released version. Normal builds do not publish releases.

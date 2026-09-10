@@ -8,7 +8,7 @@
 `cats-platform` owns the App SDK, installation, loading, Lobby integration, and
 Desktop packaging. `cats-runtime` owns provider execution and usage/quota facts.
 
-The first app is **Usage** (`cats.usage`, 0.2.0, unreleased): a read-only dashboard
+The first app is **Usage** (`cats.usage`, 0.2.0): a read-only dashboard
 for execution usage, provider-account quotas, reset windows, and cooldowns.
 Its specification distinguishes data already reported by runtime from quota
 collectors that still need verification. Codex, Copilot, Claude Code and Antigravity
@@ -44,7 +44,10 @@ npm run build -- --version 0.2.0
 The documentation check uses Node built-ins and needs no dependency installation.
 Build and tests also use Node built-ins. There is no standalone app server.
 The output includes `usage-0.2.0.catsapp`, its exact-version lock and build provenance.
-This source version is not published or selected by an existing Desktop release.
+Usage 0.2.0 is [published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.2.0)
+and selected for the coordinated Desktop 0.2.5 unsigned preview. Existing
+Desktop 0.2.4 installers still bundle Usage 0.1.1; publication does not update an
+installed Desktop automatically.
 See [deployment](docs/deployment.md) for Desktop version selection.
 
 ## Workspace Layout
