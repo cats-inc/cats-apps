@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | U1/passive windows and native Codex explicit query implemented; remaining U2/U3 deferred |
+| Status | Usage 0.2.0 multi-CLI queries implemented, unreleased; Kiro verification and remaining U2/U3 deferred |
 | Owner | cats-apps |
 | Related spec | SPEC-002 |
 | Cross-repository dependencies | Platform PLAN-106; runtime PLAN-038 |
@@ -48,6 +48,27 @@ or an exported HTML file alone is insufficient.
 
 ### Phase 3: U2 Provider Account Quotas
 
+Follow-up 2026-09-11 (implementation/verification only):
+
+- [x] Generalize query buttons to Runtime-advertised Codex/Copilot/Claude/Antigravity targets.
+- [x] Key status/failure/cooldown by provider and instance, not instance name alone.
+- [x] Display native request quantities and unlimited entitlements without inferred balances.
+- [x] Preserve missing reset times, elapsed resets, stale values and passive polling.
+- [x] Require SDK ^1.2.0 and increment immutable package version to 0.2.0.
+- [x] Add multi-provider same-instance, no-auto-query and native-quantity VM tests.
+- [x] Complete built-package browser smoke and final independent review.
+- [ ] Kiro: authenticated success fixture and verified mapping before advertising a button.
+
+Live numeric verification and the Kiro auth blocker are recorded in
+[Runtime research](../../../cats-runtime/docs/research/2026-09-11-additional-cli-quota-queries.md).
+No release, tag, Desktop lock change or installed update is authorized by this slice.
+Usage 0.2.0 validation: six App tests plus docs and deterministic build passed.
+The built archive passed authenticated host checks with both the standalone and
+production renderer, including all three new query buttons, native quantities,
+unlimited values, passive polling, stale/offline state, mobile width and disable.
+These browser values are fixtures; separate live CLI evidence is linked above.
+The following completed items record the earlier 0.1.1/Codex delivery:
+
 - [x] Add Codex-only `查詢最新額度` through SDK 1.1, with distinct refresh permission.
 - [x] Render actual window duration, remaining percentage, reset and observation time.
 - [x] Show pending/cooldown/auth-required/unsupported/error states without inventing zero.
@@ -69,9 +90,9 @@ with Usage 0.1.1; updating the installed Desktop remains outside that task.
 
 - [ ] Connect the runtime account/window snapshot when collectors are verified.
 - [ ] Display related instances without multiplying shared quota.
-- [ ] Add used/remaining, native units, reset timestamps, and stale countdown behavior.
-- [ ] Publish a provider coverage matrix based on executed collector validation.
-- [ ] Keep unsupported providers explicit rather than estimating their allowance.
+- [x] Add used/remaining, native units, reset timestamps, and stale countdown behavior.
+- [x] Document a provider coverage matrix based on executed collector validation.
+- [x] Keep unsupported providers explicit rather than estimating their allowance.
 
 ### Phase 4: U3 History
 
@@ -126,6 +147,7 @@ without a separately authorized collector-validation task.
 
 | Date | Update |
 |------|--------|
+| 2026-09-11 | Unreleased Usage 0.2.0 adds Copilot/Claude/Antigravity refresh through SDK 1.2, native quantities and provider+instance isolation. Six App tests and authenticated built-package browser checks passed; independent review completed. Kiro remains unenabled pending authenticated evidence. |
 | 2026-09-11 | Usage 0.1.1 released from Apps commit `1a06d51523e0175f65a3a062be3581a659ada2ef`; workflow docs/tests/build passed. Downloaded archive, release lock, provenance and GitHub asset digest agree. Desktop 0.2.4 version/hash selection and three-platform release gates are tracked in Platform PLAN-106; no local installed update performed. |
 | 2026-09-10 | Product/data scope and phased plan documented. U1/U2/U3 implementation remains open. |
 

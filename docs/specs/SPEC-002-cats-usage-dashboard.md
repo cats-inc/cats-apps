@@ -4,11 +4,11 @@
 
 | Field | Value |
 |-------|-------|
-| Status | U1, passive windows and explicit native Codex quota query implemented; history deferred |
+| Status | Explicit native Codex/Copilot/Claude/Antigravity queries implemented; Kiro verification/history deferred |
 | Owner | cats-apps |
 | Product name | Usage |
 | App ID | cats.usage |
-| Workspace / version | apps/usage / 0.1.1 |
+| Workspace / version | apps/usage / 0.2.0 (unreleased) |
 | Placement | Installed App under Lobby Apps |
 | Initial delivery | Built package included with a coordinated Desktop release |
 
@@ -24,9 +24,23 @@ separate `runtime.telemetry.refresh` permission. The Codex card shows the real
 reported window length (not an assumed five-hour window), remaining percentage,
 reset/observation time, query state and cooldown. Failures retain the last number
 as an old snapshot. Native Windows was verified through Codex CLI; native macOS/
-Linux use that transport, while WSL/Docker are explicitly unsupported. Claude
-still uses passive reports. Complete history, persistent preferences and verified
+Linux use that transport, while WSL/Docker are explicitly unsupported. Complete history, persistent preferences and verified
 shared-account deduplication remain unavailable. Polling never invokes the query.
+
+Usage 0.2.0 (2026-09-11, unreleased) requires SDK ^1.2.0 and extends that operation
+to Copilot, Claude Code and Antigravity (`agy`) when Runtime advertises
+`quota.refreshSupported`. Query state is keyed by provider and instance; a shared
+instance name cannot share another provider's cooldown. Copilot displays native
+requests (used/limit/remaining) and explicit unlimited entitlement without a fake
+100% balance. Missing values remain unknown and elapsed reset times remain stale.
+Claude fixed account windows use 0–100 utilization; dynamic model/extra billing
+windows are not yet covered. Antigravity's model-pool names do not imply support
+for the retired Gemini CLI. Kiro is not enabled: its no-session account probe
+returned an authentication-related failure, so no verified numeric fixture exists.
+New collectors refuse custom startup arguments and non-native transports.
+The [Runtime evidence](../../../cats-runtime/docs/research/2026-09-11-additional-cli-quota-queries.md)
+records live Windows observations and limitations; no native macOS/Linux live
+validation, publication or installed Desktop update is implied.
 
 Usage is a read-only utility for understanding provider usage and available
 quota across Cats. It presents facts supplied by cats-runtime through the
@@ -120,7 +134,7 @@ observed snapshot and its bounded coverage, not a fabricated daily/monthly trend
     suspend repeated UI reads when hidden. UI polling must not force account probes.
 15. An initial Refresh action refreshes the cached host view. Any later upstream
     collector refresh uses a separately specified host/runtime operation.
-    The Codex-only `Query latest allowance` button now uses that separate operation;
+    The capability-gated `Query latest allowance` button now uses that separate operation;
     it never reads login files, makes provider API calls, or starts a model turn.
 16. When runtime is unavailable, display that state and the last observation
     timestamp if cached data exists; do not imply healthy current telemetry.
