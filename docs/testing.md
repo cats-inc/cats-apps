@@ -5,7 +5,7 @@
 ```sh
 npm run check:docs
 npm test
-npm run build -- --version 0.1.1
+npm run build -- --version 0.2.0
 ```
 
 This dependency-free Node check validates root workspace metadata and local
@@ -16,6 +16,8 @@ and skipped in a standalone clone.
 
 `npm test` covers unknown/zero, independent quota/session scopes, currency separation,
 stale resets, deterministic source-free packaging and explicit version mismatches.
+It also verifies explicit CLI refresh capability, native quantities/unlimited
+entitlements, provider+instance cooldown isolation and passive snapshot polling.
 The docs command alone is not application test coverage.
 
 Host tests live in cats-platform: package limits/path/digest checks, compatibility,
@@ -28,9 +30,15 @@ and disable revocation. See the host [package guide](../../cats-platform/docs/ap
 
 ## Remaining Gates
 
-- Active account queries, verified shared-account linking, durable history and gaps.
-- Native installer execution on every supported OS and independent code review.
-- First published App release and an explicit official Desktop bundle opt-in.
+- Kiro authenticated quota success and verified unit/window mapping.
+- Scheduled account polling, verified shared-account linking, durable history and gaps.
+- Native live query verification on macOS/Linux and WSL/Docker query transports.
+- A separately authorized coordinated release of Usage 0.2.0, SDK 1.2 and matching
+  Runtime code; current Desktop release pins and the user's installation are unchanged.
+
+Native Codex/Copilot/Claude/Antigravity query integration, isolated built-package
+browser checks and independent implementation review are complete. Usage 0.1.1
+was previously published and bundled; the new 0.2.0 package remains unreleased.
 
 Use isolated temporary app registries, runtime roots, and fixture data. Never
 install test apps into the user's actual Desktop profile or spend provider quota
@@ -39,4 +47,4 @@ to verify a display-only change.
 See [PLAN-001](plans/PLAN-001-official-app-package-foundation.md) and
 [PLAN-002](plans/PLAN-002-cats-usage-dashboard.md).
 
-*Last updated: 2026-09-10*
+*Last updated: 2026-09-11*

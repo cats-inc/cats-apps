@@ -4,8 +4,13 @@ export function metric(value, locale = 'en') {
 }
 
 export function remaining(window) {
+  if (window.unlimited === true) return null;
   return typeof window.usedPercent === 'number' && Number.isFinite(window.usedPercent)
     && window.usedPercent >= 0 && window.usedPercent <= 100 ? 100 - window.usedPercent : null;
+}
+
+export function quotaTargetKey(provider, instance) {
+  return JSON.stringify(['cli', provider, instance]);
 }
 
 export function quotaIsStale(quota, now = Date.now()) {

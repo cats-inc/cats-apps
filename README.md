@@ -8,11 +8,12 @@
 `cats-platform` owns the App SDK, installation, loading, Lobby integration, and
 Desktop packaging. `cats-runtime` owns provider execution and usage/quota facts.
 
-The first app is **Usage** (`cats.usage`, 0.1.1): a read-only dashboard
+The first app is **Usage** (`cats.usage`, 0.2.0, unreleased): a read-only dashboard
 for execution usage, provider-account quotas, reset windows, and cooldowns.
 Its specification distinguishes data already reported by runtime from quota
-collectors that still need implementation. Codex now has an explicit CLI-only
-quota query through SDK 1.1; other active collectors remain future work.
+collectors that still need verification. Codex, Copilot, Claude Code and Antigravity
+now have explicit CLI-only queries through SDK 1.2. Kiro success verification is
+blocked on CLI authentication; it is not advertised as a working collector.
 
 ## Current Status
 
@@ -20,6 +21,9 @@ quota query through SDK 1.1; other active collectors remain future work.
 - Repository ownership and Desktop-coordinated distribution are accepted.
 - Usage shows current tokens/cost/confidence, passive Claude/Codex quota windows,
   reset times, incidents, stale/offline states, and in-memory coverage.
+- Explicit query buttons preserve native request counts, unlimited entitlements,
+  real window lengths, and independent provider/instance cooldowns. No model turns,
+  credential extraction, automatic account polling, or direct provider API calls.
 - Deterministic `.catsapp` packaging and an App-tag release workflow are implemented.
 - cats-platform provides the real isolated renderer/SDK, managed install, and pinned
   Desktop package consumption. Remote catalog, active account polling and history remain deferred.
@@ -34,12 +38,13 @@ git clone https://github.com/cats-inc/cats-apps.git
 cd cats-apps
 npm run check:docs
 npm test
-npm run build -- --version 0.1.1
+npm run build -- --version 0.2.0
 ```
 
 The documentation check uses Node built-ins and needs no dependency installation.
 Build and tests also use Node built-ins. There is no standalone app server.
-The output includes `usage-0.1.1.catsapp`, its exact-version lock and build provenance.
+The output includes `usage-0.2.0.catsapp`, its exact-version lock and build provenance.
+This source version is not published or selected by an existing Desktop release.
 See [deployment](docs/deployment.md) for Desktop version selection.
 
 ## Workspace Layout

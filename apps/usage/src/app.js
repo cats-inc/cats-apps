@@ -1,4 +1,4 @@
-import { metric, remaining, quotaIsStale, selectUsage } from './model.js';
+import { metric, remaining, quotaIsStale, selectUsage, quotaTargetKey } from './model.js';
 
 const sdk = globalThis.catsApp;
 const locale = sdk?.locale || 'zh-TW';
@@ -16,14 +16,15 @@ let disposed = false;
 let querying = null;
 const quotaQueries = new Map();
 const cooldownTimers = new Set();
-const queryMessage = (status) => ({
-  updated: word('已透過 Codex CLI 取得最新額度', 'Latest allowance received from Codex CLI'),
+const providerLabels = { codex: 'Codex', copilot: 'Copilot', claude: 'Claude Code', kiro: 'Kiro', antigravity: 'Antigravity' };
+const queryMessage = (status, provider) => ({
+  updated: word(`已透過 ${provider} CLI 取得額度回報`, `Allowance report received from ${provider} CLI`),
   cooldown: word('查詢冷卻中；保留上次數字', 'Query cooling down; keeping the last observation'),
   busy: word('Runtime 正在查詢其他實例，請稍後再試', 'Runtime is querying another instance; try again shortly'),
-  auth_required: word('請先在此實例的 Codex CLI 登入，再重新查詢', 'Sign in to this instance in Codex CLI, then try again'),
+  auth_required: word(`請先在此實例的 ${provider} CLI 登入，再重新查詢`, `Sign in to this instance in ${provider} CLI, then try again`),
   unsupported: word('此 CLI 或執行環境尚不支援額度查詢', 'This CLI or execution environment does not support quota queries yet'),
   unavailable: word('CLI 未提供可用的訂閱額度；未推算任何數字', 'The CLI returned no usable subscription allowance; no values were estimated'),
-  timeout: word('Codex CLI 查詢逾時；保留上次數字', 'Codex CLI query timed out; keeping the last observation'),
+  timeout: word(`${provider} CLI 查詢逾時；保留上次數字`, `${provider} CLI query timed out; keeping the last observation`),
   error: word('查詢失敗；保留上次數字，請稍後重試', 'Query failed; keeping the last observation. Try again later'),
 })[status] || word('查詢失敗；保留上次數字', 'Query failed; keeping the last observation');
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -38,8 +39,10 @@ const options = (values, selected, label) => `<option value="">${label}</option>
 
 function targetCard(target) {
   const q = target.quota;
-  const query = quotaQueries.get(target.instance);
-  const failed = target.provider === 'codex' && query && !['updated', 'cooldown', 'busy'].includes(query.status);
+  const key = quotaTargetKey(target.provider, target.instance);
+  const label = esc(providerLabels[target.provider] || target.provider);
+  const query = quotaQueries.get(key);
+  const failed = query && !['updated', 'cooldown', 'busy'].includes(query.status);
   const stale = offline || failed || quotaIsStale(q);
   const windows = q.windows.map((window) => {
     const value = remaining(window);
@@ -47,12 +50,15 @@ function targetCard(target) {
     const minutes = window.windowMinutes;
     const duration = !minutes ? '' : minutes % 1440 === 0 ? word(`${number(minutes / 1440)} 天`, `${number(minutes / 1440)} days`)
       : minutes % 60 === 0 ? word(`${number(minutes / 60)} 小時`, `${number(minutes / 60)} hours`) : `${number(minutes)} min`;
-    return `<div class="window"><div class="window-title"><span>${esc(window.id)}${duration ? ` · ${duration}` : ''}</span><span><strong>${number(value)}${value === null ? '' : '%'}</strong> ${word('剩餘', 'remaining')}</span></div>${value === null ? '' : `<progress value="${value}" max="100" aria-label="${esc(window.id)} ${word('剩餘百分比', 'percent remaining')}"></progress>`}<p>${elapsed ? word('已過預定重設時間，等待供應商新回報', 'Reset time passed; awaiting a new provider report') : `${word('預定重設', 'Resets')} ${date(window.resetsAt)}`}</p></div>`;
+    const unit = window.unit === 'requests' ? 'requests' : window.unit === 'credits' ? 'credits' : null;
+    const balance = window.unlimited ? word('不限額', 'Unlimited') : `${number(value)}${value === null ? '' : '%'} ${word('剩餘', 'remaining')}`;
+    const quantities = unit ? `<p>${word('已用', 'Used')} ${number(window.used)} / ${window.unlimited ? word('不限額', 'unlimited') : number(window.limit)} ${unit}${window.unlimited ? '' : ` · ${word('剩餘', 'remaining')} ${number(window.remaining)}`}</p>` : '';
+    return `<div class="window"><div class="window-title"><span>${esc(window.id)}${duration ? ` · ${duration}` : ''}</span><strong>${balance}</strong></div>${value === null ? '' : `<progress value="${value}" max="100" aria-label="${esc(window.id)} ${word('剩餘百分比', 'percent remaining')}"></progress>`}${quantities}<p>${elapsed ? word('已過回報的重設時間；目前沒有可靠的未來重設時間', 'Reported reset time has passed; no reliable future reset time is available') : `${word('預定重設', 'Resets')} ${date(window.resetsAt)}`}</p></div>`;
   }).join('');
   const guardrails = target.guardrails.filter((rule) => rule.outcome !== 'allowed').map((rule) => `<p class="notice">${esc(rule.outcome)}${rule.cooldownUntil ? ` · ${word('冷卻至', 'cooldown until')} ${date(rule.cooldownUntil)}` : ''}</p>`).join('');
   const cooling = query?.nextRefreshAt && Date.parse(query.nextRefreshAt) > Date.now();
-  const action = target.provider === 'codex' && target.backend === 'cli'
-    ? `<div class="quota-action"><button data-query-quota="${esc(target.instance)}" ${busy || querying !== null || cooling ? 'disabled' : ''}>${querying === target.instance ? word('正在查詢 Codex CLI…', 'Querying Codex CLI…') : cooling ? word('查詢冷卻中', 'Query cooling down') : word('查詢最新額度', 'Query latest allowance')}</button><p class="provenance" role="status">${query ? queryMessage(query.status) : word('只在按下按鈕時透過 CLI 查詢；不啟動模型對話', 'Queries through the CLI only on click; no model turn')}${cooling ? `<br>${word('可再次查詢', 'Available again')} ${date(query.nextRefreshAt)}` : ''}</p></div>` : '';
+  const action = q.refreshSupported === true && target.backend === 'cli'
+    ? `<div class="quota-action"><button data-query-quota="${esc(target.instance)}" data-query-provider="${esc(target.provider)}" ${busy || querying !== null || cooling ? 'disabled' : ''}>${querying === key ? word(`正在查詢 ${label} CLI…`, `Querying ${label} CLI…`) : cooling ? word('查詢冷卻中', 'Query cooling down') : word('查詢最新額度', 'Query latest allowance')}</button><p class="provenance" role="status">${query ? queryMessage(query.status, label) : word('只在按下按鈕時透過 CLI 查詢；不啟動模型對話', 'Queries through the CLI only on click; no model turn')}${cooling ? `<br>${word('可再次查詢', 'Available again')} ${date(query.nextRefreshAt)}` : ''}</p></div>` : '';
   return `<article class="provider ${stale ? 'stale' : ''}"><div class="provider-header"><div><h3>${esc(target.provider)}</h3><small>${esc(target.instance)} · ${esc(target.backend)}${q.limitId ? ` · ${esc(q.limitId)}` : ''}</small></div><span class="badge ${stale || !windows ? 'warn' : ''}">${windows ? stale ? word('舊快照', 'Stale') : word('已回報', 'Reported') : q.status === 'unsupported' ? word('尚未支援', 'Unsupported') : word('尚未回報', 'Not observed')}</span></div>${windows || `<p class="empty">${word('沒有可用的帳戶 quota 回報。未知不代表額度為零。', 'No account quota report is available. Unknown does not mean zero.')}</p>`}${action}${guardrails}<div class="provenance">${word('觀測時間', 'Observed')} ${date(q.observedAt)} · ${age(q.observedAt)}<br>${esc(q.source || word('沒有支援的訊號來源', 'No supported signal source'))}<br>${word('帳戶關聯未驗證；不跨實例加總額度', 'Account linkage unverified; allowances are never summed across instances')}</div></article>`;
 }
 
@@ -69,14 +75,14 @@ function render() {
     <div class="toolbar"><label>${word('供應商', 'Provider')}<select id="provider">${options(snapshot?.targets.map((target) => target.provider) || [], filters.provider, word('所有供應商', 'All providers'))}</select></label><label>${word('實例', 'Instance')}<select id="instance">${options(snapshot?.targets.filter((target) => !filters.provider || target.provider === filters.provider).map((target) => target.instance) || [], filters.instance, word('所有實例', 'All instances'))}</select></label><label>${word('執行用量範圍', 'Execution usage scope')}<select id="session">${options(snapshot?.sessions.filter((session) => (!filters.provider || session.provider === filters.provider) && (!filters.instance || session.instance === filters.instance)).map((session) => session.sessionId) || [], filters.session, word('所有觀測到的 Session', 'All observed sessions'))}</select></label></div>
     <div class="metrics">${[[word('輸入 tokens', 'Input tokens'), number(totals?.inputTokens)], [word('輸出 tokens', 'Output tokens'), number(totals?.outputTokens)], [word('總 tokens', 'Total tokens'), number(totals?.totalTokens)]].map(([label, value]) => `<section class="stat"><small>${label}</small><strong>${value}</strong><p>${word('Runtime 已保留的執行回報', 'Retained runtime execution reports')}</p></section>`).join('')}<section class="stat"><small>${word('回報／估算成本', 'Reported / estimated cost')}</small><strong class="cost">${money(totals?.costs || [])}</strong><p>${word('幣別分列 · 非帳單', 'Currencies kept separate · not a bill')}</p></section></div>
     <p class="provenance">${word('用量來源信心', 'Usage source confidence')}: ${Object.entries(totals?.confidence || {}).map(([kind, count]) => `${esc(kind)} ${number(count)}`).join(' · ') || '—'} · ${number(totals?.observations)} ${word('筆回報', 'reports')}</p>
-    <div class="section-head"><h2>${word('供應商額度', 'Provider allowance')}</h2><p>${word('Codex 可主動查詢 · 不受 Session 篩選影響', 'Codex supports explicit queries · independent of session filter')}</p></div>
+        <div class="section-head"><h2>${word('供應商額度', 'Provider allowance')}</h2><p>${word('支援的 CLI 可主動查詢 · 不受 Session 篩選影響', 'Explicit queries for supported CLIs · independent of session filter')}</p></div>
     <div class="providers">${selected?.targets.length ? selected.targets.map(targetCard).join('') : `<div class="empty">${word('目前沒有可呈現的供應商。連接 Runtime 後，執行回報會顯示在這裡。', 'No providers to display. Runtime execution reports will appear here when available.')}</div>`}</div>
     <div class="section-head"><h2>${word('已觀測的 Sessions', 'Observed sessions')}</h2><p>${number(selected?.sessions.length)} ${word('筆保留的 Session 彙總', 'retained session summaries')}</p></div>
     <div class="table-wrap"><table><thead><tr><th>SESSION</th><th>${word('供應商 / 實例', 'PROVIDER / INSTANCE')}</th><th>TOKENS</th><th>${word('成本', 'COST')}</th><th>${word('最後觀測', 'LAST OBSERVED')}</th></tr></thead><tbody>${selected?.sessions.length ? selected.sessions.map((session) => `<tr><td class="id" title="${esc(session.sessionId)}">${esc(session.sessionId)}</td><td>${esc(session.provider)} / ${esc(session.instance)}</td><td>${number(session.usage.totalTokens)}</td><td>${money(session.usage.costs)}</td><td>${date(session.usage.lastObservedAt)}</td></tr>`).join('') : `<tr><td colspan="5">${word('尚無執行用量回報。', 'No execution usage has been reported.')}</td></tr>`}</tbody></table></div>
     ${incidents.length ? `<div class="section-head"><h2>${word('最近限制事件', 'Recent limit incidents')}</h2></div>${incidents.map((incident) => `<p class="notice">${esc(incident.provider)} / ${esc(incident.instance)} · ${esc(incident.classification)} · ${date(incident.observedAt)}${incident.retryAt ? ` · ${word('建議重試', 'Retry after')} ${date(incident.retryAt)}` : ''}</p>`).join('')}` : ''}
     <footer><span>${word('記憶體觀測區間', 'In-memory observation period')} · ${date(snapshot?.coverage.startedAt)} → ${date(snapshot?.generatedAt)}<br>${word('不含其他工具直接執行的用量；尚無持久化歷史。', 'Excludes executions outside this runtime. Durable history is not available.')}</span><span>Usage ${esc(sdk?.version || '0.1.0')}<br>${word('每 30 秒讀取快照 · 不會喚起 CLI', 'Snapshot every 30s · never launches a CLI')}</span></footer>`;
   document.getElementById('refresh').addEventListener('click', () => void refresh());
-  for (const button of root.querySelectorAll('[data-query-quota]')) button.addEventListener('click', () => void refreshQuota(button.dataset.queryQuota));
+  for (const button of root.querySelectorAll('[data-query-quota]')) button.addEventListener('click', () => void refreshQuota(button.dataset.queryProvider, button.dataset.queryQuota));
   for (const name of ['provider', 'instance', 'session']) document.getElementById(name).addEventListener('change', (event) => {
     filters[name] = event.target.value;
     if (name === 'provider') filters.instance = '';
@@ -102,20 +108,22 @@ function acceptSnapshot(next) {
   snapshot = next; offline = false;
 }
 
-async function refreshQuota(instance) {
-  if (busy || disposed || querying !== null || Date.parse(quotaQueries.get(instance)?.nextRefreshAt) > Date.now()) return;
-  querying = instance; render();
+async function refreshQuota(provider, instance) {
+  const key = quotaTargetKey(provider, instance);
+  if (busy || disposed || querying !== null || Date.parse(quotaQueries.get(key)?.nextRefreshAt) > Date.now()) return;
+  if (!snapshot?.targets.some((target) => target.provider === provider && target.instance === instance && target.backend === 'cli' && target.quota.refreshSupported === true)) return;
+  querying = key; render();
   try {
-    const result = await sdk.usage.refreshQuota({ provider: 'codex', instance });
+    const result = await sdk.usage.refreshQuota({ provider, instance });
     if (disposed) return;
     acceptSnapshot(result.snapshot);
-    quotaQueries.set(instance, { status: result.status, nextRefreshAt: result.nextRefreshAt });
+    quotaQueries.set(key, { status: result.status, nextRefreshAt: result.nextRefreshAt });
     const delay = Date.parse(result.nextRefreshAt) - Date.now();
     if (delay > 0 && delay < 300_000) {
       const timer = setTimeout(() => { cooldownTimers.delete(timer); if (!disposed) render(); }, delay + 50);
       cooldownTimers.add(timer);
     }
-  } catch { if (!disposed) quotaQueries.set(instance, { status: 'error', nextRefreshAt: null }); }
+  } catch { if (!disposed) quotaQueries.set(key, { status: 'error', nextRefreshAt: null }); }
   finally { querying = null; if (!disposed) render(); }
 }
 const timer = setInterval(() => { if (document.visibilityState !== 'hidden') void refresh(); }, 30_000);

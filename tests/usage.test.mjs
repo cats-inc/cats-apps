@@ -35,7 +35,7 @@ test('session filtering changes execution totals, not provider quota', () => {
 
 test('build emits deterministic source-free archives with matching pins and rejects version drift', async () => {
   const outputDir = await mkdtemp(join(tmpdir(), 'usage-build-test-'));
-  const first = await buildApp({ outputDir, version: '0.1.1' });
+  const first = await buildApp({ outputDir, version: '0.2.0' });
   const second = await buildApp({ outputDir });
   assert.equal(first.sha256, second.sha256);
   const envelope = JSON.parse(gunzipSync(await readFile(first.artifactPath)).toString('utf8'));
@@ -46,6 +46,6 @@ test('build emits deterministic source-free archives with matching pins and reje
   assert.doesNotMatch(html, /from ['"]\.\.\/|localhost:|<script[^>]+src=|<link[^>]+href=/);
   const lock = JSON.parse(await readFile(first.lockPath, 'utf8'));
   assert.equal(lock.apps[0].sha256, first.sha256);
-  await assert.rejects(buildApp({ outputDir, version: '0.2.0' }), /match exactly/);
+  await assert.rejects(buildApp({ outputDir, version: '999.0.0' }), /match exactly/);
   assert.throws(() => parseArgs(['--version']), /Invalid argument/);
 });
