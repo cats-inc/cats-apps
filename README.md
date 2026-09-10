@@ -8,7 +8,7 @@
 `cats-platform` owns the App SDK, installation, loading, Lobby integration, and
 Desktop packaging. `cats-runtime` owns provider execution and usage/quota facts.
 
-The first planned app is **Cats Usage** (`cats.usage`): a read-only dashboard
+The first app is **Usage** (`cats.usage`, 0.1.0): a read-only dashboard
 for execution usage, provider-account quotas, reset windows, and cooldowns.
 Its specification distinguishes data already reported by runtime from quota
 collectors that still need implementation.
@@ -17,10 +17,12 @@ collectors that still need implementation.
 
 - Bootstrap initialization and project-specific documentation are complete.
 - Repository ownership and Desktop-coordinated distribution are accepted.
-- Cats Usage requirements and cross-repository delivery plans are documented.
-- App implementation, package production, host loading, and remote installation
-  are not implemented by this bootstrap.
-- No application server, provider probe, package publication, or installer is run here.
+- Usage shows current tokens/cost/confidence, passive Claude/Codex quota windows,
+  reset times, incidents, stale/offline states, and in-memory coverage.
+- Deterministic `.catsapp` packaging and an App-tag release workflow are implemented.
+- cats-platform provides the real isolated renderer/SDK, managed install, and pinned
+  Desktop package consumption. Remote catalog, active account polling and history remain deferred.
+- No provider probes, live user-profile installs, or release publication are performed by a build.
 
 ## Quick Start
 
@@ -30,23 +32,26 @@ Use Node.js 22 or newer:
 git clone https://github.com/cats-inc/cats-apps.git
 cd cats-apps
 npm run check:docs
+npm test
+npm run build -- --version 0.1.0
 ```
 
 The documentation check uses Node built-ins and needs no dependency installation.
-Application build/test commands will be added with the first implementation;
-there is currently no application `start`, `dev`, or `test` command.
+Build and tests also use Node built-ins. There is no standalone app server.
+The output includes `usage-0.1.0.catsapp`, its exact-version lock and build provenance.
+See [deployment](docs/deployment.md) for Desktop version selection.
 
 ## Workspace Layout
 
 | Location | Responsibility | Current state |
 |----------|----------------|---------------|
-| `apps/<slug>/` | One utility app, manifest, renderer, and tests | Planned; no app package exists yet |
+| `apps/<slug>/` | One utility app, manifest, renderer, and tests | Usage implemented |
 | `packages/<name>/` | Proven shared utilities used by multiple apps | Reserved; no speculative shared library |
-| `scripts/` | Shared repository checks and future build/package automation | Documentation check and bootstrap maintenance helpers |
+| `scripts/` | Shared repository checks and build/package automation | Package builder, docs check and maintenance helpers |
 | `docs/` | Accepted decisions, feature specifications, and delivery plans | Active |
 
 The private root npm workspace is not an installable Cats App.
-Each future app has its own stable ID, version, manifest, and built entrypoint.
+Each app has its own stable ID, version, manifest, and built entrypoint.
 
 ## Distribution
 
@@ -64,8 +69,8 @@ independent app updates remain a later phase.
 - [Repository and distribution decision](docs/decisions/001-own-official-utility-apps-and-coordinate-desktop-distribution.md)
 - [App package requirements](docs/specs/SPEC-001-official-utility-app-packages.md)
 - [Repository and package delivery plan](docs/plans/PLAN-001-official-app-package-foundation.md)
-- [Cats Usage specification](docs/specs/SPEC-002-cats-usage-dashboard.md)
-- [Cats Usage delivery plan](docs/plans/PLAN-002-cats-usage-dashboard.md)
+- [Usage specification](docs/specs/SPEC-002-cats-usage-dashboard.md)
+- [Usage delivery plan](docs/plans/PLAN-002-cats-usage-dashboard.md)
 - [Cross-repository architecture](docs/architecture.md)
 - [Documentation index](docs/README.md)
 

@@ -23,7 +23,7 @@ their own agent file, and [the agent guide](docs/AGENT-GUIDE.md).
 4. Report missing application tests or manual validation honestly.
 5. Use Conventional Commits and a pull request when publishing is authorized.
 
-No dependencies or app tests exist at the repository foundation stage.
+Usage build/unit tests are dependency-free; the host owns installed/browser tests.
 Do not add placeholder success scripts in place of implementation.
 
 ## Documentation

@@ -6,6 +6,11 @@
 *.yaml text eol=lf
 *.yml text eol=lf
 *.json text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+LICENSE text eol=lf
 *.toml text eol=lf
 
 *.bat text eol=crlf

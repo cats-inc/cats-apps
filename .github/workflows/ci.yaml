@@ -19,6 +19,14 @@ jobs:
           node-version-file: .nvmrc
       - name: Check repository documentation
         run: npm run check:docs
+      - name: Test App build and usage presentation
+        run: npm test
+      - name: Build versioned Usage package
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: usage-package
+          path: dist/*
+          if-no-files-found: error
 
-# Add app build/tests and artifact production with PLAN-001.
 # This workflow neither publishes releases nor installs apps into a user profile.

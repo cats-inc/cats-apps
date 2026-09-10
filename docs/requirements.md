@@ -13,7 +13,7 @@ boundaries and initially coordinated Desktop distribution.
 
 ## First App
 
-Cats Usage (cats.usage) presents normalized execution usage and provider-account
+Usage (cats.usage) presents normalized execution usage and provider-account
 quota when available, including coverage, freshness, source confidence, reset
 windows, and active cooldown/block state.
 

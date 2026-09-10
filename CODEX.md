@@ -21,7 +21,8 @@ scripts are documented in `skills/README.md`; do not assume they are installed.
 
 - Use the actual public App SDK once the platform exports it; interfaces alone
   do not prove that an installed renderer can execute.
-- Run npm run check:docs for this foundation; do not claim app tests or builds.
+- Run npm test, npm run build and npm run check:docs. Host/browser checks belong
+  to cats-platform and must use isolated registries; see docs/testing.md.
 - Keep Git mutations sequential and non-interactive. Commit/push only when requested.
 - Include source locations in user-facing answers only when asked for them.
 - mbf is defined in AGENTS.md; never run a blind overwrite of bootstrap proposals.

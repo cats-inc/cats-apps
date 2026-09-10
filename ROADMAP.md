@@ -8,17 +8,20 @@ Desktop. Keep app source ownership separate from the host and provider runtime.
 ## Phase 1: Repository and Contracts
 
 - [x] Initialize cats-apps and document the accepted repository boundary.
-- [x] Plan package production and Cats Usage with linked host/runtime work.
-- [ ] Finish the public App SDK and versioned artifact contract in cats-platform.
+- [x] Plan package production and Usage with linked host/runtime work.
+- [x] Finish the public App SDK and versioned artifact contract in cats-platform.
 
 ## Phase 2: First Installed App
 
-- [ ] Build Cats Usage from the app workspace.
-- [ ] Load the built package through the platform's actual App host.
-- [ ] Show existing usage, incidents, confidence, coverage, and freshness.
+- [x] Build Usage from the app workspace.
+- [x] Load the built package through the platform's actual App host.
+- [x] Show existing usage, incidents, confidence, coverage, and freshness.
+- [x] Validate explicit-version Windows Desktop staging and isolated browser execution.
 - [ ] Include a pinned app set in a Desktop release.
 
 ## Phase 3: Quotas and History
+
+- [x] Display existing passive Claude/Codex percentage/reset reports without summing targets.
 
 - [ ] Connect runtime-owned, independently verified account-quota collectors.
 - [ ] Add reset-window and shared-account presentation.

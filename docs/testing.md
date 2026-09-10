@@ -1,9 +1,11 @@
 # Testing
 
-## Implemented Repository Check
+## Implemented Checks
 
 ```sh
 npm run check:docs
+npm test
+npm run build -- --version 0.1.0
 ```
 
 This dependency-free Node check validates root workspace metadata and local
@@ -12,19 +14,23 @@ other agents' private instruction files are outside its inspection scope.
 Cross-repository relative links are checked when their sibling checkout exists
 and skipped in a standalone clone.
 
-This is a documentation/configuration check, not application test coverage.
-There are no app unit, browser, package-install, or provider-live tests yet.
+`npm test` covers unknown/zero, independent quota/session scopes, currency separation,
+stale resets, deterministic source-free packaging and explicit version mismatches.
+The docs command alone is not application test coverage.
 
-## Planned Gates
+Host tests live in cats-platform: package limits/path/digest checks, compatibility,
+pin selection, updates/rollback/data preservation, capability denial/revocation,
+upstream redaction and App-route execution. Its `scripts/testing/check-usage-app.mts`
+loads the real artifact with the actual host surface and routes against fixture data,
+using a temporary registry and an ephemeral loopback port. It checks desktop/narrow
+layouts, the SDK handshake, frame/network isolation, filters, offline/stale/restart,
+and disable revocation. See the host [package guide](../../cats-platform/docs/app-packages.md).
 
-- Package validation: app ID/version, manifest entries, built files, compatibility,
-  checksums, and absence of source-workspace dependencies.
-- Cats Usage: unknown/zero distinction, stale/partial data, shared-account quotas,
-  mixed units/currencies, countdowns, and history coverage.
-- Host integration: actual built renderer, capability denial, revocation after
-  disable/uninstall, offline launch, and failed update preserving the prior version.
-- Runtime contract: reported quota sources, cache/timeouts, persisted usage,
-  refresh deduplication, and error classifications.
+## Remaining Gates
+
+- Active account queries, verified shared-account linking, durable history and gaps.
+- Native installer execution on every supported OS and independent code review.
+- First published App release and an explicit official Desktop bundle opt-in.
 
 Use isolated temporary app registries, runtime roots, and fixture data. Never
 install test apps into the user's actual Desktop profile or spend provider quota

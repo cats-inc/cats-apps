@@ -1,11 +1,11 @@
 # Official Apps
 
-Each future app belongs in its own directory with a stable ID, independent version,
+Each app belongs in its own directory with a stable ID, independent version,
 manifest, built renderer, and targeted tests.
 
-| Planned app | ID | Directory | Status |
+| App | ID | Directory | Status |
 |-------------|----|-----------|--------|
-| Cats Usage | cats.usage | usage | Specified; implementation not started |
+| Usage | cats.usage | usage | 0.1.0 renderer and versioned package implemented |
 
-See [Cats Usage](../docs/specs/SPEC-002-cats-usage-dashboard.md).
-An entry in this planning table is not an installable package.
+See [Usage](../docs/specs/SPEC-002-cats-usage-dashboard.md).
+Run `npm run build -- --version 0.1.0` to produce the installable artifact and pin lock.

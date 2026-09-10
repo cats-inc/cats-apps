@@ -16,11 +16,10 @@
 
 - Type: monorepo for official Cats utility apps
 - Purpose: independently versioned Cats App Packages, initially shipped with Desktop
-- Entry points: no application entrypoint yet; repository check is npm run check:docs
+- Entry points: apps/usage; npm run build produces versioned .catsapp artifacts
 - Stack and versions: Node.js 22+, npm workspaces; TypeScript/browser baseline
-- Test command: application tests are not implemented; see docs/testing.md
-- Subprojects: future apps/<slug> and proven shared packages/<name>; Cats Usage
-  (cats.usage) is the first planned app, not an implemented package.
+- Test commands: npm test and npm run check:docs; see docs/testing.md
+- Subprojects: apps/usage (Usage, cats.usage); shared packages need proven reuse.
 
 ## Repository Boundaries
 
@@ -33,7 +32,8 @@
   inputs, not production install references.
 - Keep the workspace root private. Individual app versions need not match Desktop.
 - Never populate the user's real app registry or provider accounts with test data.
-- Keep planning state truthful: this bootstrap does not implement Cats Usage.
+- Keep planning state truthful: passive quota/current usage are implemented;
+  active account collectors, account linkage, catalog updates and history are deferred.
 - Document filenames follow sibling Cats repos: NNN-title.md for ADRs,
   SPEC-NNN-title.md for specifications, and PLAN-NNN-title.md for plans.
 
