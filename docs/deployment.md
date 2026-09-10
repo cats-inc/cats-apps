@@ -2,12 +2,18 @@
 
 ## Current State
 
-Usage 0.1.1 builds a `.catsapp` artifact, exact-version lock and source provenance.
-It requires App SDK ^1.1.0 for explicit Codex quota refresh. This follow-up is
-locally verified only; publishing/updating Desktop was explicitly deferred.
+Usage 0.1.1 is published as an immutable `.catsapp` artifact, exact-version lock
+and source provenance in the [Usage 0.1.1 release](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.1.1).
+It requires App SDK ^1.1.0 for explicit native Codex CLI quota refresh.
+The source revision is `1a06d51523e0175f65a3a062be3581a659ada2ef`; the published
+archive SHA-256 is `2334a33c059502cf1209aa399e1ad7ce7123c6fc4c2c54173ec271c60a5803fd`.
+Desktop 0.2.4 preview preparation selects these exact release bytes. Publication
+is now authorized, but updating the operator's installed Desktop remains outside
+this release task. Native Windows was live-verified; macOS/Linux live checks
+and WSL/Docker query transport support remain separate work.
 CI runs docs/unit/build checks and uploads artifacts. The shared App-tag workflow
 publishes a utility only when a matching `<slug>-v<version>` tag is pushed; it never
-overwrites a released version. No release was published by implementing this workflow.
+overwrites a released version. Normal builds do not publish releases.
 
 ```powershell
 # cats-apps
@@ -40,9 +46,11 @@ manifest registration remains a development path; it does not execute source as 
 production App. Private GitHub assets need an independently authenticated download
 followed by local pin selection; the initial URL resolver handles public release assets.
 
-Desktop release CI starts with an empty checked-in selection until a real App
-release exists. Publishing the App and committing its exact hash/URL into that
-selection are explicit release actions, not implied by adding this implementation.
+Desktop release CI uses a checked-in selection with real App release artifacts.
+Publishing an App and committing its exact hash/URL into that selection are
+explicit release actions, not implied by adding an implementation. Existing
+Desktop 0.2.2/0.2.3 selections remain on Usage 0.1.0; publishing Usage 0.1.1 alone
+does not replace bytes in an already published Desktop installer.
 
 ## Later Remote Distribution
 
@@ -57,4 +65,4 @@ on a network catalog.
 
 See [ADR-001](decisions/001-own-official-utility-apps-and-coordinate-desktop-distribution.md).
 
-*Last updated: 2026-09-10*
+*Last updated: 2026-09-11*

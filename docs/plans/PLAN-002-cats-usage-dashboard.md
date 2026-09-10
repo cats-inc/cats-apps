@@ -53,13 +53,16 @@ or an exported HTML file alone is insufficient.
 - [x] Show pending/cooldown/auth-required/unsupported/error states without inventing zero.
 - [x] Keep last values on failure, suppress concurrent clicks, and leave polling passive.
 - [x] Increment immutable App version to 0.1.1 and require SDK ^1.1.0.
-- [ ] Publish and validate this new package in the user's updated Desktop.
+- [x] Publish the immutable Usage 0.1.1 package with release lock/provenance.
+- [ ] Validate this package in the user's updated Desktop (separate update authorization).
 
 Local validation (2026-09-11): five App tests and docs/build checks passed. The built
 0.1.1 archive was staged offline and exercised in headless Edge with a temporary
 authenticated Platform profile and actual native Codex CLI. The displayed window
 and percentage matched Runtime's real response; no model turn or execution usage
-record was created. The user explicitly deferred publication and installed updates.
+record was created. Publication and installed updates were initially deferred.
+On 2026-09-11 the user authorized publishing the Desktop 0.2.4 unsigned preview
+with Usage 0.1.1; updating the installed Desktop remains outside that task.
 
 - [x] Present existing passive Claude/Codex percentage/reset reports with explicit
       unverified account linkage and no cross-target quota sum. This is not an active collector.
@@ -123,6 +126,7 @@ without a separately authorized collector-validation task.
 
 | Date | Update |
 |------|--------|
+| 2026-09-11 | Usage 0.1.1 released from Apps commit `1a06d51523e0175f65a3a062be3581a659ada2ef`; workflow docs/tests/build passed. Downloaded archive, release lock, provenance and GitHub asset digest agree. Desktop 0.2.4 version/hash selection and three-platform release gates are tracked in Platform PLAN-106; no local installed update performed. |
 | 2026-09-10 | Product/data scope and phased plan documented. U1/U2/U3 implementation remains open. |
 
 *Created: 2026-09-10*
