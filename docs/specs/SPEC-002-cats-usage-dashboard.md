@@ -8,7 +8,7 @@
 | Owner | cats-apps |
 | Product name | Usage |
 | App ID | cats.usage |
-| Workspace / version | apps/usage / 0.2.0 (unreleased) |
+| Workspace / version | apps/usage / 0.2.0 (published; selected for Desktop 0.2.5 preview) |
 | Placement | Installed App under Lobby Apps |
 | Initial delivery | Built package included with a coordinated Desktop release |
 
@@ -27,7 +27,7 @@ as an old snapshot. Native Windows was verified through Codex CLI; native macOS/
 Linux use that transport, while WSL/Docker are explicitly unsupported. Complete history, persistent preferences and verified
 shared-account deduplication remain unavailable. Polling never invokes the query.
 
-Usage 0.2.0 (2026-09-11, unreleased) requires SDK ^1.2.0 and extends that operation
+Usage 0.2.0 (published 2026-09-11) requires SDK ^1.2.0 and extends that operation
 to Copilot, Claude Code and Antigravity (`agy`) when Runtime advertises
 `quota.refreshSupported`. Query state is keyed by provider and instance; a shared
 instance name cannot share another provider's cooldown. Copilot displays native
@@ -39,8 +39,10 @@ for the retired Gemini CLI. Kiro is not enabled: its no-session account probe
 returned an authentication-related failure, so no verified numeric fixture exists.
 New collectors refuse custom startup arguments and non-native transports.
 The [Runtime evidence](../../../cats-runtime/docs/research/2026-09-11-additional-cli-quota-queries.md)
-records live Windows observations and limitations; no native macOS/Linux live
-validation, publication or installed Desktop update is implied.
+records live Windows observations and limitations; it does not imply native
+macOS/Linux live validation or an installed Desktop update. The separately
+authorized App publication and Desktop selection are recorded in
+[deployment](../deployment.md).
 
 Usage is a read-only utility for understanding provider usage and available
 quota across Cats. It presents facts supplied by cats-runtime through the
