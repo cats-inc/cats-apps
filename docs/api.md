@@ -5,10 +5,15 @@
 cats-apps serves no HTTP API and publishes no App SDK implementation.
 The SDK and authorization bridge belong to cats-platform.
 
-Runtime has existing read surfaces that the host may adapt:
+The App uses `catsApp.usage.getSnapshot()` from host-injected SDK v1. The host
+requires `runtime.telemetry.read`, binds reads to the enabled App/version, and
+projects the authenticated Runtime snapshot. No App-owned HTTP listener exists.
+
+Runtime read surfaces include:
 
 | Runtime read | Relevant data |
 |--------------|---------------|
+| GET /usage/snapshot | Sanitized current usage, passive quota windows, epoch/coverage, incidents and guardrails; the App bridge's source |
 | GET /diagnostics/runtime | metering usage aggregates, incidents, guardrails |
 | GET /diagnostics/providers | Per-target incident/cooldown/block summaries; not a full account quota balance |
 | GET /sessions/:id | inspection.metering for one session |
@@ -16,12 +21,14 @@ Runtime has existing read surfaces that the host may adapt:
 These are host/runtime integration references, not permission for an installed
 renderer to call arbitrary URLs or receive the runtime API key.
 
-## Planned Contract
+## Implemented v1 Contract
 
-The host provides a narrowly authorized telemetry snapshot operation through its
-App renderer context. A proposed runtime.telemetry.read permission and operation
-name must be added and tested in the host; neither exists as a usable installed
-App capability yet.
+SDK `usage.getSnapshot()` maps to the allowlisted `usage.snapshot` operation.
+The host reads `/api/apps/:id/usage?version=<exact-version>`; unknown operations are
+rejected. Snapshot schemaVersion 1 separates totals, targets, sessions, quota
+windows, incidents, guardrails, and memory coverage. Unknown metrics are null;
+account linkage remains unverified; no cross-instance quota sum is exposed.
+See the [host package guide](../../cats-platform/docs/app-packages.md).
 
 Account quotas, history, and refresh semantics are specified in
 [runtime SPEC-029](../../cats-runtime/docs/specs/SPEC-029-provider-account-quota-and-usage-snapshots.md).

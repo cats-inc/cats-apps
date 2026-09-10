@@ -8,11 +8,12 @@ project-specific procedures that are too detailed for always-loaded instructions
 - Read [architecture](architecture.md) for the three-repository split.
 - Repository/package work follows [SPEC-001](specs/SPEC-001-official-utility-app-packages.md)
   and [PLAN-001](plans/PLAN-001-official-app-package-foundation.md).
-- Cats Usage follows [SPEC-002](specs/SPEC-002-cats-usage-dashboard.md) and
+- Usage follows [SPEC-002](specs/SPEC-002-cats-usage-dashboard.md) and
   [PLAN-002](plans/PLAN-002-cats-usage-dashboard.md).
-- npm run check:docs is the only implemented repository check. No app is running.
+- npm test, npm run build, and npm run check:docs are implemented. Usage runs
+  only inside the host; this repository does not start a server.
 - Provider quota research/collectors belong in cats-runtime. App access is through
-  the platform bridge, whose usable implementation remains planned.
+  the host-injected App SDK v1 and the permission-checked platform bridge.
 - mbf means Merge Bootstrap Files. Inspect each *.bootstrap against its accepted
   original, preserve project-specific facts, merge deliberately, then remove only
   consumed proposals. Report none when there are no proposals.

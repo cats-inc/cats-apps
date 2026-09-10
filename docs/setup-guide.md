@@ -2,15 +2,17 @@
 
 ## Requirements
 
-Node.js 22+ is sufficient for current documentation checks. No application
+Node.js 22+ is sufficient for builds, tests and documentation checks. No application
 dependencies, environment secrets, database, or running service are required.
 
 ```sh
 npm run check:docs
+npm test
+npm run build -- --version 0.1.0
 ```
 
-This command checks local Markdown targets and workspace metadata. It does not
-run the planned app, access provider accounts, install packages, or publish assets.
+These commands check documentation, run fixture tests, and produce a versioned
+artifact. They do not access provider accounts, install into a user profile, or publish assets.
 
 ## Bootstrap Provenance
 
@@ -33,10 +35,9 @@ A fresh initialization had zero proposals, so no merge was necessary.
 
 ## Application Work
 
-Follow [PLAN-001](plans/PLAN-001-official-app-package-foundation.md) before adding
-runtime dependencies or claiming app build/test support. The current tsconfig is
-a planned TypeScript/browser baseline; no TypeScript compilation is part of this
-documentation-only foundation.
+Usage uses dependency-free JavaScript/CSS. The builder assembles a self-contained
+HTML payload, packages its license/manifest, and emits a SHA-256 lock. No App SDK
+source is imported from sibling repositories. See [PLAN-001](plans/PLAN-001-official-app-package-foundation.md).
 
 See [testing](testing.md) and [deployment](deployment.md).
 

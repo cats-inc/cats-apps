@@ -8,7 +8,7 @@ Acceptance does not mean app packaging or loading has been implemented.
 ## Context
 
 Cats has a platform host, a provider runtime, and a planned collection of small
-utility apps. Cats Usage is the first concrete app. These apps need real package
+utility apps. Usage is the first concrete app. These apps need real package
 boundaries without imposing a separate repository and release workflow on every
 small tool.
 
@@ -34,7 +34,7 @@ does not yet load built app renderers or execute declared scoped API handlers.
 8. Reserve later remote distribution through an official App Catalog. Available
    catalog entries, hosted release artifacts, and the local installed registry
    are separate concepts.
-9. Use Cats Usage, ID cats.usage, as the first planned utility app. It remains an
+9. Use Usage, ID cats.usage, as the first planned utility app. It remains an
    App under Lobby Apps and does not become a new top-level Product.
 
 ## Consequences

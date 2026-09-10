@@ -2,7 +2,7 @@
 
 | Term | Meaning in Cats Apps |
 |------|----------------------|
-| App | Installable utility such as Cats Usage |
+| App | Installable utility such as Usage |
 | Product | Platform-level experience such as Chat, Work, or Code |
 | App Package | Versioned manifest and built executable/static assets |
 | App SDK | Public host contract owned by cats-platform |

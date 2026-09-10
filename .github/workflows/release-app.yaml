@@ -1,0 +1,50 @@
+name: Release a versioned utility
+
+on:
+  push:
+    tags: ['*-v[0-9]+.[0-9]+.[0-9]+']
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Resolve immutable app identity
+        id: app
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          if [[ ! "$RELEASE_TAG" =~ ^([a-z][a-z0-9-]*)-v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo 'Invalid utility release tag'; exit 1
+          fi
+          echo "slug=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+          echo "version=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
+      - run: npm run check:docs
+      - run: npm test
+      - name: Build exactly the tagged version
+        env:
+          APP_SLUG: ${{ steps.app.outputs.slug }}
+          APP_VERSION: ${{ steps.app.outputs.version }}
+        run: node scripts/build-app.mjs --app "$APP_SLUG" --version "$APP_VERSION"
+      - name: Publish immutable App release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          APP_SLUG: ${{ steps.app.outputs.slug }}
+          APP_VERSION: ${{ steps.app.outputs.version }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo 'Release already exists; refusing to overwrite a version'; exit 1
+          fi
+          gh release create "$RELEASE_TAG" dist/* --verify-tag --latest=false \
+            --title "$APP_SLUG $APP_VERSION" \
+            --notes "Prebuilt utility package. Pin the exact version and SHA-256 from the lock file in Cats Desktop. Source: $GITHUB_SHA."

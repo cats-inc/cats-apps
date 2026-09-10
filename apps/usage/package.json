@@ -1,0 +1,11 @@
+{
+  "name": "@cats-inc/usage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node ../../scripts/build-app.mjs --app usage",
+    "test": "node --test ../../tests/usage.test.mjs"
+  },
+  "description": "Runtime usage and provider-reported quota, without guesswork."
+}

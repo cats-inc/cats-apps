@@ -1,6 +1,6 @@
 # App Security and State Boundaries
 
-## Cats Usage
+## Usage
 
 - Request only the scoped host telemetry read capability needed by the dashboard.
 - Never ship provider credentials, login files, API keys, or runtime authentication

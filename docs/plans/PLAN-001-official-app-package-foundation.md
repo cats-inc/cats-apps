@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Planned; repository bootstrap completed |
+| Status | Foundation/package/host integration implemented; publication/catalog deferred |
 | Owner | cats-apps |
 | Related spec | SPEC-001 |
 | Scope | Built official apps and coordinated Desktop artifact handoff |
@@ -16,7 +16,9 @@
 ## Overview
 
 Keep package production in cats-apps and host execution in cats-platform.
-Bootstrap completion does not complete the package or host runtime.
+The v1 archive/SDK/pin contract is frozen in the [host guide](../../../cats-platform/docs/app-packages.md).
+The actual Usage package passed isolated headless host checks and Windows Desktop
+staging. Native installer execution on every OS and independent review remain open.
 
 ## Implementation Phases
 
@@ -26,37 +28,39 @@ Bootstrap completion does not complete the package or host runtime.
 - [x] Preserve existing Git metadata; audit mbf proposals (none present).
 - [x] Replace project placeholders with the official utility monorepo facts.
 - [x] Declare private workspaces and document the public SDK dependency boundary.
-- [x] Record ADR-001, package requirements, Cats Usage planning, and indexes.
+- [x] Record ADR-001, package requirements, Usage planning, and indexes.
 - [x] Add a dependency-free documentation check.
 
 ### Phase 1: Host Contract Alignment
 
-- [ ] Confirm the usable renderer SDK export and host compatibility mechanism with
+- [x] Confirm the usable renderer SDK export and host compatibility mechanism with
       platform PLAN-106.
-- [ ] Freeze package contents, manifest validation, and renderer entrypoint handling.
-- [ ] Define artifact identity/checksums and the exact Desktop bundle-selection input.
-- [ ] Ensure bundle system trust derives from host provenance.
+- [x] Freeze package contents, manifest validation, and renderer entrypoint handling.
+- [x] Define artifact identity/checksums and the exact Desktop bundle-selection input.
+- [x] Ensure bundle system trust derives from host provenance.
 
 Deliverable: a testable package/host contract, not a TypeScript interface alone.
 
 ### Phase 2: First App and Shared Packaging
 
-- [ ] Create apps/usage with app-local package metadata, manifest, and renderer.
-- [ ] Add only the actual build/test dependencies and commit their lockfile.
-- [ ] Build and test Cats Usage through its own workspace commands.
-- [ ] Add shared artifact assembly that includes only required built payloads.
-- [ ] Validate every declared entrypoint and record version/source/checksum metadata.
-- [ ] Prove that the assembled artifact works after removing access to source.
+- [x] Create apps/usage with app-local package metadata, manifest, and renderer.
+- [x] Record the dependency-free build/test setup and workspace lockfile.
+- [x] Build and test Usage through its own workspace commands.
+- [x] Add shared artifact assembly that includes only required built payloads.
+- [x] Validate every declared entrypoint and record version/source/checksum metadata.
+- [x] Prove that the assembled artifact works without source access in the host.
 
-Deliverable: an installable, independently versioned Cats Usage artifact.
+Deliverable: an installable, independently versioned Usage artifact.
 
 ### Phase 3: Coordinated Desktop Handoff
 
-- [ ] Produce a selected app set through common build automation.
-- [ ] Have Desktop packaging consume the pinned artifacts through platform PLAN-106.
-- [ ] Verify launch, disable/enable, data retention, and failed replacement in an
+- [x] Produce a selected app set through common build automation.
+- [x] Have Desktop packaging consume the pinned artifacts through platform PLAN-106.
+- [x] Verify launch, disable/enable, data retention, and failed replacement in an
       isolated profile.
-- [ ] Record the actual bundled app versions in release provenance.
+- [x] Record actual pins in staged package plans and installer manifests.
+- [ ] Publish the first App release and opt it into the official Desktop selection.
+- [ ] Validate native installer launch on every supported OS.
 
 Deliverable: a Desktop build with a functioning installed app.
 
@@ -96,6 +100,6 @@ Desktop launch. All registries and runtime roots used by tests are temporary.
 
 | Date | Update |
 |------|--------|
-| 2026-09-10 | Repository initialized; ownership and package/Cats Usage planning recorded. Application work remains open. |
+| 2026-09-10 | Repository initialized; ownership and package/Usage planning recorded. Application work remains open. |
 
 *Created: 2026-09-10*

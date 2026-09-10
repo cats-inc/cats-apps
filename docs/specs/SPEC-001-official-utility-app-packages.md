@@ -4,9 +4,9 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft requirements; repository and release direction accepted |
+| Status | v1 renderer/package slice implemented; remote distribution deferred |
 | Owner | cats-apps |
-| Implementation | Bootstrap only; packages and app runtime not started |
+| Implementation | Usage 0.1.0, shared archive builder, host SDK integration and pinned Desktop handoff |
 | Related decision | ADR-001 |
 
 ## Summary
@@ -20,7 +20,7 @@ of later catalog installation and independent updates.
 - Real source/package/host boundaries across the three Cats repositories.
 - Reproducible built payloads with individual versions and compatible SDK usage.
 - Shared package automation for a collection of utilities.
-- A first installed app, Cats Usage, that proves the boundary.
+- A first installed app, Usage, that proves the boundary.
 
 ## Non-Goals
 
@@ -54,7 +54,7 @@ of later catalog installation and independent updates.
     separate, explicit data-removal action is requested.
 11. First-party ownership shall come from trusted host bundle provenance. A package's
     self-declared system trust is not sufficient.
-12. Cats Usage shall contribute a Lobby Apps entry with ID cats.usage. It requests
+12. Usage shall contribute a Lobby Apps entry with ID cats.usage. It requests
     the proposed telemetry read capability once the host implements it.
 13. A later catalog shall describe available app versions, compatibility, artifact
     download references, sizes, and checksums. Catalog state is not installed state.
@@ -75,16 +75,16 @@ of later catalog installation and independent updates.
 
 - [Platform SPEC-115](../../../cats-platform/docs/specs/SPEC-115-versioned-official-app-packages-and-telemetry-bridge.md)
 - [Platform PLAN-106](../../../cats-platform/docs/plans/PLAN-106-official-app-package-hosting.md)
-- [Cats Usage SPEC-002](SPEC-002-cats-usage-dashboard.md)
+- [Usage SPEC-002](SPEC-002-cats-usage-dashboard.md)
 
-## Open Questions
+## v1 Contract Resolution
 
-- Freeze the archive transport suffix and compression after the host package
-  contract is implemented; folder and archive inputs must represent the same payload.
-- Pin an actually exported App SDK version during the first integration. The
-  existing template's compatibility strings alone do not prove compatibility.
-- Decide the first bundle publication mechanism within the shared release workflow.
-  Remote app auto-updates remain a later capability.
+- `.catsapp` uses gzip JSON with manifest and base64 built files; license included.
+- Host-injected executable SDK v1 provides only Usage reads and Lobby navigation.
+- `<slug>-v<version>` tags use one shared App release workflow. Desktop selects
+  exact ID/version/SHA-256/artifact locks; official default selection remains empty
+  until the first published artifact is explicitly selected.
+- [Frozen host/package details](../../../cats-platform/docs/app-packages.md).
 
 *Created: 2026-09-10*
 *Related Plan: [PLAN-001](../plans/PLAN-001-official-app-package-foundation.md)*

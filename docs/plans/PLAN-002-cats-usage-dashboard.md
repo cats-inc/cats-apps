@@ -1,10 +1,10 @@
-# PLAN-002: Cats Usage Dashboard
+# PLAN-002: Usage Dashboard
 
 ## Metadata
 
 | Field | Value |
 |-------|-------|
-| Status | Planned; no dashboard implementation |
+| Status | U1 and passive quota presentation implemented; active U2/U3 deferred |
 | Owner | cats-apps |
 | Related spec | SPEC-002 |
 | Cross-repository dependencies | Platform PLAN-106; runtime PLAN-038 |
@@ -15,7 +15,7 @@
 
 ## Overview
 
-Implement Cats Usage as a versioned read-only App. Prove the host/package boundary
+Implement Usage as a versioned read-only App. Prove the host/package boundary
 and existing usage display first, then add account quotas and history as their
 runtime contracts become available.
 
@@ -23,30 +23,33 @@ runtime contracts become available.
 
 ### Phase 0: Product and Data Contract
 
-- [x] Define Cats Usage, cats.usage, Lobby placement, and coordinated Desktop delivery.
+- [x] Define Usage, cats.usage, Lobby placement, and coordinated Desktop delivery.
 - [x] Separate usage, account allowance, incidents, freshness, and coverage.
-- [ ] Align the host DTO and permission with platform PLAN-106.
-- [ ] Agree the U1 fixture set and data retention/coverage labels with runtime PLAN-038.
+- [x] Align the host DTO and permission with platform PLAN-106.
+- [x] Agree the U1 fixture set and data retention/coverage labels with runtime PLAN-038.
 
 ### Phase 1: App Package and Host Execution
 
-- [ ] Create apps/usage and its own manifest/version/build/test setup.
-- [ ] Consume the real exported renderer SDK; do not substitute direct host imports.
-- [ ] Implement locale/theme/navigation and read-only telemetry access.
-- [ ] Verify the actual built app inside the host using a temporary registry.
+- [x] Create apps/usage and its own manifest/version/build/test setup.
+- [x] Consume the real exported renderer SDK; do not substitute direct host imports.
+- [x] Implement locale/theme/navigation and read-only telemetry access.
+- [x] Verify the actual built app inside the host using a temporary registry.
 
 ### Phase 2: U1 Current Usage
 
-- [ ] Implement overview, provider/instance rows, and session detail.
-- [ ] Show tokens, cost/confidence, runtime coverage, incidents, and guardrails.
-- [ ] Implement missing/zero/stale/error/offline states.
-- [ ] Add bounded visible-page polling and cached-view refresh.
-- [ ] Add fixtures for mixed currencies, unsupported quotas, and runtime restarts.
+- [x] Implement overview, provider/instance rows, and session detail.
+- [x] Show tokens, cost/confidence, runtime coverage, incidents, and guardrails.
+- [x] Implement missing/zero/stale/error/offline states.
+- [x] Add bounded visible-page polling and cached-view refresh.
+- [x] Add fixtures for mixed currencies, unsupported quotas, and runtime restarts.
 
 U1 release gate: a packaged app renders truthful existing data; registry navigation
 or an exported HTML file alone is insufficient.
 
 ### Phase 3: U2 Provider Account Quotas
+
+- [x] Present existing passive Claude/Codex percentage/reset reports with explicit
+      unverified account linkage and no cross-target quota sum. This is not an active collector.
 
 - [ ] Connect the runtime account/window snapshot when collectors are verified.
 - [ ] Display related instances without multiplying shared quota.
@@ -62,11 +65,12 @@ or an exported HTML file alone is insufficient.
 
 ### Phase 5: Desktop Delivery
 
-- [ ] Package the app through PLAN-001 and record its version/source/checksum.
-- [ ] Include it in a pinned Desktop bundle through platform PLAN-106.
-- [ ] Verify source-free launch, offline state, enable/disable, and preferences
+- [x] Package the app through PLAN-001 and record its version/source/checksum.
+- [x] Include it in pinned Windows Desktop staging through platform PLAN-106.
+- [x] Verify source-free launch, offline state, enable/disable, and data preservation
       against an isolated profile.
-- [ ] Update user documentation with the exact shipped U1/U2/U3 capabilities.
+- [x] Update user documentation with the exact implemented U1/passive/U3 boundaries.
+- [ ] Publish and validate native installers; add persistent filter preferences only with scoped storage.
 
 ## Work Areas
 

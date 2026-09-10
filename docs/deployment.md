@@ -2,8 +2,21 @@
 
 ## Current State
 
-No app binary, archive, installer, release workflow, or production installation
-is supplied by this repository foundation. The CI workflow checks documentation.
+Usage 0.1.0 builds a `.catsapp` artifact, exact-version lock and source provenance.
+CI runs docs/unit/build checks and uploads artifacts. The shared App-tag workflow
+publishes a utility only when a matching `<slug>-v<version>` tag is pushed; it never
+overwrites a released version. No release was published by implementing this workflow.
+
+```powershell
+# cats-apps
+npm run build -- --version 0.1.0
+# cats-platform
+npm run desktop:package:windows -- --apps-lock ../cats-apps/dist/usage-0.1.0.lock.json --skip-mobile
+```
+
+The lock, not a moving latest release, selects the App version. See the host
+[build/install guide](../../cats-platform/docs/app-packages.md) for all platforms,
+local/remote artifact references, source-free launch, and lifecycle behavior.
 
 ## Accepted Initial Delivery
 
@@ -19,9 +32,15 @@ can share build automation; a separate GitHub Release workflow per app is option
 Desktop packaging consumes artifacts, not imported sibling source or a developer
 workspace path.
 
-Package-directory input is useful during development. A distributable archive is
-a transport container for the same payload; the exact archive suffix is not frozen
-by this planning task.
+`.catsapp` v1 is gzip-compressed JSON with the manifest, license and built payload
+files encoded as base64. The first renderer is self-contained HTML. Directory-only
+manifest registration remains a development path; it does not execute source as a
+production App. Private GitHub assets need an independently authenticated download
+followed by local pin selection; the initial URL resolver handles public release assets.
+
+Desktop release CI starts with an empty checked-in selection until a real App
+release exists. Publishing the App and committing its exact hash/URL into that
+selection are explicit release actions, not implied by adding this implementation.
 
 ## Later Remote Distribution
 

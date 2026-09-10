@@ -1,20 +1,29 @@
-# SPEC-002: Cats Usage Dashboard
+# SPEC-002: Usage Dashboard
 
 ## Metadata
 
 | Field | Value |
 |-------|-------|
-| Status | Draft; implementation not started |
+| Status | U1 plus passive Claude/Codex windows implemented; collectors/history deferred |
 | Owner | cats-apps |
-| Product name | Cats Usage |
+| Product name | Usage |
 | App ID | cats.usage |
-| Planned workspace | apps/usage |
+| Workspace / version | apps/usage / 0.1.0 |
 | Placement | Installed App under Lobby Apps |
 | Initial delivery | Built package included with a coordinated Desktop release |
 
 ## Summary
 
-Cats Usage is a read-only utility for understanding provider usage and available
+Delivered on 2026-09-10: real packaged renderer, overview/provider/session filters,
+per-currency cost, confidence/coverage, incidents/guardrails, unknown/zero/offline/
+stale/restart states, Traditional Chinese/English, and 30-second visible-page cached
+reads. Existing Claude/Codex stream signals supply passive percentage/reset windows.
+Account linkage is explicitly unverified; quota is never summed across targets.
+No active account query, complete billing history, persistent preferences, or
+verified shared-account deduplication is claimed. Provider coverage remains limited
+to the latest supported passive report observed by this Runtime process.
+
+Usage is a read-only utility for understanding provider usage and available
 quota across Cats. It presents facts supplied by cats-runtime through the
 platform's authorized App bridge. It does not own account login, CLI parsing,
 quota policy, execution blocking, or a separate provider connection.
@@ -39,7 +48,7 @@ runtime incidents without promising that every provider exposes an exact balance
 
 ## Users and Entry
 
-The owner opens Cats Usage from Lobby Apps. The host may show installed app identity
+The owner opens Usage from Lobby Apps. The host may show installed app identity
 and settings inventory using its normal App contract. The full dashboard lives
 inside the app route; embedding live dashboard widgets in Lobby is not required.
 
@@ -126,7 +135,7 @@ providers and disclose the unsupported ones.
 
 ## Acceptance
 
-- A built Cats Usage package launches from Lobby in an isolated Desktop profile.
+- A built Usage package launches from Lobby in an isolated Desktop profile.
 - A fixture with unknown quota does not show a full bar or zero consumption.
 - Reported zero, stale data, missing reset, different currencies, and an exhausted
   account all produce distinct, correct UI states.

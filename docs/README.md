@@ -5,10 +5,10 @@
 | Document | State | Responsibility |
 |----------|-------|----------------|
 | [ADR-001](decisions/001-own-official-utility-apps-and-coordinate-desktop-distribution.md) | Accepted | Official utility monorepo, individual packages, coordinated Desktop distribution |
-| [SPEC-001](specs/SPEC-001-official-utility-app-packages.md) | Draft; direction accepted | Package outputs, workspace boundaries, and delivery requirements |
-| [PLAN-001](plans/PLAN-001-official-app-package-foundation.md) | Planned | Repository, SDK consumption, package production, and Desktop handoff |
-| [SPEC-002](specs/SPEC-002-cats-usage-dashboard.md) | Draft | Cats Usage identity, views, data truth, and staged scope |
-| [PLAN-002](plans/PLAN-002-cats-usage-dashboard.md) | Planned | Usage MVP, account quotas, persistence, and installed validation |
+| [SPEC-001](specs/SPEC-001-official-utility-app-packages.md) | v1 implemented | Package outputs, workspace boundaries, and delivery requirements |
+| [PLAN-001](plans/PLAN-001-official-app-package-foundation.md) | Implemented; publication/catalog deferred | Repository, SDK consumption, package production, and Desktop handoff |
+| [SPEC-002](specs/SPEC-002-cats-usage-dashboard.md) | U1/passive windows implemented | Usage identity, views, data truth, and staged scope |
+| [PLAN-002](plans/PLAN-002-cats-usage-dashboard.md) | Active collectors/history deferred | Usage MVP, account quotas, persistence, and installed validation |
 
 ## Project Guides
 
@@ -16,7 +16,7 @@
 |----------|---------|
 | [Architecture](architecture.md) | Cross-repository ownership and data flow |
 | [Requirements](requirements.md) | Repository and first-app scope |
-| [API](api.md) | Planned host boundary and currently available runtime reads |
+| [API](api.md) | Executable SDK v1, host boundary and available Runtime reads |
 | [Setup](setup-guide.md) | Reproduce bootstrap and run repository checks |
 | [Testing](testing.md) | Current check and future verification gates |
 | [Deployment](deployment.md) | Versioned build artifacts and coordinated Desktop delivery |
