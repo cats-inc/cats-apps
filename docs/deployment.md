@@ -2,11 +2,18 @@
 
 ## Current State
 
-Usage 0.2.1 is the compatibility release prepared for the authorized Desktop
-0.3.0 unsigned preview. It declares Platform ^0.3.0 and retains App SDK ^1.2.0;
-the renderer and permissions are unchanged. Publish `usage-v0.2.1` after CI,
-then pin the published archive's SHA-256 and release URL in Desktop's lock.
-Desktop's package and offline-activation gates must pass before publication.
+Usage 0.2.1 is [published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.2.1)
+for the authorized Desktop 0.3.0 unsigned preview. It declares Platform ^0.3.0
+and retains App SDK ^1.2.0; the renderer and permissions are unchanged.
+Source: `df1c57168c98a6a83fffb54f58ad298a1b769511`. Archive SHA-256:
+`6b8160e548488f30c741cadd4726b55fa18f8c0a324d48ac0cbc6ea143788f24`.
+The [release workflow](https://github.com/cats-inc/cats-apps/actions/runs/35302009970)
+passed docs, all six app tests and the tagged build. The downloaded archive,
+GitHub asset digest, lock and provenance agree. Platform 0.3.0 accepts the
+published archive; its decoded payload matches the tested local build.
+Desktop [PR #98](https://github.com/cats-inc/cats-platform/pull/98) selects this
+exact release. Desktop's package and offline-activation gates must pass before
+its publication.
 Existing Desktop installers retain their previously pinned Usage version.
 
 ### Previous published version
@@ -30,6 +37,8 @@ selection, PR/CI and each OS's resource/offline-activation gates. Existing Deskt
 0.2.4 installers retain Usage 0.1.1 unchanged. This task does not update the
 operator's installed Desktop. Native Windows CLI queries were live-verified;
 macOS/Linux live checks and WSL/Docker query support remain separate work.
+### Package commands
+
 CI runs docs/unit/build checks and uploads artifacts. The shared App-tag workflow
 publishes a utility only when a matching `<slug>-v<version>` tag is pushed; it never
 overwrites a released version. Normal builds do not publish releases.

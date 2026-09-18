@@ -51,7 +51,10 @@ See [PLAN-001](plans/PLAN-001-official-app-package-foundation.md) and
 [PLAN-002](plans/PLAN-002-cats-usage-dashboard.md).
 
 Usage 0.2.1 changes only release identity and Platform compatibility for Desktop
-0.3.x. Run the same docs/tests/build checks; the coordinated Desktop release must
-also verify the published archive and offline activation on all three OSes.
+0.3.x. Its docs check, six app tests and tagged build passed in the release
+workflow. Platform 0.3.0 accepted the downloaded archive and verified that its
+digest, lock and provenance agree and its decoded payload matches the locally
+tested build. The coordinated Desktop release must also verify offline
+activation on all three OSes; installed upgrade acceptance remains separate.
 
 *Last updated: 2026-09-18*
