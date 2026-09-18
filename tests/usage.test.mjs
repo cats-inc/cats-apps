@@ -35,7 +35,8 @@ test('session filtering changes execution totals, not provider quota', () => {
 
 test('build emits deterministic source-free archives with matching pins and rejects version drift', async () => {
   const outputDir = await mkdtemp(join(tmpdir(), 'usage-build-test-'));
-  const first = await buildApp({ outputDir, version: '0.2.0' });
+  const manifest = JSON.parse(await readFile(new URL('../apps/usage/cats.app.json', import.meta.url), 'utf8'));
+  const first = await buildApp({ outputDir, version: manifest.version });
   const second = await buildApp({ outputDir });
   assert.equal(first.sha256, second.sha256);
   const envelope = JSON.parse(gunzipSync(await readFile(first.artifactPath)).toString('utf8'));

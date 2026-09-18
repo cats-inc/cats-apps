@@ -2,6 +2,15 @@
 
 ## Current State
 
+Usage 0.2.1 is the compatibility release prepared for the authorized Desktop
+0.3.0 unsigned preview. It declares Platform ^0.3.0 and retains App SDK ^1.2.0;
+the renderer and permissions are unchanged. Publish `usage-v0.2.1` after CI,
+then pin the published archive's SHA-256 and release URL in Desktop's lock.
+Desktop's package and offline-activation gates must pass before publication.
+Existing Desktop installers retain their previously pinned Usage version.
+
+### Previous published version
+
 Usage 0.2.0 is published as an immutable `.catsapp` artifact, exact-version lock
 and source provenance in the [Usage 0.2.0 release](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.2.0).
 It requires App SDK ^1.2.0 for explicit Codex/Copilot/Claude/Antigravity queries,
@@ -27,9 +36,9 @@ overwrites a released version. Normal builds do not publish releases.
 
 ```powershell
 # cats-apps
-npm run build -- --version 0.2.0
+npm run build -- --version 0.2.1
 # cats-platform
-npm run desktop:package:windows -- --apps-lock ../cats-apps/dist/usage-0.2.0.lock.json --skip-mobile
+npm run desktop:package:windows -- --apps-lock ../cats-apps/dist/usage-0.2.1.lock.json --skip-mobile
 ```
 
 The lock, not a moving latest release, selects the App version. This local example
@@ -77,4 +86,4 @@ on a network catalog.
 
 See [ADR-001](decisions/001-own-official-utility-apps-and-coordinate-desktop-distribution.md).
 
-*Last updated: 2026-09-11*
+*Last updated: 2026-09-18*

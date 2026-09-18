@@ -5,7 +5,7 @@
 ```sh
 npm run check:docs
 npm test
-npm run build -- --version 0.2.0
+npm run build -- --version 0.2.1
 ```
 
 This dependency-free Node check validates root workspace metadata and local
@@ -50,4 +50,8 @@ to verify a display-only change.
 See [PLAN-001](plans/PLAN-001-official-app-package-foundation.md) and
 [PLAN-002](plans/PLAN-002-cats-usage-dashboard.md).
 
-*Last updated: 2026-09-11*
+Usage 0.2.1 changes only release identity and Platform compatibility for Desktop
+0.3.x. Run the same docs/tests/build checks; the coordinated Desktop release must
+also verify the published archive and offline activation on all three OSes.
+
+*Last updated: 2026-09-18*
