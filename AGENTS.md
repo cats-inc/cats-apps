@@ -69,6 +69,31 @@
   conflicts and make ports configurable; do not modify an external registry
   without permission.
 
+## Release Scope and Versioning
+
+- Follow the [App release SOP](docs/deployment.md#release-boundaries) and the
+  [cross-repository release guide](https://github.com/cats-inc/cats-one/blob/main/docs/release-guide.md).
+- Ordinary implementation, documentation, commit/push and merge requests do not
+  authorize version bumps or publication. Accumulate commits until a release is
+  requested. Apply existing user authorization without asking for it again.
+- Each `apps/<slug>` workspace has an independent App version. For a selected App,
+  keep `cats.app.json`, its `package.json` and its root-lockfile workspace entry in
+  sync. Do not bump the private workspace root or unrelated Apps to match it.
+- A branch push runs CI and produces build artifacts. Pushing the matching
+  `<slug>-vX.Y.Z` tag separately triggers `release-app.yaml` and publishes immutable
+  `.catsapp` assets to GitHub Releases. Current App packages are private npm
+  workspaces and are not npm publication targets.
+- Maintain each App's `compatibility.catsPlatform` and `compatibility.appSdk`.
+  Use supported bounded ranges or exact versions that reflect required contracts;
+  do not infer host compatibility from the App's own version. See the
+  [compatibility SOP](docs/deployment.md#host-and-sdk-compatibility) for current
+  parser limits, minimum versions and recommended breaking-change boundaries.
+- App publication does not authorize changing Platform's Desktop App pins or
+  releasing Desktop. Selecting the App in a later Desktop release is a separate
+  host-owned action; installed Desktops do not automatically receive a new App.
+- Documentation/rules-only work checks the diff and links without application
+  tests or builds. Executable changes follow docs/testing.md and existing CI gates.
+
 ## Development Workflow
 
 Default: plan → feature/fix branch → implement → test → independent review →

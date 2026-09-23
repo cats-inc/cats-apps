@@ -1,5 +1,108 @@
 # Deployment
 
+## Release boundaries
+
+cats-apps is a private npm workspace containing independently versioned Apps,
+not a single npm product release. Currently Usage is the only App. The root
+private package version does not determine App versions, and releasing one App
+does not bump unrelated Apps or the workspace root.
+
+Ordinary implementation, documentation, commit/push and merge requests do not
+authorize an App version bump or publication. Accumulate commits until an App
+release is selected, using existing user authorization for the required steps.
+Branch CI checks/builds and uploaded CI artifacts are not public App releases.
+
+For a selected App, keep these three values synchronized:
+
+| File | Version field |
+| --- | --- |
+| `apps/<slug>/cats.app.json` | `version` in the App manifest |
+| `apps/<slug>/package.json` | `version` in the App's private build package |
+| Root `package-lock.json` | `packages["apps/<slug>"].version` |
+
+The artifact is published to GitHub Releases as `.catsapp`, with an exact-version
+lock and source provenance. There is no npm publish step for these Apps. See the
+[cross-repository release guide](https://github.com/cats-inc/cats-one/blob/main/docs/release-guide.md)
+for Runtime, Platform, launcher and Desktop release scope.
+
+### Publish one App
+
+1. Integrate remote changes and select the App, intended source and unused version.
+   A prepared unpublished version can be reused; published artifacts are immutable.
+2. Update that App's three version fields above and follow the repository's scoped
+   validation rules. Documentation-only edits need diff/link review, not App tests
+   or builds. Keep the hosted release gates; a bump alone does not require repeating
+   the same passing suite locally.
+3. Commit/push using the user's authorized Git workflow. Separately create and push
+   the matching `<slug>-vX.Y.Z` tag at the selected commit, for example
+   `usage-v0.2.2` (illustrative, not an instruction to release that version).
+4. The [App release workflow](../.github/workflows/release-app.yaml) runs on that
+   tag push, checks the App manifest/package/tag agreement, builds the selected
+   App and publishes its assets. It is not triggered by a normal main push and
+   has no manual dispatch input.
+5. Confirm workflow success and download the archive, lock and provenance. Verify
+   their App ID, version, source revision and archive SHA-256 agree before reporting
+   publication complete.
+
+Publishing an App does not update an installed Desktop. Platform separately
+selects the published version, URL and SHA-256 in `config/desktop-apps.lock.json`
+for an authorized later Desktop release, including Platform/App SDK compatibility
+checks. Do not bump/publish Desktop, Runtime, Platform npm or cats-one as an
+automatic follow-on. Independent installed-App updates via a remote catalog
+remain future work.
+
+## Host and SDK compatibility
+
+Every App already has two required manifest declarations. In
+[Usage's current manifest](../apps/usage/cats.app.json), App version `0.2.1` has:
+
+```json
+{
+  "compatibility": {
+    "catsPlatform": "^0.3.0",
+    "appSdk": "^1.2.0"
+  }
+}
+```
+
+| Declaration | Meaning for this App |
+| --- | --- |
+| App `version` | Identifies this immutable App artifact; does not imply a matching Desktop version |
+| `compatibility.catsPlatform` | Platform/Desktop host version must be at least 0.3.0 and below 0.4.0 |
+| `compatibility.appSdk` | Host SDK interface version must be at least 1.2.0 and below 2.0.0 |
+
+Desktop and Platform currently share a version source, so `catsPlatform` already
+expresses the Desktop host requirement. Keep `appSdk` separate: host features and
+SDK APIs can evolve at different rates. Both checks must pass during installation.
+These declarations state the supported range; they are not evidence that every
+combination was tested. Record actual verification with the release evidence.
+
+### Recommended version discipline
+
+- Specify the oldest version supplying the required behavior and a compatibility
+  upper boundary. For example, `^0.3.2` accepts stable 0.3.2 and later 0.3.x,
+  but not 0.4.0. It does not promise support for all future Desktop versions.
+- Keep the App-facing contract compatible within a 0.x minor line; an incompatible
+  host change should move to the next minor. For stable SDK 1.x, a breaking API
+  change should move to SDK 2.x. This is a recommended project discipline;
+  [SemVer itself leaves 0.x unstable](https://semver.org/#spec-item-4).
+- If compatibility within the line cannot yet be supported, use an exact verified
+  version such as `0.3.6` instead. Do not use a wide range to avoid stating uncertainty.
+- Do not raise an App's minimum merely because Desktop or SDK has a newer release.
+  Raise it when the App needs a newly introduced API, behavior or necessary fix.
+- A declared range change modifies the immutable App manifest. Publish it as a
+  new App version when selected for release; never rewrite an existing archive.
+  Supporting a new host minor requires checking the contract and deliberately
+  updating the declaration, not assuming that every 0.x version is compatible.
+
+The [current host matcher](https://github.com/cats-inc/cats-platform/blob/main/packages/app-sdk/package.js)
+accepts exact stable versions, carets, `major.x` and `major.minor.x`. It is not a
+full npm range parser: comparator expressions (`>=0.3.2 <0.4.0`), `~` ranges,
+unions and prerelease strings are unsupported. Write the supported `^0.3.2`
+form instead of its comparator equivalent. Avoid `0.x`, which admits all 0.x
+minors, and wildcard forms that omit a required patch minimum. See the
+[host compatibility guide](https://github.com/cats-inc/cats-platform/blob/main/docs/app-packages.md#host-and-sdk-compatibility).
+
 ## Current State
 
 Usage 0.2.1 is [published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.2.1)
@@ -95,4 +198,4 @@ on a network catalog.
 
 See [ADR-001](decisions/001-own-official-utility-apps-and-coordinate-desktop-distribution.md).
 
-*Last updated: 2026-09-18*
+*Last updated: 2026-09-23*

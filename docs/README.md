@@ -19,7 +19,7 @@
 | [API](api.md) | Executable SDK v1, host boundary and available Runtime reads |
 | [Setup](setup-guide.md) | Reproduce bootstrap and run repository checks |
 | [Testing](testing.md) | Current check and future verification gates |
-| [Deployment](deployment.md) | Versioned build artifacts and coordinated Desktop delivery |
+| [Deployment](deployment.md) | Per-App versions, tag-triggered publication, host/SDK compatibility and separate Desktop selection |
 | [Security](security-guidelines.md) | App permissions, credentials, and isolated state |
 | [Services](services.md) | No standalone app listener in the current foundation |
 | [Agent guide](AGENT-GUIDE.md) | Maintenance, mbf, and document routing |
@@ -34,4 +34,4 @@ Protocol examples remain optional; [A2A](a2a/README.md) is a bootstrap pointer.
 Root state: [README](../README.md), [PROGRESS](../PROGRESS.md),
 [ROADMAP](../ROADMAP.md), and [CONTRIBUTING](../CONTRIBUTING.md).
 
-*Last updated: 2026-09-11*
+*Last updated: 2026-09-23*
