@@ -70,7 +70,7 @@ remain future work.
 ## Host and SDK compatibility
 
 Every App already has two required manifest declarations. In
-[Usage's prepared manifest](../apps/usage/cats.app.json), App version `0.3.0` has:
+[Usage's manifest](../apps/usage/cats.app.json), App version `0.3.0` has:
 
 ```json
 {
@@ -121,19 +121,29 @@ minors, and wildcard forms that omit a required patch minimum. See the
 
 ## Current State
 
-Usage 0.3.0 is prepared for the Desktop 0.4.0 catalog-upgrade preview. It declares
+Usage 0.3.0 is [published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.3.0)
+for the Desktop 0.4.0 catalog-upgrade preview. It declares
 Platform ^0.4.0 and retains App SDK ^1.2.0, with the same renderer and permissions.
 The changed host compatibility line uses a new App minor and immutable artifact;
 Usage 0.2.1 continues to target Desktop 0.3.x. The owner authorized publication of
 this required App dependency followed by the Desktop 0.4.0 preview. No npm
-publication is involved. The release workflow and downloaded asset verification
-must succeed before Platform selects the published archive.
+publication is involved.
 
 Preparation checks passed on 2026-09-23: all six App tests, docs/build checks,
 Platform 0.4.0 / SDK 1.2.0 package validation, and decoded file-payload equality
 against published Usage 0.2.1 (verified old archive SHA-256). Only App version and
 host range differ. The published release's archive hash must be used for Desktop
 selection after download verification; local archive hashes can vary by build OS.
+
+The [release workflow](https://github.com/cats-inc/cats-apps/actions/runs/35861559132)
+passed docs, all six App tests and the tagged build. Source revision:
+`4c3f6057747032df24b1c1b1bb5ea873fa94f387`; archive SHA-256:
+`61395c43fc8257ffa6955c156aabe9a582fa72c903749f7684e3ed7621f5f509`.
+The downloaded archive, GitHub asset digest, lock and provenance agree. Platform
+0.4.0 / SDK 1.2.0 validates the published archive and its decoded payload equals the
+tested local build. Desktop still requires its own three-OS package and offline
+activation gates before preview publication; installed upgrade acceptance remains
+separate.
 
 Usage 0.2.1 is [published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.2.1)
 for the authorized Desktop 0.3.0 unsigned preview. It declares Platform ^0.3.0
