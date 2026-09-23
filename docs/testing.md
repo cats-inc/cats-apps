@@ -5,7 +5,7 @@
 ```sh
 npm run check:docs
 npm test
-npm run build -- --version 0.2.1
+npm run build -- --version 0.3.0
 ```
 
 This dependency-free Node check validates root workspace metadata and local
@@ -57,4 +57,9 @@ digest, lock and provenance agree and its decoded payload matches the locally
 tested build. The coordinated Desktop release must also verify offline
 activation on all three OSes; installed upgrade acceptance remains separate.
 
-*Last updated: 2026-09-18*
+Usage 0.3.0 prepares the bounded Platform ^0.4.0 declaration for Desktop 0.4.x,
+retaining SDK ^1.2.0. Its six App tests passed; release and host verification are
+recorded separately in the deployment guide. Existing published 0.2.1 bytes remain
+unchanged.
+
+*Last updated: 2026-09-23*
