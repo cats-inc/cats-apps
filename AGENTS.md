@@ -71,6 +71,12 @@
 
 ## Release Scope and Versioning
 
+- Each App preserves compatibility within its `0.x` minor line. Breaking public
+  behavior, config or persisted-data contracts require a minor bump; stable
+  `1.x+` breaking contracts require major. Schema upgrades need validated,
+  backed-up, atomic migrations with repeat-start and failure tests. Migration
+  belongs to the data owner; no destructive reset or legacy execution fallback.
+
 - Follow the [App release SOP](docs/deployment.md#release-boundaries) and the
   [cross-repository release guide](https://github.com/cats-inc/cats-one/blob/main/docs/release-guide.md).
 - Ordinary implementation, documentation, commit/push and merge requests do not
@@ -87,7 +93,7 @@
   Use supported bounded ranges or exact versions that reflect required contracts;
   do not infer host compatibility from the App's own version. See the
   [compatibility SOP](docs/deployment.md#host-and-sdk-compatibility) for current
-  parser limits, minimum versions and recommended breaking-change boundaries.
+  parser limits, minimum versions and required breaking-change boundaries.
 - App publication does not authorize changing Platform's Desktop App pins or
   releasing Desktop. Selecting the App in a later Desktop release is a separate
   host-owned action; installed Desktops do not automatically receive a new App.

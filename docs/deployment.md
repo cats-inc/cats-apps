@@ -25,6 +25,22 @@ lock and source provenance. There is no npm publish step for these Apps. See the
 [cross-repository release guide](https://github.com/cats-inc/cats-one/blob/main/docs/release-guide.md)
 for Runtime, Platform, launcher and Desktop release scope.
 
+### Compatibility and data upgrades
+
+Apply the [shared version policy](https://github.com/cats-inc/cats-one/blob/main/docs/release-guide.md#compatibility-and-data-upgrades)
+to each independently versioned App: breaking public behavior, configuration or
+stored-data requirements increment `0.x` minor, or stable `1.x+` major. Compatible
+fixes can use patch. Schema and App versions remain independent. Preserve existing
+user data through a validated, backed-up, atomic one-time migration; test a prior
+profile, repeat startup and failed conversion as well as clean installation.
+Unknown data must remain intact. Delegate host- or Runtime-owned migrations to
+their owners; do not populate or repair the real user's registry in tests.
+
+A host minor bump is not an instruction to bump all Apps, but it does require
+checking the declared host range. Publish a new immutable App artifact if its
+compatibility declaration must change; verify it against the new host first.
+Version numbers and release notes never replace the data-upgrade path.
+
 ### Publish one App
 
 1. Integrate remote changes and select the App, intended source and unused version.
@@ -77,14 +93,14 @@ SDK APIs can evolve at different rates. Both checks must pass during installatio
 These declarations state the supported range; they are not evidence that every
 combination was tested. Record actual verification with the release evidence.
 
-### Recommended version discipline
+### Version discipline
 
 - Specify the oldest version supplying the required behavior and a compatibility
   upper boundary. For example, `^0.3.2` accepts stable 0.3.2 and later 0.3.x,
   but not 0.4.0. It does not promise support for all future Desktop versions.
 - Keep the App-facing contract compatible within a 0.x minor line; an incompatible
-  host change should move to the next minor. For stable SDK 1.x, a breaking API
-  change should move to SDK 2.x. This is a recommended project discipline;
+  host change must move to the next minor. For stable SDK 1.x, a breaking API
+  change must move to SDK 2.x. This is the adopted project discipline;
   [SemVer itself leaves 0.x unstable](https://semver.org/#spec-item-4).
 - If compatibility within the line cannot yet be supported, use an exact verified
   version such as `0.3.6` instead. Do not use a wide range to avoid stating uncertainty.
