@@ -5,7 +5,7 @@
 ```sh
 npm run check:docs
 npm test
-npm run build -- --version 0.3.0
+npm run build -- --version 0.4.0
 ```
 
 This dependency-free Node check validates root workspace metadata and local
@@ -62,4 +62,9 @@ retaining SDK ^1.2.0. Its six App tests passed; release and host verification ar
 recorded separately in the deployment guide. Existing published 0.2.1 bytes remain
 unchanged.
 
-*Last updated: 2026-09-23*
+Usage 0.4.0 prepares the bounded Platform ^0.5.0 declaration for Desktop 0.5.x,
+retaining SDK ^1.2.0; the renderer and permissions equal 0.3.0. Release and host
+verification are recorded in the deployment guide. Published 0.3.0 bytes remain
+unchanged.
+
+*Last updated: 2026-09-25*

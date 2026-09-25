@@ -70,12 +70,12 @@ remain future work.
 ## Host and SDK compatibility
 
 Every App already has two required manifest declarations. In
-[Usage's manifest](../apps/usage/cats.app.json), App version `0.3.0` has:
+[Usage's prepared manifest](../apps/usage/cats.app.json), App version `0.4.0` has:
 
 ```json
 {
   "compatibility": {
-    "catsPlatform": "^0.4.0",
+    "catsPlatform": "^0.5.0",
     "appSdk": "^1.2.0"
   }
 }
@@ -84,7 +84,7 @@ Every App already has two required manifest declarations. In
 | Declaration | Meaning for this App |
 | --- | --- |
 | App `version` | Identifies this immutable App artifact; does not imply a matching Desktop version |
-| `compatibility.catsPlatform` | Platform/Desktop host version must be at least 0.4.0 and below 0.5.0 |
+| `compatibility.catsPlatform` | Platform/Desktop host version must be at least 0.5.0 and below 0.6.0 |
 | `compatibility.appSdk` | Host SDK interface version must be at least 1.2.0 and below 2.0.0 |
 
 Desktop and Platform currently share a version source, so `catsPlatform` already
@@ -120,6 +120,22 @@ minors, and wildcard forms that omit a required patch minimum. See the
 [host compatibility guide](https://github.com/cats-inc/cats-platform/blob/main/docs/app-packages.md#host-and-sdk-compatibility).
 
 ## Current State
+
+Usage 0.4.0 is prepared for the Desktop 0.5.0 standard-profile preview. Desktop
+0.5.0 moves to the next host minor because it bundles Runtime 0.3.0, and Usage
+0.3.0's Platform ^0.4.0 declaration excludes it. Usage 0.4.0 declares Platform
+^0.5.0 and retains App SDK ^1.2.0, with the same renderer and permissions; only App
+version and host range differ. The host matcher has no union form, so the new App
+minor targets the 0.5 host line while Usage 0.3.0 continues to target Desktop
+0.4.x. The owner authorized publication of this required App dependency followed
+by the Desktop 0.5.0 preview. No npm publication is involved. The release workflow
+and downloaded asset verification must succeed before Platform selects the
+published archive.
+
+Preparation checks passed on 2026-09-25: the docs check, all six App tests, the
+0.4.0 build, and Platform SDK 1.2.0 package validation (Platform 0.5.x accepted;
+0.4.7 and 0.6.0 rejected). The decoded file payload equals published Usage 0.3.0
+(verified old archive SHA-256); only App version and host range differ.
 
 Usage 0.3.0 is [published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.3.0)
 for the Desktop 0.4.0 catalog-upgrade preview. It declares
@@ -188,9 +204,9 @@ overwrites a released version. Normal builds do not publish releases.
 
 ```powershell
 # cats-apps
-npm run build -- --version 0.3.0
+npm run build -- --version 0.4.0
 # cats-platform
-npm run desktop:package:windows -- --apps-lock ../cats-apps/dist/usage-0.3.0.lock.json --skip-mobile
+npm run desktop:package:windows -- --apps-lock ../cats-apps/dist/usage-0.4.0.lock.json --skip-mobile
 ```
 
 The lock, not a moving latest release, selects the App version. This local example
