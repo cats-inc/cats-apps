@@ -20,6 +20,12 @@ It also verifies explicit CLI refresh capability, native quantities/unlimited
 entitlements, provider+instance cooldown isolation and passive snapshot polling.
 The docs command alone is not application test coverage.
 
+When every changed file is under `docs/`, CI still runs `npm run check:docs` but
+skips `npm test`, the Usage package build and its artifact. Any other path or a
+failed detection runs every step. Tests, scripts and App sources must not read
+repository documentation, and `tests/docs-boundary.test.mjs` enforces that; the link
+checker is the deliberate exception.
+
 Host tests live in cats-platform: package limits/path/digest checks, compatibility,
 pin selection, updates/rollback/data preservation, capability denial/revocation,
 upstream redaction and App-route execution. Its `scripts/testing/check-usage-app.mts`
