@@ -121,21 +121,31 @@ minors, and wildcard forms that omit a required patch minimum. See the
 
 ## Current State
 
-Usage 0.4.0 is prepared for the Desktop 0.5.0 standard-profile preview. Desktop
+Usage 0.4.0 is [published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.4.0)
+for the Desktop 0.5.0 standard-profile preview. Desktop
 0.5.0 moves to the next host minor because it bundles Runtime 0.3.0, and Usage
 0.3.0's Platform ^0.4.0 declaration excludes it. Usage 0.4.0 declares Platform
 ^0.5.0 and retains App SDK ^1.2.0, with the same renderer and permissions; only App
 version and host range differ. The host matcher has no union form, so the new App
 minor targets the 0.5 host line while Usage 0.3.0 continues to target Desktop
 0.4.x. The owner authorized publication of this required App dependency followed
-by the Desktop 0.5.0 preview. No npm publication is involved. The release workflow
-and downloaded asset verification must succeed before Platform selects the
-published archive.
+by the Desktop 0.5.0 preview. No npm publication is involved.
 
 Preparation checks passed on 2026-09-25: the docs check, all six App tests, the
 0.4.0 build, and Platform SDK 1.2.0 package validation (Platform 0.5.x accepted;
 0.4.7 and 0.6.0 rejected). The decoded file payload equals published Usage 0.3.0
 (verified old archive SHA-256); only App version and host range differ.
+
+The [release workflow](https://github.com/cats-inc/cats-apps/actions/runs/36128012121)
+passed docs, all six App tests and the tagged build. Source revision:
+`cb48b229295d5cb4bb6f3009fbe0b9e81afe1b63`; archive SHA-256:
+`7ec944b264093dbeda9009986d5558336467851868f014258be17f60db88bcba`.
+The downloaded archive, GitHub asset digest, lock and provenance agree. The
+Platform SDK 1.2.0 matcher accepts the published archive for host 0.5.x, and its
+decoded payload equals Usage 0.3.0. Platform
+[PR #141](https://github.com/cats-inc/cats-platform/pull/141) selects this exact
+release for Desktop 0.5.0, whose own package and offline-activation gates must pass
+before publication; installed upgrade acceptance remains separate.
 
 Usage 0.3.0 is [published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.3.0)
 for the Desktop 0.4.0 catalog-upgrade preview. It declares
