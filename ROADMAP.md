@@ -36,4 +36,19 @@ Desktop. Keep app source ownership separate from the host and provider runtime.
 A public marketplace, third-party execution model, and an individual release
 workflow for every utility are not prerequisites for Phase 2.
 
-*Last updated: 2026-09-10*
+## Planned Media Studio Vertical Slice
+
+The 2026-09-28 planning request adds a separate App track alongside Usage.
+Cats Studio is a working name; the draft contracts do not represent shipped capabilities.
+
+- [ ] Verify Grok image generation, editing and image-to-video through the Runtime CLI path.
+- [ ] Define and implement owner-scoped App jobs/assets SDK and durable media delivery.
+- [ ] Complete generation, editing, a 6-second/480p clip, export and retained works in one App.
+- [ ] Validate the built installed package, recovery, access boundaries and compatibility.
+
+See [ADR-002](docs/decisions/002-cli-backed-media-studio-vertical-slice.md),
+[SPEC-003](docs/specs/SPEC-003-media-studio-vertical-slice.md) and
+[PLAN-003](docs/plans/PLAN-003-media-studio-vertical-slice.md).
+Implementation, live CLI validation and publication remain pending.
+
+*Last updated: 2026-09-28 (media planning added; earlier phase history retained)*

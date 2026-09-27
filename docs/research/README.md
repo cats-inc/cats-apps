@@ -10,3 +10,11 @@ contract from this repository's planning examples.
 
 Use dated research notes when future packaging or SDK choices depend on external
 facts. Architectural decisions belong in ADRs, not in research notes.
+
+## Index
+
+Research filenames follow `YYYY-MM-DD-topic.md`, matching the sibling Cats repos.
+
+| Date | Topic | Scope |
+|------|-------|-------|
+| 2025-09-12 | [Five CLI media capability test report](2025-09-12-five-cli-media-final-report.md) | User-provided image/video test observations; original report date retained, source evidence and CLI versions not included |
