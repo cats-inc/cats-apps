@@ -50,7 +50,27 @@ until a separately authorized immutable Studio publication/selection.
 
 ## Deferred follow-up
 
-- Fresh user-authorized App → Grok generation acceptance when allowance permits.
+- Full fresh App → Grok acceptance after the collection correction, when allowance permits.
 - Editing/import, image-to-video, playback, reference inputs and asset lineage.
 - User-facing App install/remove/update/catalog UX and retention/deletion controls.
 - Other CLI transports/providers; only native direct Grok is currently supported.
+
+## Real Studio attempt and collection correction
+
+After initial installation, the user submitted one real Studio job and reported failure.
+Grok did generate a 1024 × 1024 JPEG, but Runtime returned `invalid_image_source` because
+the configured `~/.grok/sessions` directory was not expanded. The prior isolated fixture
+covered absolute paths and missed this default-configuration case. This was a real failure
+of the delivered App workflow, despite successful fixture and Home-page checks.
+
+Runtime now resolves native home-relative paths and validates retained session evidence
+before recollecting the existing image, backing up the failed receipt first. Platform
+checks these specific failed jobs on reopen and retains the original task/run. Neither
+repair submits another generation. Studio 0.1.0 itself and its immutable archive are
+unchanged; the correction is delivered by local Desktop 0.5.12. Installed recovery evidence
+is tracked in Platform PLAN-111, with no further paid CLI call by the agent.
+
+Installed acceptance passed: reopening Studio shows the original tabby-cat work as saved
+and completed; normal preview and enlargement display the recovered image. Byte hashes
+match the original Grok JPEG, and the user's existing task/run are retained. This verifies
+actual collection/recovery; a fresh generation after the fix remains untested.
