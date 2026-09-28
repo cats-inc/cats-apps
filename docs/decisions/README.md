@@ -6,6 +6,6 @@ ADR-NNN. Use [000-template.md](000-template.md) for structure.
 | ADR | Title | Status | Date |
 |-----|-------|--------|------|
 | [ADR-001](001-own-official-utility-apps-and-coordinate-desktop-distribution.md) | Own official utility apps and coordinate Desktop distribution | Accepted | 2026-09-10 |
-| [ADR-002](002-cli-backed-media-studio-vertical-slice.md) | CLI-backed media studio vertical slice | Proposed; implementation and CLI validation pending | 2026-09-28 |
+| [ADR-002](002-cli-backed-media-studio-vertical-slice.md) | CLI-backed media studio vertical slice | Accepted; independent single-image App | 2026-09-28 |
 
 Accepted decisions record ownership and release direction, not implemented features.

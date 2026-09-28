@@ -1,0 +1,7 @@
+{
+  "name": "@cats-inc/studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A simple image studio for Cats Desktop."
+}

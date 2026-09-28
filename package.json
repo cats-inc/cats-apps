@@ -21,6 +21,7 @@
     "check:docs": "node scripts/check-docs.mjs",
     "build": "node scripts/build-app.mjs --app usage",
     "package:usage": "node scripts/build-app.mjs --app usage",
+    "package:studio": "node scripts/build-app.mjs --app studio",
     "test": "node --test tests/*.test.mjs"
   }
 }

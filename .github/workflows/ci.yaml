@@ -65,5 +65,14 @@ jobs:
           name: usage-package
           path: dist/*
           if-no-files-found: error
+      - name: Build versioned Studio package
+        if: needs.changes.outputs.code != 'false'
+        run: npm run package:studio
+      - uses: actions/upload-artifact@v4
+        if: needs.changes.outputs.code != 'false'
+        with:
+          name: studio-package
+          path: dist/studio-*
+          if-no-files-found: error
 
 # This workflow neither publishes releases nor installs apps into a user profile.

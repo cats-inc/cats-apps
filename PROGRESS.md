@@ -2,6 +2,13 @@
 
 ## Current Status
 
+Studio single-image slice (2026-09-28): standalone `cats.studio` renderer and
+deterministic package implemented. The actual archive passed isolated Platform
+SDK/browser submit, image download, offline reopen, cancellation and Home checks.
+The one earlier Grok spike remains the only paid execution; editing/video deferred.
+Local Desktop update and direct main delivery are tracked by
+[PLAN-003](docs/plans/PLAN-003-media-studio-vertical-slice.md).
+
 Implementation follow-through (2026-09-10): Usage 0.1.0, deterministic `.catsapp`
 packaging, exact-version lock/provenance, CI build/tests and an App-tag release
 workflow are implemented. The actual archive passed isolated host/browser checks:

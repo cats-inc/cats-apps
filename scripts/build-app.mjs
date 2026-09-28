@@ -21,7 +21,18 @@ export async function buildApp({ app = 'usage', version, outputDir = resolve(roo
     .map((file) => readFile(join(appRoot, 'src', file), 'utf8')));
   const script = `${model.replace(/^export /gm, '')}\n${renderer.replace(/^import .* from '\.\/model\.js';\s*$/m, '')}`;
   if (/<\/script/i.test(script) || /<\/style/i.test(css)) throw new Error('Inline renderer payload contains an unsafe closing tag.');
-  const html = template.replace('/* APP_STYLES */', css).replace('/* APP_SCRIPT */', () => script);
+  let html = template.replace('/* APP_STYLES */', css).replace('/* APP_SCRIPT */', () => script);
+  const assets = {};
+  for (const match of html.matchAll(/\{\{APP_ASSET:([^}]+)\}\}/g)) {
+    const name = match[1];
+    if (!/^[a-z0-9-]+\.(jpg|png|webp)$/.test(name)) throw new Error('Invalid inline image asset.');
+    if (assets[name]) continue;
+    const bytes = await readFile(join(appRoot, 'assets', name));
+    if (bytes.length > 2 * 1024 * 1024) throw new Error('Inline image asset exceeds 2 MiB.');
+    assets[name] = hash(bytes);
+    const type = name.endsWith('.jpg') ? 'jpeg' : name.split('.').at(-1);
+    html = html.replaceAll(match[0], `data:image/${type};base64,${bytes.toString('base64')}`);
+  }
   const license = await readFile(join(root, 'LICENSE'));
   const envelope = { schemaVersion: 1, kind: 'cats-app', manifest,
     files: [{ path: 'LICENSE', base64: license.toString('base64') }, { path: manifest.entrypoints.renderer, base64: Buffer.from(html).toString('base64') }] };
@@ -41,7 +52,7 @@ export async function buildApp({ app = 'usage', version, outputDir = resolve(roo
   await writeFile(join(outputDir, `${app}-${manifest.version}.provenance.json`), `${JSON.stringify({
     ...lock.apps[0], repository: 'cats-inc/cats-apps',
     sourceRevision: process.env.GITHUB_REPOSITORY === 'cats-inc/cats-apps' && /^[a-f0-9]{40}$/.test(process.env.GITHUB_SHA ?? '') ? process.env.GITHUB_SHA : null,
-    sourceDigest: hash(Buffer.from(JSON.stringify({ manifest, pkg, template, css, model, renderer, license: license.toString('utf8') }))),
+    sourceDigest: hash(Buffer.from(JSON.stringify({ manifest, pkg, template, css, model, renderer, license: license.toString('utf8'), ...(Object.keys(assets).length ? { assets } : {}) }))),
     sourceScope: 'app-inputs-and-license',
   }, null, 2)}\n`);
   return { artifactPath, lockPath, ...lock.apps[0] };

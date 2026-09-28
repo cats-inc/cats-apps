@@ -17,6 +17,14 @@ blocked on CLI authentication; it is not advertised as a working collector.
 
 ## Current Status
 
+- Studio 0.1.0 (`cats.studio`) is an independent image App beside Usage. It provides
+  one square image per explicit request, preview/download, cancellation and saved
+  works through SDK 1.3 / Desktop ^0.5.11. Actual-package isolated browser checks
+  passed with a fixture Runtime; no extra Grok calls. Local Desktop delivery is
+  tracked in [PLAN-003](docs/plans/PLAN-003-media-studio-vertical-slice.md).
+  Build separately with `npm run package:studio`. Editing/video and App install/remove
+  UX remain deferred; Studio has not been publicly released.
+
 - Bootstrap initialization and project-specific documentation are complete.
 - Repository ownership and Desktop-coordinated distribution are accepted.
 - Usage shows current tokens/cost/confidence, passive Claude/Codex quota windows,

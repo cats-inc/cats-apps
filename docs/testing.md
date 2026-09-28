@@ -1,5 +1,11 @@
 # Testing
 
+Studio packaging is covered by `tests/studio.test.mjs` and `npm run package:studio`.
+The Platform owner provides `scripts/testing/check-studio-app.mts` for the actual
+archive, SDK and host with an isolated fixture Runtime. Pass the Studio lock and
+the existing sample JPEG; this check never calls Grok. Use a separate output
+directory when rebuilding an unpublished version with changed bytes.
+
 ## Implemented Checks
 
 ```sh

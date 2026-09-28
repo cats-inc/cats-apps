@@ -9,9 +9,9 @@
 | [PLAN-001](plans/PLAN-001-official-app-package-foundation.md) | Implemented; publication/catalog deferred | Repository, SDK consumption, package production, and Desktop handoff |
 | [SPEC-002](specs/SPEC-002-cats-usage-dashboard.md) | Usage 0.2.0 published | Usage identity, native quantities, data truth, and staged scope |
 | [PLAN-002](plans/PLAN-002-cats-usage-dashboard.md) | Kiro verification/history deferred | Usage MVP, account quotas, persistence, and installed validation |
-| [ADR-002](decisions/002-cli-backed-media-studio-vertical-slice.md) | Proposed | Unified image/video App, Grok-first CLI path, host/runtime ownership and compatibility |
-| [SPEC-003](specs/SPEC-003-media-studio-vertical-slice.md) | Draft; single-image adapter verified | Generate, edit, animate, export and retained works; App/SDK and editing/video acceptance pending |
-| [PLAN-003](plans/PLAN-003-media-studio-vertical-slice.md) | Draft; image spike passed, implementation pending | Further live generation deferred; owner contracts, Runtime/Platform/App implementation and installed acceptance remain |
+| [ADR-002](decisions/002-cli-backed-media-studio-vertical-slice.md) | Accepted | Independent Studio beside Usage; bounded CLI image generation and SDK 1.3 |
+| [SPEC-003](specs/SPEC-003-media-studio-vertical-slice.md) | Implemented; installed Desktop verified | Single-image generate/preview/download/reopen; editing/video deferred |
+| [PLAN-003](plans/PLAN-003-media-studio-vertical-slice.md) | Isolated acceptance passed | Installed Desktop accepted; direct-main delivery; no additional paid calls |
 
 ## Project Guides
 
