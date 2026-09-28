@@ -13,6 +13,11 @@
 上與 Usage 並列的獨立 App。本輪固定 `cats.studio` / Studio 0.1.0，僅單張 1:1 生圖。
 原提案的修圖、圖片匯入、影片與版本 lineage 延後；App 安裝／移除 UX 另案規劃。
 
+2026-09-28：安裝／移除、獨立發布與 Market 已納入
+[Platform SPEC-120](../../../cats-platform/docs/specs/SPEC-120-app-market-and-lifecycle.md)
+與 [Apps PLAN-004](../plans/PLAN-004-independent-app-distribution.md)。Studio 不預裝，
+未安裝時沒有 Home placeholder；停用仍保留已安裝卡片，移除後消失。此後續尚未實作。
+
 流程為描述 → 明確按下生成 → 任務狀態 → 圖片預覽／下載 → 重開取回。
 每次只允許一次 CLI invocation、一輪模型呼叫及一次 image_gen；沒有自動重試或 fallback。
 頁面初始顯示先前 spike 的橘貓範例，清楚標示來源，不當成本次生成。

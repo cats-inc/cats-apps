@@ -50,6 +50,9 @@ until a separately authorized immutable Studio publication/selection.
 
 ## Deferred follow-up
 
+- App lifecycle／Market delivery now has an owner plan:
+  [PLAN-004](PLAN-004-independent-app-distribution.md), governed by Platform SPEC-120.
+  It keeps Studio optional and preserves existing works when changing update sources.
 - Full fresh App → Grok acceptance after the collection correction, when allowance permits.
 - Editing/import, image-to-video, playback, reference inputs and asset lineage.
 - User-facing App install/remove/update/catalog UX and retention/deletion controls.

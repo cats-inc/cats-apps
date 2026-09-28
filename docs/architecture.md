@@ -10,6 +10,21 @@
 
 Apps consume host contracts. Provider parsing and secrets remain runtime/host-owned.
 
+## Planned independent distribution (2026-09-28)
+
+[Platform ADR-121](../../cats-platform/docs/decisions/121-distribute-apps-independently-with-host-owned-lifecycle.md)
+and [SPEC-120](../../cats-platform/docs/specs/SPEC-120-app-market-and-lifecycle.md)
+govern the next phase; [PLAN-004](plans/PLAN-004-independent-app-distribution.md)
+tracks this repository's SDK, artifact and catalog work. Usage remains preinstalled
+and listed in Market, with a host-owned Home recovery placeholder after removal.
+Studio is optional: no uninstalled Home placeholder. Both keep independent App
+versions, release artifacts and one common host lifecycle.
+
+Current Desktop 0.5.13 publicly bundles Usage only. Studio's single-image renderer
+and SDK 1.3 integration are implemented and locally installed; remote catalog,
+resource-cleaning uninstall and complete repair remain unimplemented. The sections
+below describe the initial package foundation, not delivery of the new phase.
+
 ## Source, Package, and Release
 
 An app lives in apps/<slug> and produces a Cats App Package with a stable
@@ -61,4 +76,4 @@ account polling, other collectors and durable time-series data still require
 - [Platform ADR-114](../../cats-platform/docs/decisions/114-separate-official-app-sources-and-coordinate-desktop-distribution.md)
 - [Runtime ADR-038](../../cats-runtime/docs/decisions/038-separate-execution-usage-from-provider-account-quota.md)
 
-*Last updated: 2026-09-10*
+*Last updated: 2026-09-28*

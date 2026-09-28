@@ -3,7 +3,7 @@
 ## Release boundaries
 
 cats-apps is a private npm workspace containing independently versioned Apps,
-not a single npm product release. Currently Usage is the only App. The root
+not a single npm product release. Usage and Studio have separate workspaces. The root
 private package version does not determine App versions, and releasing one App
 does not bump unrelated Apps or the workspace root.
 
@@ -11,6 +11,13 @@ Ordinary implementation, documentation, commit/push and merge requests do not
 authorize an App version bump or publication. Accumulate commits until an App
 release is selected, using existing user authorization for the required steps.
 Branch CI checks/builds and uploaded CI artifacts are not public App releases.
+
+Independent catalog delivery is planned in
+[PLAN-004](plans/PLAN-004-independent-app-distribution.md). Artifact publication,
+catalog promotion and Desktop bundle selection are separate actions. The new
+Market flow is not implemented; the tag workflow below remains the current App
+release mechanism. Usage will stay preinstalled and also available in Market;
+Studio will be optional and excluded from the default Desktop bundle.
 
 For a selected App, keep these three values synchronized:
 
@@ -264,4 +271,4 @@ on a network catalog.
 
 See [ADR-001](decisions/001-own-official-utility-apps-and-coordinate-desktop-distribution.md).
 
-*Last updated: 2026-09-23*
+*Last updated: 2026-09-28*
