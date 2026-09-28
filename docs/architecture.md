@@ -20,6 +20,41 @@ and listed in Market, with a host-owned Home recovery placeholder after removal.
 Studio is optional: no uninstalled Home placeholder. Both keep independent App
 versions, release artifacts and one common host lifecycle.
 
+### Desktop management surface clarification (accepted, 2026-09-29)
+
+Apps Marketplace is a standalone Desktop destination with a prominent entry from
+Home. Users discover Apps, inspect details and install directly from Marketplace;
+installation must not require a detour through Settings. Home also retains installed
+App launch cards and the existing recovery entries.
+
+Settings > Apps focuses on installed inventory, permissions, machine-level setup,
+enable/disable, updates, repair and removal. Marketplace may expose appropriate
+actions on App details using the same Desktop lifecycle service and state. Settings
+is not the exclusive route allowed to initiate these actions. Plugin inventory
+uses a separate Settings > Plugins page; any Home shortcut to Plugin management stays small.
+
+Ordinary browser access to the Platform web UI does not grant authority to
+install, enable, disable, update, repair, remove, or change the machine-level
+setup of Desktop-managed packages. These operations need a verified Desktop
+management context at the service boundary, not merely hidden web controls,
+an owner login, a localhost URL, or a client-supplied environment flag. Browser
+or remote invocation alone must not silently initiate a Desktop mutation.
+This is a client authorization boundary, not a requirement to place Marketplace
+inside Settings.
+
+The implementation remains owned by cats-platform: repository ownership and
+the client allowed to initiate an operation are separate concerns. Package
+renderers receive no package-management authority through the App SDK. Whether
+an authorized browser may launch or use an already-installed App is a separate
+product decision; this clarification neither removes that capability nor promises
+browser support. Ordinary in-App preferences are also separate from installation
+and machine-level setup.
+
+This is an accepted planning requirement, not an implemented access restriction.
+The coordinated Platform ADR-121 / SPEC-120 / PLAN-112 update records the same
+requirement and Desktop-versus-browser acceptance cases. The concrete management
+context contract, implementation and acceptance remain host-owned follow-up work.
+
 Current Desktop 0.5.13 publicly bundles Usage only. Studio's single-image renderer
 and SDK 1.3 integration are implemented and locally installed; remote catalog,
 resource-cleaning uninstall and complete repair remain unimplemented. The sections
@@ -76,4 +111,4 @@ account polling, other collectors and durable time-series data still require
 - [Platform ADR-114](../../cats-platform/docs/decisions/114-separate-official-app-sources-and-coordinate-desktop-distribution.md)
 - [Runtime ADR-038](../../cats-runtime/docs/decisions/038-separate-execution-usage-from-provider-account-quota.md)
 
-*Last updated: 2026-09-28*
+*Last updated: 2026-09-29*

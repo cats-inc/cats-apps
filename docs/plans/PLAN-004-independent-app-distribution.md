@@ -15,6 +15,27 @@ Studio 不預裝，未安裝時無 Home placeholder，已安裝停用時保留�
 Home placeholder、出貨政策、信任、下載與清理都由宿主處理，不放進 Usage／Studio renderer。
 兩者使用同一種 `.catsapp`，原始碼留在同一 repo，各自 version／build／release。
 
+## Desktop management clarification (accepted, 2026-09-29)
+
+Apps Marketplace 是 Desktop 的獨立頁面，Home 提供醒目入口。使用者在商店探索、
+查看介紹與直接安裝，不必繞到 Settings 才能完成。Home 另保留已安裝 App 啟動卡片
+與既定恢復入口。
+
+Settings > Apps 聚焦已安裝清單、權限、機器層級設定、啟停、更新、修復與移除。
+商店詳情也可提供合適的操作，兩者共用同一 Desktop lifecycle service／狀態，
+不把 Settings 路徑當成唯一管理授權條件。Plugin 則維持 Settings > Plugins 獨立分頁，
+Home 若提供 Plugin 管理捷徑則保持小型入口；Apps 商店不受這個小捷徑規則限制。
+
+一般瀏覽器開啟 cats-platform 網頁，不因此取得這台 Desktop 的套件管理權限。
+限制要由宿主管理操作的授權契約實施，不能只藏按鈕、信任 owner 登入、localhost
+或前端傳入的環境旗標。瀏覽器／遠端呼叫不得自行觸發安裝或其他套件變更。
+管理服務程式仍可由 cats-platform 持有；「repo 擁有服務」與「允許哪個 client 操作」分開。
+
+已安裝 App 是否可由授權網頁使用，以及一般 App 內偏好設定，與這個管理限制分開決定。
+本補充不改 Usage／Studio 的出貨、Home 卡片、格式或 SDK 能力，也不宣稱目前已限制網頁。
+本次協同更新 Platform ADR-121／SPEC-120／PLAN-112 的管理要求與驗收項目；
+context 的具體簽發／傳遞／撤銷契約、實作與驗收仍由 Platform 後續完成。
+
 ## Baseline and scope
 
 現有 shared builder 能選取單一 App；`<slug>-vX.Y.Z` tag workflow 已可產生 `.catsapp`、
@@ -30,6 +51,8 @@ lock 與來源紀錄。Usage 0.4.0 已發布，Studio 0.1.0 有本機 artifact �
 - [ ] 以版本化契約驗證兩個 App，不 import sibling private source、不附帶宿主特權 bridge。
 - [ ] 補最低能力不可用的可理解畫面；安裝或開啟 App 不自動呼叫生成／provider 登入。
 - [ ] 更新 docs，區分 renderer build、host integration fixtures 與實際 provider acceptance。
+- [ ] 與 Platform 固定 Desktop management context 與拒絕一般 browser mutation 的契約；
+      App SDK 不提供 lifecycle 管理權，復原／Market 入口不繞過宿主授權。
 
 ## A2 — Official catalog content and promotion
 
@@ -63,6 +86,12 @@ Catalog promotion 是發布動作，App tag 發布不自動選入目錄或 Deskt
 - [ ] 壞包與錯 hash 能恢復或拒絕；新版本不相容／新增權限時明確處理。
 - [ ] Market 更新後 Desktop 舊 bundled 包不蓋回；手動移除不被 Desktop 升級復活。
 - [ ] 產物／SDK checks 與各 OS installed acceptance 分開記錄，補 source／hash／host matrix。
+- [ ] Desktop Settings／Home 捷徑／Market 共用管理狀態；一般 browser 即使 owner 登入，
+      直接呼叫 lifecycle mutation 仍被拒絕，registry／package／process 無變更。
+- [ ] Home 的醒目入口直接開獨立 Apps Marketplace，探索／詳情／安裝不跳往 Settings；
+      安裝完成同步 Home 與 Settings 已安裝清單，兩個入口不各自維護 installer。
+- [ ] 驗證 localhost、偽造前端環境旗標、App iframe 均無法取得 Desktop 管理權限；
+      已授權 Desktop 操作照常可用。上述 host 驗收由 Platform 提供隔離證據。
 
 所有 fixture 使用暫存 registry／profile，資料回收驗收不動使用者作品或 provider 帳號。
 
@@ -79,7 +108,21 @@ Catalog promotion 是發布動作，App tag 發布不自動選入目錄或 Deskt
 2026-09-28：使用者要求規劃文件，尚未改 build／workflow、SDK 依賴、manifest 或 App 版本。
 接續 Platform M0 固定契約後執行 A1／A2；發布前依 [App release SOP](../deployment.md) 驗證。
 
-文件驗證：`npm run check:docs` 通過（38 份 Markdown、155 個本機目標，無略過 sibling links），
+原始提案文件驗證：`npm run check:docs` 通過（38 份 Markdown、155 個本機目標，無略過 sibling links），
 `git diff --check` 通過。獨立唯讀審查無剩餘阻擋；未執行 App build／tests 或新的 provider 呼叫。
 
-*Last updated: 2026-09-28*
+2026-09-28 Desktop 管理界線補充：只更新 Apps 側文件，Platform 契約同步與實作尚未進行。
+同日澄清：Apps Marketplace 必須獨立且由 Home 醒目進入；Settings 負責已安裝管理，
+Desktop 管理權限不代表商店必須放進 Settings。
+此補充未經獨立審查，驗證只涵蓋 Markdown 連結與 diff，不代表上述 host 存取限制已生效。
+本補充的 `npm run check:docs` 通過（38 份 Markdown、156 個本機目標，無略過 sibling links）；
+`git diff --check` 通過。未執行產品測試、build 或安裝。
+
+2026-09-29：使用者要求完成這份補充的 commit／PR 與 auto-merge；同步 Platform 規劃，
+保留實作與 acceptance 未完成的狀態。本次獨立唯讀審查無阻擋，已將 Home 小型捷徑
+明確限定為 Plugin 管理入口。`npm run check:docs` 通過（38 份 Markdown、156 個本機目標，
+無略過 sibling links）；兩 repo 6 份變更文件的 35 個本機檔案／anchor 目標檢查通過，
+使用對應 worktree 核對跨 repo 連結。兩 repo 的 `git diff --check` 通過。
+這些是文件驗證，未執行產品測試、build、安裝或 provider 呼叫，不代表 host 限制已生效。
+
+*Last updated: 2026-09-29*
