@@ -81,8 +81,9 @@ independent app updates remain a later phase.
 - [Usage specification](docs/specs/SPEC-002-cats-usage-dashboard.md)
 - [Usage delivery plan](docs/plans/PLAN-002-cats-usage-dashboard.md)
 - [Media studio vertical slice (draft)](docs/plans/PLAN-003-media-studio-vertical-slice.md):
-  Grok-backed image generation, editing, short video and retained works; implementation
-  and CLI validation have not started. App name and package identity remain provisional.
+  Grok-backed image generation, editing, short video and retained works. A single-image
+  adapter spike passed; implementation and editing/video acceptance remain pending.
+  App name and package identity remain provisional.
 - [Cross-repository architecture](docs/architecture.md)
 - [Documentation index](docs/README.md)
 

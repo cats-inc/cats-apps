@@ -49,6 +49,8 @@ Cats Studio is a working name; the draft contracts do not represent shipped capa
 See [ADR-002](docs/decisions/002-cli-backed-media-studio-vertical-slice.md),
 [SPEC-003](docs/specs/SPEC-003-media-studio-vertical-slice.md) and
 [PLAN-003](docs/plans/PLAN-003-media-studio-vertical-slice.md).
-Implementation, live CLI validation and publication remain pending.
+A single-image adapter spike passed on 2026-09-28. Further live generation is deferred
+under the owner's allowance constraint; App implementation, editing/video validation
+and publication remain pending.
 
 *Last updated: 2026-09-28 (media planning added; earlier phase history retained)*

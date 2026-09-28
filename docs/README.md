@@ -10,8 +10,8 @@
 | [SPEC-002](specs/SPEC-002-cats-usage-dashboard.md) | Usage 0.2.0 published | Usage identity, native quantities, data truth, and staged scope |
 | [PLAN-002](plans/PLAN-002-cats-usage-dashboard.md) | Kiro verification/history deferred | Usage MVP, account quotas, persistence, and installed validation |
 | [ADR-002](decisions/002-cli-backed-media-studio-vertical-slice.md) | Proposed | Unified image/video App, Grok-first CLI path, host/runtime ownership and compatibility |
-| [SPEC-003](specs/SPEC-003-media-studio-vertical-slice.md) | Draft; CLI validation pending | Generate, edit, animate, export and retained works through the public App SDK |
-| [PLAN-003](plans/PLAN-003-media-studio-vertical-slice.md) | Draft; implementation not started | CLI spike, owner contracts, Runtime/Platform/App implementation and installed acceptance |
+| [SPEC-003](specs/SPEC-003-media-studio-vertical-slice.md) | Draft; single-image adapter verified | Generate, edit, animate, export and retained works; App/SDK and editing/video acceptance pending |
+| [PLAN-003](plans/PLAN-003-media-studio-vertical-slice.md) | Draft; image spike passed, implementation pending | Further live generation deferred; owner contracts, Runtime/Platform/App implementation and installed acceptance remain |
 
 ## Project Guides
 

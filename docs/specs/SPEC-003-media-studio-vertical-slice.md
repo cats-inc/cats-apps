@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft — implementation and live CLI validation not started |
+| Status | Draft — single-image adapter spike verified; App implementation and remaining live validation pending |
 | Owner | cats-apps; Platform owns SDK/data delivery, Runtime owns CLI execution |
 | Reviewer | Not assigned; independent review pending |
 | Related decision | [ADR-002](../decisions/002-cli-backed-media-studio-vertical-slice.md) |
@@ -15,6 +15,10 @@
 提供一個 Cats App，讓使用者透過表單與作品預覽，完成 Grok CLI 的生圖、
 修圖與圖生短片。驗收包含實際檔案交付、作品版本、背景任務，以及重新開啟
 App／host 後保存的作品。CLI 能力暫依使用者提供的 spike 自述規劃，實測另行完成。
+
+2026-09-28 的 [單張生圖證據](../../../cats-runtime/docs/research/2026-09-28-grok-single-image-spike.md)
+已驗證 Runtime adapter 可取得有效 JPEG；受本月額度限制，修圖與影片未測。
+這不是 AC-02 的完整鏈路，也不是安裝 App 的驗收。
 
 ## Goals
 
@@ -30,7 +34,7 @@ App／host 後保存的作品。CLI 能力暫依使用者提供的 spike 自述�
 - 局部遮罩修圖、批量生成、去背、超解析度、社群發布、協作或雲端同步。
 - 精確像素／seed／模型 ID 的保證、生成品質或「訂閱內免費」保證。
 - 新建一般任務系統、公開第三方執行平台或 App marketplace。
-- 本次文件工作不包含功能實作、live generation、版本調整或發行。
+- 本規劃與已授權單張 spike 不包含 App 功能實作、額外生成、版本調整或發行。
 
 ## User Stories
 
@@ -62,8 +66,11 @@ App／host 後保存的作品。CLI 能力暫依使用者提供的 spike 自述�
 
 ### Capability and Parameter Baseline
 
-下表是待驗證的首版目標，不是目前支援宣告。能力需綁定 CLI 版本、OS、
-instance／執行 transport 與相容 profile；改版或條件不符時回報未知／不可用。
+下表是首版目標，不是全部已支援的宣告；目前只有單張生圖的 adapter 證據。
+能力證據需記錄 CLI 版本、OS、instance／執行 transport 與相容 profile。
+版本差異本身不阻擋執行，依 Runtime
+[ADR-035](../../../cats-runtime/docs/decisions/035-never-block-provider-execution-on-exact-cli-version.md)
+嘗試已知相容契約；具體能力或安全契約不成立時才回報不可用。
 初次驗證可由受控的版本相容紀錄提供，不能在使用者每次開頁時花額度探測。
 
 | Operation | Planned native tool | First acceptance combination |

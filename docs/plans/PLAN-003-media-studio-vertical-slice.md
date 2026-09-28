@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft — planning only; implementation and live validation not started |
+| Status | Draft — single-image adapter spike passed; App implementation and remaining live validation pending |
 | Owner | cats-apps coordinates product acceptance; each member owns its implementation |
 | Assigned To | Unassigned |
 | Reviewer | Unassigned; independent review pending |
@@ -17,8 +17,12 @@
 ## Overview
 
 先驗證 Grok 的最小非互動媒體鏈路，再固定跨 repo 契約，接上 Runtime、Platform
-與 App，最後用真實安裝套件走完生成到持久化作品。當前工作只撰寫規劃；
-以下所有實作、live probe 與驗收均待完成。草稿不觸發 generation 或發布。
+與 App，最後用真實安裝套件走完生成到持久化作品。2026-09-28 已依使用者縮減後的
+範圍完成一次生圖 adapter spike；App 實作與完整驗收仍待完成，沒有發布。
+
+**目前 live 範圍**：因本月 Grok 額度有限，使用者只允許一次最基本的生圖，
+成功或失敗都停止，不重試、不修圖、不生影片。此次額度已用於下述單張圖片；
+其餘 live 項目延後，不因原計畫列有三個動作就自動續跑。
 
 第一條驗收固定為 `I1 生圖 → I2 修圖 → 選定 I2 → V1 短片 → 匯出 → 重開取回`。
 其他 provider 與影片模式延後，不用擴大範圍來繞過 Grok 必要能力缺口。
@@ -26,6 +30,17 @@
 ## Implementation Phases
 
 ### Phase 0: Verify the CLI Media Path — cats-runtime
+
+#### Completed bounded image spike
+
+- [x] 使用 Runtime Grok adapter 的啟動參數與事件解析，在 Windows native 的
+      Grok 1.0.41 執行一次 `image_gen`：一輪模型呼叫、一張圖片、無重試。
+- [x] 驗證 1024×1024 JPEG、98,234 bytes、可解碼與副本雜湊一致。
+      CLI 在工具完成後因 `max-turns 1` 停止，不能把該退出碼解讀成圖片生成失敗。
+- [x] 保存 [Runtime evidence](../../../cats-runtime/docs/research/2026-09-28-grok-single-image-spike.md)。
+      模型回報成本為 US$0.00761872，未單獨量得圖片費用或帳號剩餘額度變化。
+
+#### Remaining CLI verification — deferred
 
 - [ ] 讀取 Runtime 的 AGENTS／CODEX／相關指南，沿用既有 Grok adapter 與
       provider fixture 慣例；確認測試 CLI 版本、Windows native、instance 與登入狀態。
@@ -191,5 +206,6 @@ Desktop pin／release 與更新正式安裝，依既有發布授權分別處理�
 | Date | Update |
 |------|--------|
 | 2026-09-28 | 建立 ADR-002／SPEC-003／PLAN-003 草稿與索引；能力依使用者提供的 spike 暫作假設。未開始實作、live probe 或獨立 review。 |
+| 2026-09-28 | 使用者將當次 spike 縮為單張圖片，已完成一次模型／image_gen 呼叫與 JPEG 驗證。Phase 0 部分完成；修圖、影片與 App／SDK 驗收延後，不再自動生成。 |
 
 *Created: 2026-09-28*
