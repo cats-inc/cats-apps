@@ -13,6 +13,14 @@ accepts the independent-distribution direction; [PLAN-004](../plans/PLAN-004-ind
 tracks Apps work. Usage stays preinstalled with Home recovery; Studio is optional.
 That next phase is planned, while the original ownership and initial delivery remain valid.
 
+The accepted [Desktop management clarification](../plans/PLAN-004-independent-app-distribution.md#desktop-management-clarification-accepted-2026-09-29)
+places installed-App management in Desktop Settings and discovery/direct installation
+in a standalone Marketplace reached prominently from Home. Both share the Desktop
+lifecycle service, with a boundary denying ordinary browser management. cats-platform
+retains implementation ownership. The coordinated Platform planning update records the same
+requirement; the concrete authorization contract and implementation remain follow-up work.
+This is not an implemented restriction or a change to App renderer availability.
+
 Cats has a platform host, a provider runtime, and a planned collection of small
 utility apps. Usage is the first concrete app. These apps need real package
 boundaries without imposing a separate repository and release workflow on every
