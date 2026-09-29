@@ -17,6 +17,13 @@ blocked on CLI authentication; it is not advertised as a working collector.
 
 ## Current Status
 
+- Ask (`cats.ask`, working identity) is in planning. Its MVP asks the user's
+  Gemini Spark, Grok Bot or Meta AI, retains asynchronous responses and provides
+  a Copy button. Product-specific delegation remains unverified; no Ask package
+  exists yet. See [ADR-003](docs/decisions/003-delegate-personal-questions-to-first-party-assistants.md),
+  [SPEC-004](docs/specs/SPEC-004-personal-assistant-questions-mvp.md) and
+  [PLAN-005](docs/plans/PLAN-005-personal-assistant-questions-mvp.md).
+
 - Studio 0.1.0 (`cats.studio`) is an independent image App beside Usage. It provides
   one square image per explicit request, preview/download, cancellation and saved
   works through SDK 1.3 / Desktop ^0.5.11. Actual-package isolated browser checks

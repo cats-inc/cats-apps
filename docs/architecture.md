@@ -10,6 +10,33 @@
 
 Apps consume host contracts. Provider parsing and secrets remain runtime/host-owned.
 
+## Proposed Ask delegation boundary (2026-09-29)
+
+Ask / `cats.ask` is a planning identity. [ADR-003](decisions/003-delegate-personal-questions-to-first-party-assistants.md),
+[SPEC-004](specs/SPEC-004-personal-assistant-questions-mvp.md) and
+[PLAN-005](plans/PLAN-005-personal-assistant-questions-mvp.md) propose:
+
+Ask question UI → host-authorized submission and retained request → Runtime-owned
+delegation to the user's actual first-party assistant → correlated, retained answer
+→ Ask detail and Copy.
+
+Apps owns the list/detail/copy renderer and eventual package. Platform owns the
+public SDK, permissions, clipboard boundary and App-scoped read views; Runtime
+owns generic workspace persistence, product-specific execution, connectors and
+return handling. Reuse existing storage and job primitives where they satisfy the
+contract. Exact APIs, storage and read-view contracts require follow-up decisions
+in their owning repositories.
+
+Gemini Spark, Grok Bot with its X Connector, and Meta AI are distinct product
+targets. Each needs proof of activation, personal-context access and answer return;
+an MCP endpoint alone proves none of those. Current SDK 1.3 does not implement
+this delegation flow. Credentials remain outside the App iframe, and closing that
+iframe must not be treated as cancelling a submitted task.
+
+The MVP provides asynchronous status, reopening of retained answers and Copy.
+Host deep links/history, automatic Chat/Code/Work ingestion, a general answer
+knowledge service and full offline execution remain deferred.
+
 ## Planned independent distribution (2026-09-28)
 
 [Platform ADR-121](../../cats-platform/docs/decisions/121-distribute-apps-independently-with-host-owned-lifecycle.md)

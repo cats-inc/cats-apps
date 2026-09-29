@@ -53,4 +53,25 @@ A single-image adapter spike passed on 2026-09-28. Further live generation is de
 under the owner's allowance constraint; App implementation, editing/video validation
 and publication remain pending.
 
-*Last updated: 2026-09-28 (media planning added; earlier phase history retained)*
+## Planned Ask MVP
+
+Ask / `cats.ask` is the working identity for the 2026-09-29 personal-assistant
+question App. Scope is a question list/detail flow with asynchronous answers and
+copy for manual use in Chat, Code or Work.
+
+- [x] Record the MVP scope, proposed architecture, evidence baseline and delivery plan.
+- [ ] Verify Gemini Spark's personal-context question and machine-returned answer.
+- [ ] Independently verify Grok Bot's X Connector and Meta AI's authorized-content path.
+- [ ] Define and implement host/runtime contracts after a product round trip succeeds.
+- [ ] Build the Ask package with truthful states, retained answers and Copy.
+- [ ] Verify actual-package reopening, Desktop clipboard, account scope and recovery.
+
+Each assistant needs its own evidence and availability status. Full offline
+operation, host navigation SDK, scheduling UI and automatic Chat/Code/Work use
+remain deferred. No package version or publication is part of the planning work.
+
+See [ADR-003](docs/decisions/003-delegate-personal-questions-to-first-party-assistants.md),
+[SPEC-004](docs/specs/SPEC-004-personal-assistant-questions-mvp.md) and
+[PLAN-005](docs/plans/PLAN-005-personal-assistant-questions-mvp.md).
+
+*Last updated: 2026-09-29 (Ask planning added; earlier phase history retained)*
