@@ -5,7 +5,7 @@
   "description": "Official utility app workspace for Cats Desktop.",
   "type": "module",
   "license": "MIT",
-  "author": "Cats Inc",
+  "author": "sammykenny2 <sammykenny2@gmail.com>",
   "repository": {
     "type": "git",
     "url": "https://github.com/cats-inc/cats-apps.git"

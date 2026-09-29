@@ -12,6 +12,21 @@ authorize an App version bump or publication. Accumulate commits until an App
 release is selected, using existing user authorization for the required steps.
 Branch CI checks/builds and uploaded CI artifacts are not public App releases.
 
+**Pending publisher correction (2026-09-29).**
+
+Source manifests identify the individual maintainer `sammykenny2`; the root MIT
+copyright names `sammykenny2 and contributors`. Both the full manifest and root
+LICENSE enter the archive and source digest, so these edits change package hashes
+without changing App IDs. Published Usage 0.5.0 and Studio 0.2.0 remain immutable.
+Keep this correction source-only until each App's next authorized version bump;
+do not replace published artifacts or update Desktop pins from this source
+revision. CI may build disposable verification archives from the pending source;
+those archives must not be promoted as replacements for an existing release.
+Run the normal PR checks; no-publication scope is not a reason to skip CI.
+Include the publisher correction in each App's next release notes.
+App SDK validation requires a nonempty publisher name,
+while artifact selection still pins App ID, version and archive SHA-256.
+
 Independent catalog delivery is planned in
 [PLAN-004](plans/PLAN-004-independent-app-distribution.md). Artifact publication,
 catalog promotion and Desktop bundle selection are separate actions. The new
