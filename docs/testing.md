@@ -85,4 +85,8 @@ retaining SDK ^1.2.0; the renderer and permissions equal 0.3.0. Release and host
 verification are recorded in the deployment guide. Published 0.3.0 bytes remain
 unchanged.
 
+Usage 0.5.0 prepares the bounded Platform ^0.6.0 declaration for Desktop 0.6.x, retaining
+SDK ^1.2.0; its renderer and permissions equal 0.4.0. It builds with the pinned Platform
+0.6.0 App SDK. Release and host verification are recorded in the deployment guide.
+
 *Last updated: 2026-09-29*
