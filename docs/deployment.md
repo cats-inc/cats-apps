@@ -128,7 +128,8 @@ minors, and wildcard forms that omit a required patch minimum. See the
 
 ## Current State
 
-Usage 0.5.0 is prepared for the Desktop 0.6.0 standard-profile preview. Platform 0.6.0 is a
+Usage 0.5.0 is [published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.5.0)
+for the Desktop 0.6.0 standard-profile preview. Platform 0.6.0 is a
 host minor ([ADR-124](../../cats-platform/docs/decisions/124-model-companion-as-a-cat-role-not-a-skill-profile.md)),
 and Usage 0.4.0's Platform ^0.5.0 declaration excludes it. Usage 0.5.0 declares Platform
 ^0.6.0 and retains App SDK ^1.2.0; its LICENSE and renderer payloads equal Usage 0.4.0,
@@ -136,7 +137,17 @@ and the manifests differ only in version and host range. It is the first release
 with the pinned Platform 0.6.0 App SDK, so its archive bytes come from the SDK encoder.
 The owner authorized this App release together with Platform npm 0.6.0 and the Desktop
 0.6.0 preview. Preparation passed 12 App tests, and the 0.5.0 build validated at host 0.6.0
-with SDK 1.2.0 and 1.3.0. Release workflow results and published hashes follow.
+with SDK 1.2.0 and 1.3.0.
+
+The [release workflow](https://github.com/cats-inc/cats-apps/actions/runs/36508492841) passed
+docs, `npm ci`, all 12 App tests and the tagged build. Source revision:
+`2c077cbf9265ff0207292ca54754b3298fa28144`; archive SHA-256:
+`66bbb0acbee92cf114a7836dccbfbad261e702caeb268007f12536c804b7c47d`. The downloaded archive,
+GitHub asset digest, lock and provenance agree, and the provenance records the Platform 0.6.0
+SDK and both validated hosts. A local Windows build of the same commit produced the same
+bytes. Platform [PR #175](https://github.com/cats-inc/cats-platform/pull/175) selects this
+release, and the [Desktop 0.6.0 preview](https://github.com/cats-inc/cats-platform/releases/tag/v0.6.0)
+rebuilt its payload after `npm ci` and bundles it. Installed upgrade acceptance remains separate.
 
 Usage 0.4.0 is [published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.4.0)
 for the Desktop 0.5.0 standard-profile preview. Desktop
