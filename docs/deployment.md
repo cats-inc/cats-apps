@@ -149,8 +149,10 @@ minors, and wildcard forms that omit a required patch minimum. See the
 
 ## Current State
 
-Usage 0.5.1 and Studio 0.2.1 are prepared as compatible patch releases whose only
-purpose is the publisher and copyright correction above. Renderer payloads and
+Usage 0.5.1 ([published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.5.1))
+and Studio 0.2.1 ([published](https://github.com/cats-inc/cats-apps/releases/tag/studio-v0.2.1))
+are compatible patch releases whose only purpose is the publisher and copyright
+correction above. Renderer payloads and
 permissions equal 0.5.0 and 0.2.0; `compatibility.catsPlatform` stays `^0.6.0` and
 the App SDK ranges stay `^1.2.0` (Usage) and `^1.3.0` (Studio). Under Platform
 [ADR-128](https://github.com/cats-inc/cats-platform/blob/main/docs/decisions/128-make-the-app-sdk-version-the-sole-app-compatibility-gate.md)
@@ -158,9 +160,19 @@ the host reads `catsPlatform` as a minimum, so both install on Platform 0.6.x an
 0.7.x alike; the build still validates against the pinned Platform 0.6.0 SDK. The
 owner authorized these releases together with Runtime 0.4.0, Platform npm 0.7.0 and
 the Desktop 0.7.0 standard-profile preview, which selects Usage 0.5.1. Studio stays
-outside the default Desktop bundle. Release workflow results and published hashes follow.
+outside the default Desktop bundle. Both were released on 2026-09-30 from source revision
+`1c67c428c0b506972d57c1d365e6b140189ba3f0`: the
+[Usage workflow](https://github.com/cats-inc/cats-apps/actions/runs/36607741728) and the
+[Studio workflow](https://github.com/cats-inc/cats-apps/actions/runs/36607742106) each
+passed docs, `npm ci`, the App tests and the tagged build. Archive SHA-256:
+Usage `8189edbf1cce81ce4d712a0cf59f9d8ab4e23225add1cbb7e3b06030483ad467`, Studio
+`be0ae730c0948bf5dde7a5a519321bc86506a0bcea595783c7f8df66dc0dcb21`; the published
+lock files carry the same digests and Desktop 0.7.0 pins the Usage digest. After
+Desktop 0.7.0 was published with the new pin, the owner-authorized deletion of the
+`usage-v0.5.0` and `studio-v0.2.0` releases and tags was carried out; their entries
+below remain as history, but the links no longer resolve and no host pins them.
 
-Studio 0.2.0 is [published](https://github.com/cats-inc/cats-apps/releases/tag/studio-v0.2.0)
+Studio 0.2.0 was published (release deleted on 2026-09-30, superseded by 0.2.1)
 as Studio's first public release. Studio 0.1.0 was built and
 installed only locally, and its Platform ^0.5.11 declaration excludes host 0.6.0. Studio
 0.2.0 declares Platform ^0.6.0 and keeps App SDK ^1.3.0 and permissions `ui.route`,
@@ -176,7 +188,7 @@ docs, `npm ci`, all 12 App tests and the tagged build. Source revision:
 GitHub asset digest, lock and provenance agree; the Platform 0.6.0 App SDK validator accepts it
 for host 0.6.0, and a local Windows build produced the same bytes.
 
-Usage 0.5.0 is [published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.5.0)
+Usage 0.5.0 was published (release deleted on 2026-09-30, superseded by 0.5.1)
 for the Desktop 0.6.0 standard-profile preview. Platform 0.6.0 is a
 host minor ([ADR-124](../../cats-platform/docs/decisions/124-model-companion-as-a-cat-role-not-a-skill-profile.md)),
 and Usage 0.4.0's Platform ^0.5.0 declaration excludes it. Usage 0.5.0 declares Platform
