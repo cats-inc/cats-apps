@@ -1,0 +1,10 @@
+{
+  "name": "@cats-inc/ask",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Personal questions answered by your connected assistants.",
+  "scripts": { "build": "node ../../scripts/build-app.mjs --app ask" },
+  "catsBuild": { "entries": { "services/ask.mjs": "server/service.mjs", "services/migrate.mjs": "server/migrate.mjs" } },
+  "dependencies": { "@modelcontextprotocol/sdk": "1.31.0", "zod": "4.6.5" }
+}

@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // Build an immutable utility artifact. Usage: node scripts/build-app.mjs --app usage [--version 0.1.0] [--output-dir dist]
-import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { readFile, mkdir, writeFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { build } from 'esbuild';
 import { APP_SDK_VERSION, encodeAppPackage, supportsVersion, validateRendererAppPackage } from '@cats-inc/cats-platform/app-sdk';
 
 const scriptPath = fileURLToPath(import.meta.url);
@@ -34,15 +35,15 @@ export function validateHosts(bytes, compatibility) {
   return hosts;
 }
 
-export async function buildApp({ app = 'usage', version, outputDir = resolve(root, 'dist') } = {}) {
-  if (!/^[a-z][a-z0-9-]*$/.test(app)) throw new Error('Invalid app slug.');
-  const appRoot = join(root, 'apps', app);
-  const manifest = JSON.parse(await readFile(join(appRoot, 'cats.app.json'), 'utf8'));
-  const pkg = JSON.parse(await readFile(join(appRoot, 'package.json'), 'utf8'));
-  if (!/^\d+\.\d+\.\d+$/.test(manifest.version) || pkg.version !== manifest.version
-    || (version && version !== manifest.version)) throw new Error('Requested, manifest, and package versions must match exactly.');
+function safeInput(source) {
+  if (typeof source !== 'string' || !/^[a-zA-Z0-9_./-]+$/.test(source)
+    || source.split('/').some(part => !part || part === '.' || part === '..')) throw new Error('Missing or unsafe component build input.');
+  return source;
+}
+
+async function rendererInput(appRoot, source) {
   const [template, css, model, renderer] = await Promise.all(['index.html', 'style.css', 'model.js', 'app.js']
-    .map((file) => readFile(join(appRoot, 'src', file), 'utf8')));
+    .map((file) => readFile(join(appRoot, safeInput(source), file), 'utf8')));
   const script = `${model.replace(/^export /gm, '')}\n${renderer.replace(/^import .* from '\.\/model\.js';\s*$/m, '')}`;
   if (/<\/script/i.test(script) || /<\/style/i.test(css)) throw new Error('Inline renderer payload contains an unsafe closing tag.');
   let html = template.replace('/* APP_STYLES */', css).replace('/* APP_SCRIPT */', () => script);
@@ -57,9 +58,69 @@ export async function buildApp({ app = 'usage', version, outputDir = resolve(roo
     const type = name.endsWith('.jpg') ? 'jpeg' : name.split('.').at(-1);
     html = html.replaceAll(match[0], `data:image/${type};base64,${bytes.toString('base64')}`);
   }
+  return { template, css, model, renderer, html, assets };
+}
+
+async function bundledNotices(inputs) {
+  const packages = new Map();
+  for (const input of inputs) {
+    if (!input.replaceAll('\\', '/').includes('/node_modules/') && !input.startsWith('node_modules/')) continue;
+    let directory = dirname(resolve(input));
+    while (directory !== dirname(directory)) {
+      try {
+        const pkg = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
+        if (pkg.name && pkg.version) { packages.set(`${pkg.name}@${pkg.version}`, { directory, pkg }); break; }
+      } catch (error) { if (error.code !== 'ENOENT') throw error; }
+      directory = dirname(directory);
+    }
+  }
+  const sections = [];
+  for (const [name, { directory, pkg }] of [...packages].sort(([a], [b]) => a.localeCompare(b))) {
+    const names = (await readdir(directory)).filter(name => /^(licen[sc]e|copying|notice)(\..*)?$/i.test(name)).sort();
+    if (!names.length) throw new Error(`Bundled dependency needs license review: ${name}`);
+    sections.push(`${name} (${pkg.license ?? 'see license'})\n${(await Promise.all(names.map(name => readFile(join(directory, name), 'utf8')))).join('\n')}`);
+  }
+  return sections.join('\n\n--------------------\n\n');
+}
+
+export async function buildApp({ app = 'usage', version, outputDir = resolve(root, 'dist') } = {}) {
+  if (!/^[a-z][a-z0-9-]*$/.test(app)) throw new Error('Invalid app slug.');
+  const appRoot = join(root, 'apps', app);
+  const manifest = JSON.parse(await readFile(join(appRoot, 'cats.app.json'), 'utf8'));
+  const pkg = JSON.parse(await readFile(join(appRoot, 'package.json'), 'utf8'));
+  if (!/^\d+\.\d+\.\d+$/.test(manifest.version) || pkg.version !== manifest.version
+    || (version && version !== manifest.version)) throw new Error('Requested, manifest, and package versions must match exactly.');
+  const primaryId = manifest.components?.primaryFrontend;
+  const { template, css, model, renderer, html, assets } = await rendererInput(appRoot, pkg.catsBuild?.frontends?.[primaryId] ?? 'src');
   const license = await readFile(join(root, 'LICENSE'));
-  const bytes = encodeAppPackage({ manifest,
-    files: [{ path: 'LICENSE', data: license }, { path: manifest.entrypoints.renderer, data: Buffer.from(html) }] });
+  const files = [{ path: 'LICENSE', data: license }];
+  const componentDigests = {};
+  if (manifest.components) {
+    const primary = manifest.components.frontends.find(frontend => frontend.id === manifest.components.primaryFrontend);
+    if (!primary) throw new Error('Missing primary frontend.');
+    files.push({ path: primary.entrypoint, data: Buffer.from(html) });
+    for (const frontend of manifest.components.frontends.filter(item => item.id !== primary.id)) {
+      const rendered = await rendererInput(appRoot, safeInput(pkg.catsBuild?.frontends?.[frontend.id]));
+      const data = Buffer.from(rendered.html);
+      files.push({ path: frontend.entrypoint, data }); componentDigests[frontend.entrypoint] = hash(data);
+    }
+    const entries = [...manifest.components.services, ...manifest.components.workers].map(item => item.entrypoint);
+    if (manifest.components.data.migration) entries.push(manifest.components.data.migration);
+    const inputs = new Set();
+    for (const entry of new Set(entries)) {
+      const source = safeInput(pkg.catsBuild?.entries?.[entry]);
+      const output = await build({ entryPoints: [join(appRoot, source)], bundle: true, write: false,
+        platform: 'node', target: 'node22', format: 'esm', legalComments: 'inline', metafile: true,
+        banner: { js: "import { createRequire as __catsCreateRequire } from 'node:module'; const require = __catsCreateRequire(import.meta.url);" } });
+      const data = Buffer.from(output.outputFiles[0].contents);
+      files.push({ path: entry, data }); componentDigests[entry] = hash(data);
+      for (const input of Object.keys(output.metafile.inputs)) inputs.add(input);
+    }
+    const notices = Buffer.from(await bundledNotices(inputs));
+    files.push({ path: 'THIRD-PARTY-NOTICES.txt', data: notices });
+    componentDigests['THIRD-PARTY-NOTICES.txt'] = hash(notices);
+  } else files.push({ path: manifest.entrypoints.renderer, data: Buffer.from(html) });
+  const bytes = encodeAppPackage({ manifest, files });
   const hosts = validateHosts(bytes, manifest.compatibility);
   const artifact = `${app}-${manifest.version}.catsapp`;
   const lock = { schemaVersion: 1, apps: [{ id: manifest.id, version: manifest.version, sha256: hash(bytes), artifact }] };
@@ -76,7 +137,7 @@ export async function buildApp({ app = 'usage', version, outputDir = resolve(roo
   await writeFile(join(outputDir, `${app}-${manifest.version}.provenance.json`), `${JSON.stringify({
     ...lock.apps[0], repository: 'cats-inc/cats-apps',
     sourceRevision: process.env.GITHUB_REPOSITORY === 'cats-inc/cats-apps' && /^[a-f0-9]{40}$/.test(process.env.GITHUB_SHA ?? '') ? process.env.GITHUB_SHA : null,
-    sourceDigest: hash(Buffer.from(JSON.stringify({ manifest, pkg, template, css, model, renderer, license: license.toString('utf8'), ...(Object.keys(assets).length ? { assets } : {}) }))),
+    sourceDigest: hash(Buffer.from(JSON.stringify({ manifest, pkg, template, css, model, renderer, license: license.toString('utf8'), ...(Object.keys(assets).length ? { assets } : {}), ...(Object.keys(componentDigests).length ? { componentDigests } : {}) }))),
     sourceScope: 'app-inputs-and-license',
     builtWith: { package: '@cats-inc/cats-platform', version: SDK_PLATFORM_VERSION, appSdk: APP_SDK_VERSION },
     validatedHosts: hosts,
