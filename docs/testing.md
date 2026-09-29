@@ -38,6 +38,18 @@ failed detection runs every step. Tests, scripts and App sources must not read
 repository documentation, and `tests/docs-boundary.test.mjs` enforces that; the link
 checker is the deliberate exception.
 
+Code that already passed is skipped the same way. The `changes` job fingerprints the
+mode, blob and path of every tracked file outside `docs/` (for a pull request, the merge
+result) and looks up the Actions cache key `ci-green-v1-<fingerprint>`, which a fully
+passing run saves. A pull request rebased only because main gained documentation keeps
+its fingerprint, so its rerun still checks docs but skips tests, package builds and their
+artifacts. Any change outside `docs/`, a missing or evicted cache entry, or a manual run
+runs everything. Releases always build from the tag workflow, not these CI artifacts.
+A pull request can also reuse a green run from main when its code outside `docs/` equals
+main's, which means that exact code already passed there. The skip trusts everyone who can
+push to the branch: such a person could save a marker for untested code. Pull requests from
+forks cannot write to the base branch's cache scope.
+
 Host tests live in cats-platform: package limits/path/digest checks, compatibility,
 pin selection, updates/rollback/data preservation, capability denial/revocation,
 upstream redaction and App-route execution. Its `scripts/testing/check-usage-app.mts`
