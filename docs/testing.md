@@ -6,6 +6,12 @@ archive, SDK and host with an isolated fixture Runtime. Pass the Studio lock and
 the existing sample JPEG; this check never calls Grok. Use a separate output
 directory when rebuilding an unpublished version with changed bytes.
 
+`tests/sdk-build.test.mjs` builds Usage and Studio through the pinned Platform App SDK,
+checks the exact pin, the range-floor resolution for the host grammar, and that each
+archive passes the installer's validation at its declared floor and, when its ranges accept it,
+at the pinned host.
+Platform tests pin the encoder itself: its golden hash, header and conformance vectors.
+
 ## Implemented Checks
 
 ```sh
@@ -79,4 +85,4 @@ retaining SDK ^1.2.0; the renderer and permissions equal 0.3.0. Release and host
 verification are recorded in the deployment guide. Published 0.3.0 bytes remain
 unchanged.
 
-*Last updated: 2026-09-25*
+*Last updated: 2026-09-29*

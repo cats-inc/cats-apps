@@ -47,8 +47,11 @@ lock 與來源紀錄。Usage 0.4.0 已發布，Studio 0.1.0 有本機 artifact �
 
 ## A1 — Versioned SDK consumption and fixtures
 
-- [ ] 與 Platform 固定可取得的 SDK 開發產物、schema／能力型別與最低／candidate host matrix。
-- [ ] 以版本化契約驗證兩個 App，不 import sibling private source、不附帶宿主特權 bridge。
+- [x] 與 Platform 固定可取得的 SDK 開發產物、schema／能力型別與最低／candidate host matrix。
+      以 exact-pin 的 `@cats-inc/cats-platform` devDependency 取得 `./app-sdk`；每個 App
+      驗證宣告的最低 host／SDK，以及範圍接受時 pin 的 host。低於首個 SDK 版本的最低 host 以 pin 版本的
+      規則檢查，舊 host 規則不重跑。
+- [x] 以版本化契約驗證兩個 App，不 import sibling private source、不附帶宿主特權 bridge。
 - [ ] 補最低能力不可用的可理解畫面；安裝或開啟 App 不自動呼叫生成／provider 登入。
 - [ ] 更新 docs，區分 renderer build、host integration fixtures 與實際 provider acceptance。
 - [ ] 與 Platform 固定 Desktop management context 與拒絕一般 browser mutation 的契約；
@@ -124,5 +127,12 @@ Desktop 管理權限不代表商店必須放進 Settings。
 無略過 sibling links）；兩 repo 6 份變更文件的 35 個本機檔案／anchor 目標檢查通過，
 使用對應 worktree 核對跨 repo 連結。兩 repo 的 `git diff --check` 通過。
 這些是文件驗證，未執行產品測試、build、安裝或 provider 呼叫，不代表 host 限制已生效。
+
+2026-09-29：依 Platform ADR-123 改用已發布的 `@cats-inc/cats-platform/app-sdk`。
+`build-app.mjs` 保留 renderer 組裝、版本檢查、lock 與 provenance，自製的 gzip envelope
+改為 SDK 的 `encodeAppPackage`，並在寫出前以 `validateRendererAppPackage` 檢查宣告的最低
+host，以及範圍接受時 pin 的 host。新增 `tests/sdk-build.test.mjs`，CI 與 release workflow
+先執行 `npm ci --ignore-scripts`。以 registry 上的 Platform 0.6.0 驗證：12 項 App 測試通過。
+沒有改 App 版本、manifest 或 release。
 
 *Last updated: 2026-09-29*
