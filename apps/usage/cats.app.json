@@ -6,7 +6,7 @@
   "description": "用量總覽 · Runtime usage and provider-reported quota",
   "category": "user-app",
   "trustTier": "local-user",
-  "publisher": { "name": "Cats Inc", "homepage": "https://github.com/cats-inc/cats-apps" },
+  "publisher": { "name": "sammykenny2", "homepage": "https://github.com/cats-inc/cats-apps" },
   "compatibility": { "catsPlatform": "^0.6.0", "appSdk": "^1.2.0" },
   "entrypoints": { "renderer": "renderer/index.html" },
   "contributions": {
