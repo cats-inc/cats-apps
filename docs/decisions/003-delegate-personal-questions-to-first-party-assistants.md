@@ -2,16 +2,25 @@
 
 ## Status
 
-Proposed — 2026-09-29. The user confirmed the MVP scope and requested ADR/Spec/Plan
-work. Product requirements below preserve that scope; transport and host/runtime
-contracts remain proposals pending feasibility evidence. Planning uses **Ask** /
-`cats.ask`; no package version, implementation or release is declared.
+MVP scope and complete-App ownership accepted — 2026-09-29. Detailed transport
+and hosting contracts remain drafts. Grok Bot assisted MCP/bookmark retrieval
+passed a standalone probe with limits; the installed App remains unimplemented.
+Planning uses **Ask** / `cats.ask`; no package version or release is declared.
 
 ## Context
 
+2026-09-29 architecture correction: the user requires each App to own multiple
+frontends and backends as one install/update/management unit. App-owned API
+requests use normal web protocols, without Platform SDK business-method wrappers.
+The former Runtime-owned Ask delegation/storage proposal below is replaced by
+App-owned services under [Platform ADR-125](https://github.com/cats-inc/cats-platform/blob/main/docs/decisions/125-own-multiple-frontends-and-backends-in-one-app.md).
+That coordinated decision records the product boundary; host execution support
+is not implemented.
+
 使用者需要 Gemini Spark 已具備的個人化理解與推薦，以及 Grok Bot、Meta AI
 在使用者身分／connector 授權下取得的內容。使用者已在原產品實測相關能力；
-Cats 到這些產品的完整往返尚未驗證。資料 API、公眾貼文搜尋及同品牌模型 API
+後續 Grok Bot 書籤 probe 已通過；Spark／Meta 與 installed App 往返尚未驗證。
+資料 API、公眾貼文搜尋及同品牌模型 API
 不能證明取得相同的個人脈絡。Grok 網頁版與 Grok Bot 必須分別辨識。
 
 現行 Cats App 可以在單一 sandboxed HTML 文件中切換清單與詳情。可執行 SDK 1.3
@@ -31,10 +40,11 @@ Cats 到這些產品的完整往返尚未驗證。資料 API、公眾貼文搜�
 4. 優先驗證正式委派入口，或由外部助理透過受限 connector 領取問題及回傳結果。
    MCP 是候選傳輸，不代表有喚醒能力、可與私人資料工具同時使用，或可免批准回傳。
    觸發、查詢能力、回傳是三個各自需要通過的契約。
-5. App renderer 經版本化 Platform SDK 操作。Platform 擁有 App/owner 授權、
-   文字複製與問答讀取介面；Runtime 擁有通用 workspace 持久化能力、委派執行、
-   外部通訊 adapter、回收及執行收據。具體儲存與投影契約由後續兩個 owning repo
-   文件固定；此 ADR 不宣稱它們已有 Ask API。
+5. Ask 前端透過一般 HTTP／串流呼叫同 App 的後端；Ask 自己擁有提問 API、
+   問答資料、外部助理 adapter、MCP 領取／回傳與收據。Platform 提供通用的
+   App origin、路由、身分隔離與程序生命週期；SDK 用於 clipboard 等宿主能力。
+   Runtime 僅提供實際需要的共通執行能力，這條 Bot 領取／回傳路線不必經過它。
+   一個 `cats.ask` 套件可含多個前端／後端，使用者只安裝、更新、管理一個 App。
 6. 問答生命週期由背景服務持有。離開 App 可重開查看；純本機 host 停機時，
    不承諾仍能接收回覆。雲端回覆如何保留、重送與重啟後回收必須由選定 transport 證明。
 7. 先保存 request identity 再送出；同一 request 的本機重試與回覆接收須去重。
@@ -49,7 +59,8 @@ Cats 到這些產品的完整往返尚未驗證。資料 API、公眾貼文搜�
 - Ask 可專注驗證使用者已有的第一方能力，UI 與每家產品的接法分離。
 - 同一 App 可逐個接入三個產品，但每個入口都有獨立驗收；第一個成功不代表三家完成。
 - 使用者在原產品登入、啟動或批准的步驟可能仍存在，需呈現且納入驗收。
-- 需要 Platform/Runtime 能力補充；現有 SDK 無法僅靠新增一份 renderer 完成此功能。
+- 需要 Platform 補齊 App 多元件執行與直接通訊；現有 renderer 限制不作產品邊界。
+  不要求使用者另外安裝後端、啟動 terminal server 或管理第二個套件。
 - 雲端助理若需回呼本機，需受限且可達的端點或 relay。部署方式、認證、版本及保留策略
   在 transport spike 後固定；本次不開 tunnel、不保留連接埠、不部署服務。
 - App 內多層 drill down 可用本地 UI 狀態完成，沒有導覽 SDK 的前置依賴。

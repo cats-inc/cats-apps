@@ -1,5 +1,30 @@
 # Personal Assistant Delegation Baseline
 
+## Follow-up checkpoint (2026-09-29)
+
+The sections below preserve the initial baseline. Subsequent work demonstrated
+Grok Bot custom MCP registration, challenge response, and authenticated submission
+of three X bookmark summaries; returned request/receipt IDs matched the local
+probe. Bot initiation was manual, latest-save order was inferred from array order,
+and video understanding was not tested. Local Cursor CLI OAuth and discovery of
+41 X tools succeeded, but current-user/credit calls returned `client-not-enrolled`.
+That route is not an accepted replacement for the Bot.
+
+Evidence is summarized in the [Runtime research record](https://github.com/cats-inc/cats-runtime/blob/main/docs/research/2026-09-29-cats-ask-mcp-probe.md).
+Executable probe files remain in the local `spike/ask-mcp-probe` worktree and are
+not included in the documentation delivery. Private results and credentials
+remain local and untracked. The temporary public endpoint was stopped.
+
+The user clarified that one App must own multiple frontends/backends as one
+install/update/manage unit, with normal App-owned API communication. Ask owns
+its question service, data and MCP; Platform owns generic hosting and isolation.
+The baseline's Runtime-owned Ask adapter/storage proposal is superseded by the
+updated [ADR-003](../decisions/003-delegate-personal-questions-to-first-party-assistants.md)
+and coordinated Platform ADR-125/SPEC-122/PLAN-115. Host component execution and
+the installed Ask App remain unimplemented.
+
+## Original baseline
+
 Date: 2026-09-29. Scope: Ask planning, official documentation and local host inspection.
 No authenticated Cats-to-assistant probe, connector installation or live user-data collection
 was performed. Follow [ADR-003](../decisions/003-delegate-personal-questions-to-first-party-assistants.md),

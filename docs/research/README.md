@@ -12,8 +12,10 @@ Use dated research notes when future packaging or SDK choices depend on external
 facts. Architectural decisions belong in ADRs, not in research notes.
 
 The Ask baseline records product observations, official documentation and current
-App constraints. Authenticated adapter probes and sanitized fixtures belong in
-cats-runtime when execution work begins; this baseline does not verify a transport.
+App constraints. Its follow-up records the standalone Bot probe, CLI enrollment
+failure and revised complete-App ownership. Ask adapter evidence belongs with the
+App; the initial experiment is documented in Runtime research, with executable
+probe files still retained in the local worktree.
 
 ## Index
 
@@ -21,5 +23,5 @@ Research filenames follow `YYYY-MM-DD-topic.md`, matching the sibling Cats repos
 
 | Date | Topic | Scope |
 |------|-------|-------|
-| 2026-09-29 | [Personal assistant delegation baseline](2026-09-29-personal-assistant-delegation-baseline.md) | Ask planning evidence for Gemini Spark, Grok Bot and Meta AI; no authenticated Cats round trip |
+| 2026-09-29 | [Personal assistant delegation baseline](2026-09-29-personal-assistant-delegation-baseline.md) | Historical baseline, Bot probe and CLI failure checkpoint, revised complete-App ownership |
 | 2025-09-12 | [Five CLI media capability test report](2025-09-12-five-cli-media-final-report.md) | User-provided image/video test observations; original report date retained, source evidence and CLI versions not included |

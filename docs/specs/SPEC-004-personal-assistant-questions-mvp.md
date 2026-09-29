@@ -2,8 +2,8 @@
 
 ## Metadata
 
-- Status: Draft technical contract; user-confirmed MVP scope (2026-09-29). No implementation or Cats-to-assistant acceptance yet.
-- Owner: cats-apps for App UI/package; cats-platform for App SDK/host capabilities; cats-runtime for provider execution capabilities.
+- Status: Draft technical contract; user-confirmed MVP and unified App boundary (2026-09-29). Grok Bot probe passed with limits; installed App not implemented.
+- Owner: cats-apps for all Ask UI/services/data/MCP and package; cats-platform for component hosting/lifecycle and host capabilities; cats-runtime for optional shared execution capabilities.
 - Working identity: **Ask**, `cats.ask`, source slug `ask`; no package version assigned.
 - Decision: [ADR-003](../decisions/003-delegate-personal-questions-to-first-party-assistants.md).
 - Plan: [PLAN-005](../plans/PLAN-005-personal-assistant-questions-mvp.md).
@@ -17,13 +17,14 @@
 
 ## Confirmed user context
 
-以下是使用者在本次討論提供的實測經驗，尚未由 Cats 的整合流程重現：
+以下保留使用者的產品需求；Grok Bot 書籤往返已有 probe 證據，其他能力分別驗證：
 
 - Gemini Spark 能依據對使用者的了解，提供興趣、偏好及 YouTube 推薦等高階建議。
   Google Workspace 原始資料 API 不代表同等的個人化能力。
 - Meta 的目標包括已儲存貼文、自己的內容、有權限閱讀的文章與 Reels 摘要。
 - Grok Bot 設定 X Connector 後，能理解這個使用者的發文歷史並處理相關內容。
   使用者確認 Grok 網頁版的 X connector 無法達成相同目標；兩者不得視為等價入口。
+  使用者後續澄清自己未發文，實際驗收改查三篇已儲存書籤；不宣稱測過自有發文歷史。
 - 核心價值包含第一方 AI 的個人化理解、使用者授權內容及其整理判斷能力。
   公開貼文搜尋或單純模型 API 的成功，不足以驗證本 MVP。
 
@@ -51,21 +52,24 @@ Meta Muse 若成為候選，需獨立入口證據，不因品牌相同自動承�
 | FR-07 | 使用者按下複製後，複製所選回答的本文及其中連結；成功確認後才顯示已複製，失敗保留可選取文字並明示未成功。 |
 | FR-08 | App 離頁／關閉後，背景任務不依賴 renderer 存活；重開讀取已保存狀態／回答。host 停機期間能否回收依 transport 證據呈現。 |
 | FR-09 | 每個 attempt 固定目標與問題。再次提問建立明確的新 attempt；相同回覆的重送去重，不覆蓋另一筆問題或另一個帳號的答案。 |
-| FR-10 | App/account/connection 權限由 host/runtime 執行；回覆本文作為資料顯示，不能執行其中腳本、指令或自動發布到其他產品。 |
+| FR-10 | Platform 執行 App/owner hosting 與宿主能力授權；Ask 後端執行 connection/attempt/question 權限與回覆驗證；Runtime 僅授權實際使用的 Runtime 能力。回覆本文只作資料顯示，不執行其中腳本、指令或自動發布。 |
 
 ## Minimal UX
 
-1. 選擇已設定的個人助理，輸入問題並送出；不可用入口顯示原因。
-2. 清單保留問題、助理、時間與目前狀態；使用者可以繼續操作其他項目。
-3. 詳情呈現原問題、回答及需要使用者完成的步驟；完成後可複製。
-4. 再次查詢由使用者明確送出。MVP 不提供多助理自動 fan-out 或自動持續追問。
+1. 第一個可用入口為 Ask Grok Bot，首頁同時列出既有提問。
+2. 點擊後在 App 內 drill down：上方為可收合的首次連線 tutorial，下方為 composer。
+   教學協助使用者在 Bot 設定 Cats connector；不要求另外安裝或管理 Ask 後端。
+3. 按「建立提問」保存 request，顯示「複製 Bot 執行指令」。使用者貼到 Bot 啟動；
+   Bot 領取指定問題、使用 X Connector，再透過 Ask MCP 回傳。Submit 不假稱喚醒 Bot。
+4. 詳情呈現原問題、狀態、完整回答與限制，以及複製回答。重開讀取同一紀錄。
+5. 再次查詢由使用者明確送出。Gemini Spark／Meta 待各自驗證再啟用；不作靜默 fallback。
 
 來源連結至少保留為可選取、可複製的文字；外部連結開啟介面不是本次前置依賴。
 影片／Reels 以助理回傳的文字摘要為驗收內容，不新增影片下載或播放器。
 
 ## Proposed records and state semantics
 
-以下是概念契約，實際 schema、SDK 方法、大小／並行限制及儲存方式在 PLAN-005 A2 固定。
+以下是概念契約，Ask API/schema、必要的宿主 SDK 能力、大小／並行限制及儲存方式在 PLAN-005 A2 固定。
 
 | Record | Required meaning |
 |---|---|
@@ -90,19 +94,25 @@ needs_user 完成後依收據續接；unconfirmed 收到有效遲到回覆可轉
 
 ## Host and Runtime integration requirements
 
-- SDK 至少需覆蓋連線／能力讀取、提問、列出／讀取既有任務與答案，以及文字複製。
-  實際名稱與授權在 Platform 文件固定；不得把這份概念清單宣稱為現有 SDK。
+- Ask 是單一安裝與更新單位，可含多個 frontend/service/worker。全部元件由 App
+  套件宣告與交付，Desktop 統一啟停、修復與移除；後端不是第二個安裝項目。
+- Ask 前端直接用一般 HTTP／串流操作自己的連線、提問、清單與答案 API。
+  Platform 提供隔離 origin、私有服務路由、身分／權限與啟動資訊，不為每個 Ask
+  operation 增加 SDK 方法。平台可做透明路由，但不擁有 Ask API 的 domain schema。
+  SDK 留給 clipboard、宿主導覽及其他 Cats 能力；其方法與授權由 Platform 固定。
 - 複製必須在真實 sandboxed App 驗證。必要時提供由使用者點擊觸發、只寫文字的
   host clipboard bridge；不需要讀取剪貼簿或放寬一般網路／同源權限。
-- 問答資料保存在可更新套件以外的服務端儲存。通用持久化屬 Runtime workspace
-  substrate；優先評估既有 task/run/artifact 原語，Platform 提供 App 權限與讀取介面。
-  不另建通用知識庫，也不把這些私人答案寫入 Cats 產品知識文件。
-- 外部登入與資料 connector 留在對方產品。Ask renderer 不接觸 cookie、token、
-  shell 或任意 URL fetch；對外回覆通道限制到指定 owner/connection/attempt。
-- Runtime adapter 負責產品入口與執行收據。正式 API、MCP 領取／回傳、事件或排程只是
+- 問答資料由 Ask 後端持有，放在套件 bytes 以外的 App data directory。Ask 負責
+  schema／migration，Platform 協調整個 App 的更新、備份與啟用。共通 Runtime
+  儲存可依實際需要採用，不能因為需要持久化就將 Ask domain 搬到 Runtime。
+  私人答案不寫入 Cats 產品知識文件。
+- 外部登入與資料 connector 留在對方產品。Ask 前端能存取自身宣告 API，無需取得
+  外部 provider token 或宿主權限；對外回覆通道限制到指定 owner/connection/attempt。
+- Ask adapter 負責產品入口與執行收據。正式 API、MCP 領取／回傳、事件或排程只是
   候選。三家分別固定啟動、可讀資料、回收及人工批准的能力矩陣。
 - 若需 public endpoint／relay，先固定部署持有人、驗證、端點範圍、保留與失聯恢復。
-  本機 Runtime 原有 MCP 端點不能直接當成已符合雲端產品 connector 要求。
+  對外只公開 Ask 宣告的 MCP 路由，入口與後端生命週期整合到同一 App。
+  Runtime 原有 MCP 不作 Ask 公開入口；沒有分開安裝 backend／tunnel App 的產品流程。
 - 系統需區分本機 request 去重與外部執行去重。確認不了外部收據時，保留 unconfirmed；
   使用者明確重問才建立可能產生新用量的 attempt。
 - 私人回答不進追蹤中的測試 fixture、研究附件或日誌；驗收報告保留去識別的結論。
@@ -116,7 +126,9 @@ needs_user 完成後依收據續接；unconfirmed 收到有效遲到回覆可轉
 - 完整斷網排隊／同步、持續運作的雲端代管承諾、進階分類、答案比較與使用者定期排程管理。
   若 transport 需要對方排程領取問題，可作整合設定，不擴張為 App 的排程產品功能。
 - 對來源社群發布、按讚、修改收藏或刪除內容；本 MVP 查詢與回傳答案即可。
-- 新影片播放器／下載器、通用 App server/worker 執行器、Market 或 Desktop 發布。
+- 新影片播放器／下載器、Market 或 Desktop 發布。Platform 通用 App 多元件執行
+  是本 App 的必要前置，依 Platform SPEC-122 交付；不再以延後 server/worker 為由
+  要求使用者分開啟動後端。
 
 ## Acceptance
 

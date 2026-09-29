@@ -10,22 +10,25 @@
 
 Apps consume host contracts. Provider parsing and secrets remain runtime/host-owned.
 
-## Proposed Ask delegation boundary (2026-09-29)
+## Complete App and Ask boundary (2026-09-29)
 
 Ask / `cats.ask` is a planning identity. [ADR-003](decisions/003-delegate-personal-questions-to-first-party-assistants.md),
 [SPEC-004](specs/SPEC-004-personal-assistant-questions-mvp.md) and
 [PLAN-005](plans/PLAN-005-personal-assistant-questions-mvp.md) propose:
 
-Ask question UI → host-authorized submission and retained request → Runtime-owned
-delegation to the user's actual first-party assistant → correlated, retained answer
-→ Ask detail and Copy.
+Ask frontend → ordinary HTTP to its App-owned question service → first-party
+assistant retrieves a question and returns its answer through Ask MCP → retained
+answer → Ask detail and Copy. The Bot route does not require Runtime execution.
 
-Apps owns the list/detail/copy renderer and eventual package. Platform owns the
-public SDK, permissions, clipboard boundary and App-scoped read views; Runtime
-owns generic workspace persistence, product-specific execution, connectors and
-return handling. Reuse existing storage and job primitives where they satisfy the
-contract. Exact APIs, storage and read-view contracts require follow-up decisions
-in their owning repositories.
+Apps owns all of an App's frontends, services, workers, domain APIs and data
+schema. One package/installation/version covers every component. Platform owns
+component hosting, isolated application origins, routing, identity, supervision
+and unified install/update/repair/remove. Frontends call their services through
+ordinary web requests; the SDK supplies Cats host capabilities such as clipboard.
+Runtime owns provider execution and shared execution primitives only when needed.
+App persistence is not automatically Runtime-owned. Platform ADR-125/SPEC-122/
+PLAN-115 formalize this accepted boundary in the coordinated documentation; actual
+multi-component hosting and manifest syntax remain implementation work.
 
 Gemini Spark, Grok Bot with its X Connector, and Meta AI are distinct product
 targets. Each needs proof of activation, personal-context access and answer return;
@@ -91,8 +94,10 @@ below describe the initial package foundation, not delivery of the new phase.
 
 An app lives in apps/<slug> and produces a Cats App Package with a stable
 ID, independent version, manifest, built renderer, and required static assets.
-Server/worker entrypoints are optional future capabilities; Usage starts
-as a read-only renderer.
+An App can own multiple frontends, backend services and workers within that one
+package. The user installs/manages the whole App; there is no separate frontend
+or backend installation. The currently delivered Usage/Studio renderer slice
+does not yet implement this multi-component execution contract.
 
 The private root workspace coordinates tooling; it is not itself an installable
 app or a replacement Platform product. Shared packages are introduced only when

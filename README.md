@@ -19,8 +19,10 @@ blocked on CLI authentication; it is not advertised as a working collector.
 
 - Ask (`cats.ask`, working identity) is in planning. Its MVP asks the user's
   Gemini Spark, Grok Bot or Meta AI, retains asynchronous responses and provides
-  a Copy button. Product-specific delegation remains unverified; no Ask package
-  exists yet. See [ADR-003](docs/decisions/003-delegate-personal-questions-to-first-party-assistants.md),
+  a Copy button. A Grok Bot bookmark probe passed with documented limits; the
+  installed App remains unimplemented. Ask will own frontends/services/MCP in
+  one package with direct internal APIs and unified management. See
+  [ADR-003](docs/decisions/003-delegate-personal-questions-to-first-party-assistants.md),
   [SPEC-004](docs/specs/SPEC-004-personal-assistant-questions-mvp.md) and
   [PLAN-005](docs/plans/PLAN-005-personal-assistant-questions-mvp.md).
 

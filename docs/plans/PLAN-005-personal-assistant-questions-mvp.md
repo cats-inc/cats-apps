@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Status: Planning documents prepared; feasibility spikes and implementation not started.
+- Status: Grok Bot assisted probe passed with limits; unified App architecture corrected; installed App implementation not started.
 - Working identity: Ask / `cats.ask`; no package version or release selected.
 - Owner: cats-apps; Platform and Runtime own their corresponding integration work.
 - Decision: [ADR-003](../decisions/003-delegate-personal-questions-to-first-party-assistants.md).
@@ -11,11 +11,12 @@
 
 ## Delivery order
 
-先完成原產品能力到 Cats 的最小往返，再固定 SDK／背景服務契約，最後製作與驗收 App。
-第一個實驗使用 Gemini Spark 的個人化建議，接著 Grok Bot + X Connector、Meta AI。
-若某入口等待帳號設定，可繼續其他入口；三家各自保留驗證結果，不降低原本資料目標。
+Grok Bot + X Connector 的人工啟動／MCP 回傳已通過獨立 probe，先交付此入口。
+下一步先補齊 Platform 的 App 多前端／多後端與統一生命週期契約，再製作一個完整
+`cats.ask` 套件。Ask 直接擁有自己的 API／儲存／MCP；SDK 僅用於宿主能力。
+Gemini Spark 與 Meta AI 保留各自驗證，不因同品牌或一般 API 成功而啟用。
 
-本輪只交付文件，不改使用者登入、connector 設定、真實狀態、套件版本或 Desktop。
+本次架構修正只交付文件，不改使用者登入、connector 設定、真實狀態、版本或 Desktop。
 後續執行依使用者當時的授權與帳號可用性前進，不因本計畫自行開始長期排程或部署 relay。
 
 ## A0 — Scope and baseline
@@ -33,8 +34,8 @@
 
 | Order | Probe | Required observations |
 |---|---|---|
-| 1 | Spark：使用者已成功問過的興趣／YouTube 個人化建議 | 確切帳號與產品模式、問題交付、Personal Intelligence 與 connector 同任務可用、回傳及批准步驟。 |
-| 2 | Grok Bot：依 X Connector 理解自己的發文歷史／授權內容，另測影片摘要 | Bot 與 connector 身分、正確內容、任務觸發與回收；不改接 Grok 網頁版。 |
+| 1 | Grok Bot：自己的三篇已儲存書籤，另測影片摘要 | MCP 往返收據已核對；最新儲存順序僅推論，影片理解、自動觸發與產品恢復未驗證。 |
+| 2 | Spark：使用者已成功問過的興趣／YouTube 個人化建議 | 確切帳號與產品模式、問題交付、Personal Intelligence 與 connector 同任務可用、回傳及批准步驟。 |
 | 3 | Meta AI：已儲存／自有／授權文章，另測 Reels 摘要 | 確切 Meta 入口、內容範圍及回傳方式；Muse 候選另記，不繼承其他入口證據。 |
 
 - [ ] 為每家建立產品／帳號條件、觸發、個人資料能力、結果回傳、人工步驟、恢復的矩陣。
@@ -54,14 +55,13 @@ A1 完成條件：三家都有可追溯的可行或受阻結論；只有通過 S
 ## A2 — Owning-repository contracts
 
 依 A1 證據到各 owning repo 建立自己的 worktree、讀取指引並補對應 ADR/Spec/Plan。
-本文件記錄依賴，不先配置不存在的跨 repo 文件編號或 API。
+Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；執行能力尚未實作。
 
-- [ ] Platform：固定 App permission／SDK 操作、owner/connection/request 關聯、答覆讀取介面
-      及 clipboard 實作。
-- [ ] Runtime：固定問答持久化與各產品 adapter 的交付、狀態觀測、回收收據、去重及未知完成處理。
-      先評估既有 Core task/run/artifact 的適配程度。
-      共通 execution 與產品差異分明，不要求所有助理都有推送、取消或無人值守能力。
-- [ ] 固定 Platform request → Runtime execution → 外部問題 → answer 的對應與回覆認證；
+- [ ] Platform：固定多前端／多服務／worker manifest、同 App 直接 HTTP／串流、
+      隔離 origin／授權、整體安裝更新／啟停／移除與 clipboard 能力。
+- [ ] Apps：固定 Ask 自有 API／資料 schema、adapter 交付、MCP 領取／回傳、
+      狀態觀測、收據、去重與未知完成處理。Runtime 只在需要共通執行能力時參與。
+- [ ] 固定 Ask request → 外部問題 → answer 的對應與回覆認證；
       相同回覆重送不重複保存，衝突／過期／跨帳號回覆有明確拒絕或保留規則。
 - [ ] 固定 host 停機時的保留／重送／輪詢責任。無持續接收端時，UX 不承諾停機後即時接收。
 - [ ] 固定數值限制：問題／回答大小、等待期限、並行／佇列、保留量、刪除規則與 bounded logging。
@@ -71,8 +71,10 @@ A1 完成條件：三家都有可追溯的可行或受阻結論；只有通過 S
 
 完成條件：具體契約、擁有者、限制及 fixture strategy 可供實作；至少一個 A1 入口通過。
 
-## A3 — Host/Runtime vertical slice
+## A3 — Complete App hosting and Ask services
 
+- [ ] Platform 先通過兩個前端、兩個服務與 worker 的單 App fixture；整體安裝與
+      更新／停用／移除，前端直接呼叫 App API，不新增 Ask domain SDK 方法。
 - [ ] 先實作 request 持久化、執行交付、status/read 與完整回答保存，離開 renderer 後仍可處理。
 - [ ] 以隔離 fixture 測成功／部分／無權限／無內容、needs_user 與 unconfirmed。
 - [ ] 驗證重複送出、回覆重送、衝突／遲到回覆、停機恢復及重問建立新 attempt。
@@ -80,11 +82,13 @@ A1 完成條件：三家都有可追溯的可行或受阻結論；只有通過 S
 - [ ] 在真正的 App sandbox 驗證文字複製；若 browser clipboard 不可用，實作受限 host bridge。
 - [ ] 將其他通過 A1 的入口依同一問答契約接入，各自保留能力差異與驗收狀態。
 
-完成條件：服務與 SDK 的 focused tests/build 通過；已有可用 fixture 與一條真實 transport 證據。
+完成條件：App 元件與直接通訊契約通過 focused checks，已有 fixture 與真實 transport 證據。
+安裝後不需要使用者再開 terminal server 或分開安裝後端。
 
 ## A4 — Ask App and package
 
-- [ ] 新增獨立 `apps/ask`，消費實際可取得的版本化 SDK；不 import sibling 私有 source。
+- [ ] 新增獨立 `apps/ask`，同套件包含全部 Ask 前後端／MCP；消費版本化 host contract。
+      自有 API 使用一般 HTTP／串流，宿主能力使用 SDK；不 import sibling 私有 source。
 - [ ] 實作助理選擇、問題輸入、清單／詳情、狀態及小型複製按鈕；同文件 UI 切換。
 - [ ] 保留問題、完整回答、理由與可選引用；文字安全呈現，不從回答自動執行動作。
 - [ ] 開啟／重開／refresh 只讀既有紀錄；明確按下送出才提問。
@@ -114,6 +118,19 @@ A1 完成條件：三家都有可追溯的可行或受阻結論；只有通過 S
 | iframe 複製失敗 | 驗證 actual package，必要時補 host clipboard；明確拒絕時保留可選取本文。 |
 
 ## Resume checkpoint
+
+2026-09-29 後續：Grok Bot synthetic 與 authenticated bookmarks probe 已回傳並核對收據；
+save order 僅由陣列推論、影片理解未驗證、Bot 仍由使用者啟動。Cursor CLI OAuth／
+41 個工具探索通過，但資料呼叫為 `client-not-enrolled`，不作可用 fallback。
+詳細證據見 [Runtime 研究記錄](https://github.com/cats-inc/cats-runtime/blob/main/docs/research/2026-09-29-cats-ask-mcp-probe.md)。
+實驗程式仍保留在本機 spike worktree，未隨文件提交。
+本次修正 App ownership：一個套件可含多前後端，統一管理；下一步為 A2／A3。
+文件檢查：`npm run check:docs` 通過（42 份 Markdown、159 個 local targets）；
+跨 worktree 映射檢查另涵蓋 36 份修改文件的 1,338 個目標，全部存在。獨立審查指出
+授權與 migration ownership 舊條款，修正後複查無 blocker。未執行 App build/test、
+改寫真實 registry 或發布產品；使用者後續授權文件直接 commit/push 到 main。
+這些檢查不是多元件執行驗收。
+以下保留首輪文件的歷史 checkpoint，不能當成目前尚未做 probe 的狀態。
 
 2026-09-29：在 `.claude/worktrees/ask-mvp-scope`、分支 `docs/ask-mvp-scope` 完成首輪文件草稿。
 下一步為 A1 的 Spark 個人化查詢往返驗證；Grok Bot 與 Meta AI 保持同等 MVP 目標。

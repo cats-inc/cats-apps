@@ -2,6 +2,12 @@
 
 ## Current State
 
+Accepted extension (2026-09-29): Apps own their business APIs and may package
+multiple frontends/services/workers as one installation. Frontends use normal
+HTTP/streaming to their own services; Platform provides origin/routing/identity
+and lifecycle. The SDK remains the interface to Cats host capabilities. This is
+the upcoming Platform SPEC-122 contract, not implemented by the v1 slice below.
+
 cats-apps serves no HTTP API and publishes no App SDK implementation.
 The SDK and authorization bridge belong to cats-platform.
 
@@ -48,4 +54,4 @@ The initial dashboard is read-only. Collector scheduling/configuration and any
 operation that contacts provider accounts remain host/runtime-owned. Cached UI
 refresh is separate from requesting a fresh upstream probe.
 
-*Last updated: 2026-09-10*
+*Last updated: 2026-09-29*

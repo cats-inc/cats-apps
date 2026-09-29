@@ -6,11 +6,14 @@ Ask planning (2026-09-29): [ADR-003](docs/decisions/003-delegate-personal-questi
 [SPEC-004](docs/specs/SPEC-004-personal-assistant-questions-mvp.md) and
 [PLAN-005](docs/plans/PLAN-005-personal-assistant-questions-mvp.md) record the
 working identity `cats.ask` and the question / asynchronous answer / copy MVP.
-The user's first-party product observations and dated official sources are
-recorded separately from unverified Cats transports. No authenticated probes,
-App implementation, package version or release has been created. Next is A1:
-prove a Gemini Spark personal-context round trip, then independently investigate
-Grok Bot and Meta AI. Navigation SDK and Chat/Code/Work integration stay deferred.
+The Grok Bot assisted bookmark probe has matched return receipts; latest-save
+order is inferred, video understanding and autonomous initiation unverified.
+Cursor CLI OAuth/discovery passed but data calls returned `client-not-enrolled`.
+Ask now owns all its frontends/services/data/MCP in one install and management
+unit; frontend-to-own-backend traffic uses ordinary web requests. Next is the
+Platform multi-component contract and host implementation, then the complete Ask
+package. Spark/Meta remain unverified. No installed Ask implementation or release
+exists; navigation SDK and automatic Chat/Code/Work ingestion stay deferred.
 
 Studio single-image slice (2026-09-28): standalone `cats.studio` renderer and
 deterministic package implemented. The actual archive passed isolated Platform

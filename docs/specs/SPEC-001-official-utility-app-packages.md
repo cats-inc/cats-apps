@@ -24,7 +24,8 @@ of later catalog installation and independent updates.
 
 ## Non-Goals
 
-- A standalone server for every utility.
+- Requiring a server for utilities that need none. Apps that need services own
+  them inside the same package and installation.
 - Application source compilation on the user's machine at install/launch time.
 - A public marketplace or a separate release pipeline per app.
 - Moving provider integrations or the host SDK into this repository.
@@ -39,8 +40,10 @@ of later catalog installation and independent updates.
    information, and any declared optional runtime dependencies.
 4. The production package shall run without the app's source tree, build tools,
    sibling repository paths, or a dev server. App source may be published separately.
-5. Apps shall use the versioned public host SDK and scoped bridge. Workspace
-   imports of cats-platform/cats-runtime source are forbidden.
+5. Apps shall use the versioned public host SDK for Cats host capabilities.
+   App-owned frontend/service traffic uses ordinary web protocols within the
+   host-provided isolated application boundary. Workspace imports of
+   cats-platform/cats-runtime source are forbidden.
 6. Build output, app version, source revision, and content checksum shall be
    traceable. Rebuilding changed contents under an already released app version
    is not an update strategy.
@@ -60,6 +63,10 @@ of later catalog installation and independent updates.
     download references, sizes, and checksums. Catalog state is not installed state.
 14. Documentation and release notes shall distinguish supported capabilities from
     reserved manifest fields and unimplemented SDK interfaces.
+15. One App may contain multiple frontends, services and workers. All belong to
+    the same install/version/update/repair/remove transaction; no separately
+    managed backend package is required. This 2026-09-29 accepted requirement
+    needs Platform SPEC-122 implementation beyond the delivered renderer slice.
 
 ## Acceptance
 

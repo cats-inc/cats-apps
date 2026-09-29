@@ -62,7 +62,9 @@ copy for manual use in Chat, Code or Work.
 - [x] Record the MVP scope, proposed architecture, evidence baseline and delivery plan.
 - [ ] Verify Gemini Spark's personal-context question and machine-returned answer.
 - [ ] Independently verify Grok Bot's X Connector and Meta AI's authorized-content path.
-- [ ] Define and implement host/runtime contracts after a product round trip succeeds.
+- [x] Verify an assisted Grok Bot bookmark round trip, with save-order/video limits.
+- [x] Confirm multiple frontends/backends in one App and direct App-owned API traffic.
+- [ ] Implement Platform component hosting and unified lifecycle, then Ask-owned services.
 - [ ] Build the Ask package with truthful states, retained answers and Copy.
 - [ ] Verify actual-package reopening, Desktop clipboard, account scope and recovery.
 
