@@ -2,9 +2,9 @@
 
 ## Metadata
 
-- Status: Draft technical contract; user-confirmed MVP and unified App boundary (2026-09-29). Grok Bot probe passed with limits; installed App not implemented.
+- Status: Shared-ingress correction documented (2026-09-29), implementation pending. An unpublished Grok candidate passed isolated Windows package fixtures under the earlier per-App ingress. Shared Platform/Mobile/App access, live candidate Bot and other providers remain pending.
 - Owner: cats-apps for all Ask UI/services/data/MCP and package; cats-platform for component hosting/lifecycle and host capabilities; cats-runtime for optional shared execution capabilities.
-- Working identity: **Ask**, `cats.ask`, source slug `ask`; no package version assigned.
+- Working identity: **Ask**, `cats.ask`, source slug `ask`; initial unpublished development package 0.1.0. No release authorized.
 - Decision: [ADR-003](../decisions/003-delegate-personal-questions-to-first-party-assistants.md).
 - Plan: [PLAN-005](../plans/PLAN-005-personal-assistant-questions-mvp.md).
 - Evidence: [2026-09-29 baseline](../research/2026-09-29-personal-assistant-delegation-baseline.md).
@@ -97,7 +97,7 @@ needs_user 完成後依收據續接；unconfirmed 收到有效遲到回覆可轉
 - Ask 是單一安裝與更新單位，可含多個 frontend/service/worker。全部元件由 App
   套件宣告與交付，Desktop 統一啟停、修復與移除；後端不是第二個安裝項目。
 - Ask 前端直接用一般 HTTP／串流操作自己的連線、提問、清單與答案 API。
-  Platform 提供隔離 origin、私有服務路由、身分／權限與啟動資訊，不為每個 Ask
+  Platform 提供 sandbox 隔離、共用入口路由、身分／權限與啟動資訊，不為每個 Ask
   operation 增加 SDK 方法。平台可做透明路由，但不擁有 Ask API 的 domain schema。
   SDK 留給 clipboard、宿主導覽及其他 Cats 能力；其方法與授權由 Platform 固定。
 - 複製必須在真實 sandboxed App 驗證。必要時提供由使用者點擊觸發、只寫文字的
@@ -110,9 +110,21 @@ needs_user 完成後依收據續接；unconfirmed 收到有效遲到回覆可轉
   外部 provider token 或宿主權限；對外回覆通道限制到指定 owner/connection/attempt。
 - Ask adapter 負責產品入口與執行收據。正式 API、MCP 領取／回傳、事件或排程只是
   候選。三家分別固定啟動、可讀資料、回收及人工批准的能力矩陣。
-- 若需 public endpoint／relay，先固定部署持有人、驗證、端點範圍、保留與失聯恢復。
-  對外只公開 Ask 宣告的 MCP 路由，入口與後端生命週期整合到同一 App。
-  Runtime 原有 MCP 不作 Ask 公開入口；沒有分開安裝 backend／tunnel App 的產品流程。
+- Platform、Cats Mobile 與所有 Apps 共用一個 public origin／HTTPS port／tunnel。
+  Platform 持有入口設定、路由與 tunnel 生命週期；Ask 掛載 `/apps/cats.ask/`，
+  私有 API 為 `/apps/cats.ask/api/...`，MCP 為 `/apps/cats.ask/mcp`。內部服務可
+  使用動態 loopback port／IPC，不能將 localhost URL 交給遠端瀏覽器或 Mobile。
+  停用／更新／移除 Ask 只撤銷自己的路由及 grant，不停止共用 tunnel 或其他 App。
+  Runtime 原有 MCP 不作 Ask 公開入口；沒有分開安裝 backend／tunnel App 的流程。
+- 共用入口的 private API 仍需 owner/App/generation grant，使用一般 fetch 與
+  `credentials: omit`；MCP 使用 Ask connection／attempt 認證，不能交換使用。
+  Host shell 驗證 viewer，App 文件採 opaque sandbox；path prefix 不構成隔離。
+  Platform 負責 CORS／CSRF／frame bridge／URL 邊界，依 Platform SPEC-122 驗收。
+  遠端開 App 不賦予安裝或管理原生元件的權限；Desktop 管理邊界保持獨立。
+- Tutorial 只顯示 host 提供的共用入口狀態及 Ask endpoint，必要時開啟 Platform
+  remote-access 設定。App 不收取、保存或管理 ngrok／Tailscale 帳號憑證。
+  公開 URL 改變時顯示重新設定 Bot connector 的步驟；保留問題、答案與收據，
+  不自動重問。Platform 負責原型 ingress 設定的驗證、備份、原子遷移及失敗恢復。
 - 系統需區分本機 request 去重與外部執行去重。確認不了外部收據時，保留 unconfirmed；
   使用者明確重問才建立可能產生新用量的 attempt。
 - 私人回答不進追蹤中的測試 fixture、研究附件或日誌；驗收報告保留去識別的結論。
@@ -143,19 +155,62 @@ needs_user 完成後依收據續接；unconfirmed 收到有效遲到回覆可轉
 | AC-07 | 重送 request、重複／遲到／衝突回覆、斷線與重啟不混答、不默默重新提問；無收據時保持 unconfirmed。 |
 | AC-08 | 錯 owner/connection/attempt 與撤銷權限的呼叫被拒絕；惡意回答只作資料顯示。 |
 | AC-09 | 確認實際最小 host/SDK/Runtime 相容契約，安裝不呼叫 provider；測試只用隔離 registry/state。 |
+| AC-10 | 同一公開 origin／port／tunnel 同時服務 Platform、遠端 Mobile、Ask 及另一個 App/MCP。Ask URL 不含 server localhost；停用 Ask 不影響其他服務；跨 App token 與未授權私有 API 被拒絕，於新 sandbox 重新驗證 Copy。 |
 
 AC-01–03 需分別記錄真實帳號的最小往返證據；fixture 成功只能證明程式處理，不能代替。
 登入、產品端批准或人工啟動可標示為 assisted；人工搬運回答不能算回收通道成功。
 任何入口仍未通過時，應回報其狀態與下一個實驗；不得將部分完成描述為完整三家支援。
 
+## Initial local Grok prototype (2026-09-29; shared ingress pending)
+
+The implementation branch introduces the initial private Ask package identity
+`0.1.0`; this is not a release or a bump of an existing App. Its archive requires
+the unpublished Platform component contract (envelope 2), in addition to the
+manifest version ranges. Current published renderer-only hosts cannot install it.
+Development acceptance consumes a built/versioned Platform candidate package,
+never imports sibling source. The final released host minimum remains a release gate.
+
+Ask owns one HTML frontend and one bundled service containing private `/api` and
+external `/mcp`. Its state is `ask.json` schema 1 in the host-provided generation
+directory. Writes are serialized and atomically replace the file after retaining
+a validated previous-state backup; malformed data is not reset. The App migration
+validates recognized schema 1; later schema changes must add an explicit migration.
+
+One local connection has a random bearer credential. Each question has a distinct
+request ID, attempt ID and secret; MCP never lists questions. Connection rotation
+revokes old attempts. Fetch and submit require all identities to match. Equal
+answer retries return the original receipt; conflicting answers preserve it.
+Reopening changes unresolved `awaiting_assistant` to `unconfirmed` and never sends
+anything. Preparing the same question returns the same attempt; explicit re-asking
+creates a separate record.
+
+Numeric bounds: 8,000 question characters; 64,000 answer characters; 20 HTTPS
+sources with 2,000-character URLs; 4,000 characters each for evidence/limitations;
+500 questions; 32 MiB state; 512 KiB request body; 8 simultaneous MCP requests;
+120 MCP requests/minute/connection; unanswered attempts expire after 7 days.
+Completed identical receipts remain retrievable after expiry. No source content,
+question text, connection secret or answer is written to product logs.
+
+The UI offers Ask Grok Bot, a collapsible first-connection tutorial, composer,
+question detail and recent questions. Creating a question saves it first.
+Preparing and copying its instruction are explicit actions; the user pastes into
+Bot to initiate. The prototype tutorial configures per-App ngrok ingress; this
+must be replaced by shared Platform ingress status/setup and an `AddMcpServer`
+instruction using `/apps/cats.ask/mcp`. That UI correction is not implemented.
+Bot's X Connector remains untouched.
+Answers, sources, evidence and limitations render as text and can be copied.
+Gemini Spark and Meta AI remain unavailable pending their separate real proofs.
+
 ## Compatibility and open decisions
 
 新 SDK 能力優先採相容新增，保留現有 App 契約。若需破壞既有公開或持久資料契約，
 在 owning repo 記錄所需版本邊界；資料升級需驗證、備份、原子替換及失敗恢復。
-本輪不設定 App 版本、不 bump、不發布；宿主最低版本在實作證據出現後才固定。
+初始實作版本見上節；這次共用入口文件修訂不設定或更動套件版本、不發布。
+宿主發布最低版本在實作與安裝證據出現後才固定。
 
-尚待決定：每家 transport、部署方式、帳號可用性、批准流程、SDK／資料 schema、
-資料保留／刪除與上限，以及無收據時的恢復策略。以上由 PLAN-005 分階段解除。
+待完成：Platform 共用入口／sandbox 與精確 bootstrap 契約、候選套件真實 Bot 往返、
+Spark／Meta 的 transport／帳號／批准驗證及實際 release 相容下限。Ask 初版資料
+schema、數值上限與 unconfirmed 策略已在上節固定；後續依 PLAN-005 驗收。
 
 ## References
 

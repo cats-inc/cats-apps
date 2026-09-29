@@ -2,8 +2,8 @@
 
 ## Metadata
 
-- Status: Grok Bot assisted probe passed with limits; unified App architecture corrected; installed App implementation not started.
-- Working identity: Ask / `cats.ask`; no package version or release selected.
+- Status: Shared-ingress documents updated; implementation pending. Initial local Grok package/MCP/clipboard fixtures passed on Windows; shared-origin and live candidate Bot acceptance remain pending.
+- Working identity: Ask / `cats.ask`; initial unpublished development package 0.1.0; no release selected.
 - Owner: cats-apps; Platform and Runtime own their corresponding integration work.
 - Decision: [ADR-003](../decisions/003-delegate-personal-questions-to-first-party-assistants.md).
 - Requirements: [SPEC-004](../specs/SPEC-004-personal-assistant-questions-mvp.md).
@@ -12,11 +12,11 @@
 ## Delivery order
 
 Grok Bot + X Connector 的人工啟動／MCP 回傳已通過獨立 probe，先交付此入口。
-下一步先補齊 Platform 的 App 多前端／多後端與統一生命週期契約，再製作一個完整
-`cats.ask` 套件。Ask 直接擁有自己的 API／儲存／MCP；SDK 僅用於宿主能力。
+初版完整套件與元件宿主已有本機 fixture 證據；下一步先修正為 Platform／Mobile／
+所有 Apps 共用入口，再重驗 `cats.ask` 套件。Ask 直接擁有自己的 API／儲存／MCP；SDK 僅用於宿主能力。
 Gemini Spark 與 Meta AI 保留各自驗證，不因同品牌或一般 API 成功而啟用。
 
-本次架構修正只交付文件，不改使用者登入、connector 設定、真實狀態、版本或 Desktop。
+使用者先前已授權開 worktree 實作；這次共用入口修正要求文件先行，尚未改程式。
 後續執行依使用者當時的授權與帳號可用性前進，不因本計畫自行開始長期排程或部署 relay。
 
 ## A0 — Scope and baseline
@@ -55,17 +55,22 @@ A1 完成條件：三家都有可追溯的可行或受阻結論；只有通過 S
 ## A2 — Owning-repository contracts
 
 依 A1 證據到各 owning repo 建立自己的 worktree、讀取指引並補對應 ADR/Spec/Plan。
-Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；執行能力尚未實作。
+Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；協調 worktree 已實作執行能力。
 
-- [ ] Platform：固定多前端／多服務／worker manifest、同 App 直接 HTTP／串流、
-      隔離 origin／授權、整體安裝更新／啟停／移除與 clipboard 能力。
-- [ ] Apps：固定 Ask 自有 API／資料 schema、adapter 交付、MCP 領取／回傳、
+- [x] Platform：固定多前端／多服務／worker manifest、同 App 直接 HTTP／串流、
+      原型 origin／授權、整體安裝更新／啟停／移除與 clipboard 能力；
+      共用入口與新 sandbox 尚待 A4a，不沿用原型的完成判定。
+- [x] Apps：固定 Ask 自有 API／資料 schema、adapter 交付、MCP 領取／回傳、
       狀態觀測、收據、去重與未知完成處理。Runtime 只在需要共通執行能力時參與。
-- [ ] 固定 Ask request → 外部問題 → answer 的對應與回覆認證；
-      相同回覆重送不重複保存，衝突／過期／跨帳號回覆有明確拒絕或保留規則。
-- [ ] 固定 host 停機時的保留／重送／輪詢責任。無持續接收端時，UX 不承諾停機後即時接收。
-- [ ] 固定數值限制：問題／回答大小、等待期限、並行／佇列、保留量、刪除規則與 bounded logging。
+- [x] 固定 Ask request → 外部問題 → answer 的對應與回覆認證；
+      相同回覆重送不重複保存，衝突／過期／跨 connection 或 attempt 回覆有明確規則。
+      這不證明 X／其他 provider 帳號與 Cats connection 已驗證綁定。
+- [ ] 另驗證實際助理／provider 帳號對應與帳號切換；connection/attempt token
+      的成功核對不能代替外部帳號身分證據。
+- [x] 固定 host 停機時的保留／重送／輪詢責任。無持續接收端時，UX 不承諾停機後即時接收。
+- [x] 固定數值限制：問題／回答大小、等待期限、並行／佇列、保留量與 bounded logging。
       這些必須在 executable schema／storage 實作前有數值，不保留為無限預設。
+- [ ] 明定使用者刪除／保留答案的規則；數量與逾時上限不等於資料刪除政策。
 - [ ] 判斷相容性與資料升級。若影響既有資料，先定義驗證、備份、原子替換與失敗恢復測試；
       不以重設資料或只 bump 版本替代。版本需求先記錄，發布另依授權執行。
 
@@ -73,13 +78,13 @@ Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；執行能力尚�
 
 ## A3 — Complete App hosting and Ask services
 
-- [ ] Platform 先通過兩個前端、兩個服務與 worker 的單 App fixture；整體安裝與
+- [x] Platform 先通過兩個前端、兩個服務與 worker 的單 App fixture；整體安裝與
       更新／停用／移除，前端直接呼叫 App API，不新增 Ask domain SDK 方法。
-- [ ] 先實作 request 持久化、執行交付、status/read 與完整回答保存，離開 renderer 後仍可處理。
+- [x] 先實作 request 持久化、執行交付、status/read 與完整回答保存，離開 renderer 後仍可處理。
 - [ ] 以隔離 fixture 測成功／部分／無權限／無內容、needs_user 與 unconfirmed。
 - [ ] 驗證重複送出、回覆重送、衝突／遲到回覆、停機恢復及重問建立新 attempt。
 - [ ] 驗證 disabled/version/account/connection 變更後的讀取與回覆收取政策，不洩漏其他帳號結果。
-- [ ] 在真正的 App sandbox 驗證文字複製；若 browser clipboard 不可用，實作受限 host bridge。
+- [x] 原型 App sandbox 的 Windows Electron clipboard 已通過；A4a 新 sandbox 須重驗。
 - [ ] 將其他通過 A1 的入口依同一問答契約接入，各自保留能力差異與驗收狀態。
 
 完成條件：App 元件與直接通訊契約通過 focused checks，已有 fixture 與真實 transport 證據。
@@ -87,19 +92,34 @@ Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；執行能力尚�
 
 ## A4 — Ask App and package
 
-- [ ] 新增獨立 `apps/ask`，同套件包含全部 Ask 前後端／MCP；消費版本化 host contract。
+- [x] 新增獨立 `apps/ask`，同套件包含全部 Ask 前後端／MCP；消費版本化 host contract。
       自有 API 使用一般 HTTP／串流，宿主能力使用 SDK；不 import sibling 私有 source。
-- [ ] 實作助理選擇、問題輸入、清單／詳情、狀態及小型複製按鈕；同文件 UI 切換。
-- [ ] 保留問題、完整回答、理由與可選引用；文字安全呈現，不從回答自動執行動作。
-- [ ] 開啟／重開／refresh 只讀既有紀錄；明確按下送出才提問。
-- [ ] 尚未驗證或失去權限的入口顯示可理解狀態；不靜默選另一個產品。
+- [x] 實作助理選擇、問題輸入、清單／詳情、狀態及小型複製按鈕；同文件 UI 切換。
+- [x] 保留問題、完整回答、理由與可選引用；文字安全呈現，不從回答自動執行動作。
+- [x] 開啟／重開／refresh 只讀既有紀錄；明確按下送出才提問。
+- [x] 尚未驗證或失去權限的入口顯示可理解狀態；不靜默選另一個產品。
 - [ ] 確定需要的最小 host/SDK 契約後，依 release authorization 設定新套件版本與相容範圍。
       開發 fixture／原型先使用隔離輸出，不改現有 App 或 Desktop 版本。
-- [ ] 用既有 builder 產生候選並驗證 actual archive；不以 source 頁面取代套件驗收。
+- [x] 用既有 builder 產生候選並驗證 actual archive；不以 source 頁面取代套件驗收。
+
+## A4a — Shared Platform ingress correction (next)
+
+- [x] 更新 ADR／SPEC／PLAN：整個 Platform、Mobile 與所有 Apps 共用一個入口，
+      `/apps/<appId>/` 路由由宿主持有；每個 App 仍是單一套件與生命週期。
+- [ ] 配合 Platform PLAN-115 P4 固定 reachable base URL、view grant、shared
+      ingress status/setup 的精確 bootstrap 契約；自有 API 保持一般 fetch。
+- [ ] Tutorial 移除 Ask 專屬 ngrok token/setup；顯示 Platform 共用入口狀態，
+      未設定時帶到 host 設定，完成後產生 `/apps/cats.ask/mcp` connector 指令。
+- [ ] 在 opaque sandbox 驗證 fetch／Copy／drill down／重新開啟，處理 grant 撤銷，
+      不依賴 server localhost 或 Platform cookie。導航 SDK／答案深連結仍延後。
+- [ ] 配合 host 設定遷移與 URL 變更，保留既有 Ask data／receipt；需要使用者更新
+      Bot connector 時清楚顯示，不自動重新提問或重設資料。
+- [ ] 通過 AC-10：單一外部入口上的 Platform/Mobile + Ask + 第二個 App/MCP，
+      跨 App／auth 拒絕與 Ask 停用時其他服務不中斷；再做真實 Grok Bot 往返。
 
 ## A5 — Acceptance and handoff
 
-- [ ] 對照 SPEC AC-01–09，分別記錄三家實際往返、assist steps、內容類型與未驗證限制。
+- [ ] 對照 SPEC AC-01–10，分別記錄三家實際往返、assist steps、內容類型與未驗證限制。
 - [ ] 使用隔離 registry/state 執行 built package 的清單／詳情、重開、失敗恢復與 clipboard 測試。
 - [ ] 針對實際 Desktop host 驗證中文、換行、連結及長回答貼上內容；其他 OS 另列未驗證。
 - [ ] 記錄程式 focused checks、fixture、真實產品往返與 installed acceptance 的不同證據。
@@ -118,6 +138,29 @@ Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；執行能力尚�
 | iframe 複製失敗 | 驗證 actual package，必要時補 host clipboard；明確拒絕時保留可選取本文。 |
 
 ## Resume checkpoint
+
+2026-09-29 共用入口修正：ADR/SPEC/PLAN 先行，A4a／Platform P4 尚未實作。
+以下為先前獨立 App origin／ingress 的歷史 fixture，不能作為 AC-10 或新 sandbox
+驗收；程式保留在原 worktrees，未發布。此次只做文件 diff／link 與獨立審查。
+
+本次文件檢查：`check:docs` 通過（43 Markdown、161 local targets，39 個 sibling
+links 由標準檢查略過）；兩 repo 的 36 份修改文件另作映射檢查，1,244 個本地／
+sibling targets 全部存在；兩邊 whitespace check 通過。獨立審查修正 ingress
+ownership 衝突、外部帳號驗證與刪除政策的過度完成描述、憑證區分及編輯殘字；
+複查無剩餘 blocker。這些檢查不構成共用入口或新 sandbox 的實作驗收。
+
+2026-09-29 implementation: `feat/ask-mvp` / Platform `feat/app-components`。
+Apps 16 tests、Usage build、Ask archive build 與文件檢查通過。協調 SDK 由 Platform
+build 後 pack 成 tarball，再以 no-save 安裝；既有 release pin 未改。
+Windows Electron 的實際套件 create → close → MCP get/submit → reopen → Copy →
+paste 已通過（中文、換行、連結及字面 script 文字）；回覆使用隔離 fixture，
+無真實 X 內容。Archive SHA-256：
+`9e362b428837928457bbb6b3d0aa85e645fa344625d16d7cfe61c53c4933b6f6`。
+Store/transport 覆蓋重複／衝突、過期／遲到、重啟 unconfirmed、connection rotation
+及跨 attempt 拒絕。兩邊獨立審查修正後無 blocker。未 commit、發布、安裝到真實
+profile 或測試此版本的 live Bot；ngrok 真實帳號連線、macOS/Linux 與其他助理待驗證。
+最後文件檢查通過：42 Markdown、159 local targets；兩個 worktree 的修改文件另作
+跨 repo 映射連結檢查，441 個目標全部存在；兩邊 `git diff --check` 通過。
 
 2026-09-29 後續：Grok Bot synthetic 與 authenticated bookmarks probe 已回傳並核對收據；
 save order 僅由陣列推論、影片理解未驗證、Bot 仍由使用者啟動。Cursor CLI OAuth／

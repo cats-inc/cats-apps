@@ -2,10 +2,11 @@
 
 ## Status
 
-MVP scope and complete-App ownership accepted — 2026-09-29. Detailed transport
-and hosting contracts remain drafts. Grok Bot assisted MCP/bookmark retrieval
-passed a standalone probe with limits; the installed App remains unimplemented.
-Planning uses **Ask** / `cats.ask`; no package version or release is declared.
+MVP scope, complete-App ownership and shared Platform ingress accepted —
+2026-09-29. Grok Bot assisted MCP/bookmark retrieval passed a standalone probe.
+An unpublished `cats.ask` 0.1.0 candidate passed isolated Windows installed-package
+fixtures; shared ingress, a live candidate Bot round trip and other providers
+remain pending. No release is declared.
 
 ## Context
 
@@ -14,12 +15,12 @@ frontends and backends as one install/update/management unit. App-owned API
 requests use normal web protocols, without Platform SDK business-method wrappers.
 The former Runtime-owned Ask delegation/storage proposal below is replaced by
 App-owned services under [Platform ADR-125](https://github.com/cats-inc/cats-platform/blob/main/docs/decisions/125-own-multiple-frontends-and-backends-in-one-app.md).
-That coordinated decision records the product boundary; host execution support
-is not implemented.
+That decision now also requires one public origin/port/tunnel for Platform,
+Mobile and all Apps. The local per-App ingress prototype must be revised.
 
 使用者需要 Gemini Spark 已具備的個人化理解與推薦，以及 Grok Bot、Meta AI
 在使用者身分／connector 授權下取得的內容。使用者已在原產品實測相關能力；
-後續 Grok Bot 書籤 probe 已通過；Spark／Meta 與 installed App 往返尚未驗證。
+後續 Grok Bot 書籤 probe 已通過；Spark／Meta 與正式候選套件的真實 Bot 往返尚未驗證。
 資料 API、公眾貼文搜尋及同品牌模型 API
 不能證明取得相同的個人脈絡。Grok 網頁版與 Grok Bot 必須分別辨識。
 
@@ -42,7 +43,7 @@ is not implemented.
    觸發、查詢能力、回傳是三個各自需要通過的契約。
 5. Ask 前端透過一般 HTTP／串流呼叫同 App 的後端；Ask 自己擁有提問 API、
    問答資料、外部助理 adapter、MCP 領取／回傳與收據。Platform 提供通用的
-   App origin、路由、身分隔離與程序生命週期；SDK 用於 clipboard 等宿主能力。
+   App sandbox、路由、身分隔離與程序生命週期；SDK 用於 clipboard 等宿主能力。
    Runtime 僅提供實際需要的共通執行能力，這條 Bot 領取／回傳路線不必經過它。
    一個 `cats.ask` 套件可含多個前端／後端，使用者只安裝、更新、管理一個 App。
 6. 問答生命週期由背景服務持有。離開 App 可重開查看；純本機 host 停機時，
@@ -53,6 +54,14 @@ is not implemented.
    不強迫每句推薦附原始資料連結，也不把回答當成完整資料匯出或經核實的使用者記憶。
 9. MVP 由使用者複製／貼上到 Chat、Code、Work。導覽 SDK、答案深層連結、宿主歷史同步、
    跨產品交付、共用答案檢索及自動長期記憶明確延後。
+
+10. Ask 共用 Platform 的 public origin、HTTPS port 與 tunnel，掛載於
+    `/apps/cats.ask/`；MCP 為 `/apps/cats.ask/mcp`。同一入口同時供 Platform、
+    Cats Mobile 與其他 Apps 使用，依路徑及各自認證分流。入口設定／生命週期由
+    Platform 持有；停用 Ask 只撤銷 Ask，不中斷 Mobile 或其他 App。
+    Ask tutorial 顯示共用入口狀態及自身 connector 指令，不收 ngrok token，
+    不要求獨立 domain、公開 port 或後端安裝。前端仍直接 fetch 自有 API；
+    共用 URL path 不代表瀏覽器隔離，宿主須落實 SPEC-122 的 sandbox／grant。
 
 ## Consequences
 

@@ -1,5 +1,12 @@
 # Testing
 
+Ask's historical local Windows fixture is recorded in
+[PLAN-005](plans/PLAN-005-personal-assistant-questions-mvp.md). Shared ingress
+requires new AC-10 evidence: one origin/port/tunnel serving Platform/Mobile plus
+Ask and another App/MCP, isolated auth, independent revocation and real
+opaque-sandbox Copy. A fixture does not verify live Grok, Spark or Meta access.
+Documentation-only work runs diff/link checks without App builds/tests.
+
 Studio packaging is covered by `tests/studio.test.mjs` and `npm run package:studio`.
 The Platform owner provides `scripts/testing/check-studio-app.mts` for the actual
 archive, SDK and host with an isolated fixture Runtime. Pass the Studio lock and

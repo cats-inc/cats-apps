@@ -12,7 +12,7 @@ Apps consume host contracts. Provider parsing and secrets remain runtime/host-ow
 
 ## Complete App and Ask boundary (2026-09-29)
 
-Ask / `cats.ask` is a planning identity. [ADR-003](decisions/003-delegate-personal-questions-to-first-party-assistants.md),
+Ask / `cats.ask` has an unpublished local prototype; shared ingress is pending. [ADR-003](decisions/003-delegate-personal-questions-to-first-party-assistants.md),
 [SPEC-004](specs/SPEC-004-personal-assistant-questions-mvp.md) and
 [PLAN-005](plans/PLAN-005-personal-assistant-questions-mvp.md) propose:
 
@@ -22,19 +22,24 @@ answer → Ask detail and Copy. The Bot route does not require Runtime execution
 
 Apps owns all of an App's frontends, services, workers, domain APIs and data
 schema. One package/installation/version covers every component. Platform owns
-component hosting, isolated application origins, routing, identity, supervision
+component hosting, opaque browser sandboxes, path routing, identity, supervision
 and unified install/update/repair/remove. Frontends call their services through
 ordinary web requests; the SDK supplies Cats host capabilities such as clipboard.
 Runtime owns provider execution and shared execution primitives only when needed.
 App persistence is not automatically Runtime-owned. Platform ADR-125/SPEC-122/
-PLAN-115 formalize this accepted boundary in the coordinated documentation; actual
-multi-component hosting and manifest syntax remain implementation work.
+PLAN-115 formalize this boundary. Platform/Mobile/all Apps share one public
+origin/port/tunnel; Ask mounts at `/apps/cats.ask/`. App routes and scoped grants
+are revoked with the App; the shared tunnel remains alive for other users/Apps.
+A local multi-component prototype exists, but shared routing/sandbox is pending.
 
 Gemini Spark, Grok Bot with its X Connector, and Meta AI are distinct product
 targets. Each needs proof of activation, personal-context access and answer return;
 an MCP endpoint alone proves none of those. Current SDK 1.3 does not implement
-this delegation flow. Credentials remain outside the App iframe, and closing that
-iframe must not be treated as cancelling a submitted task.
+this delegation flow. Host bootstrap supplies only scoped view grants, never
+Platform/provider/tunnel credentials. Ask may separately display its own MCP
+connection and attempt credentials in user-requested Bot instructions; these
+authorize only Ask's declared operations. Closing the iframe must not be treated
+as cancelling a submitted task.
 
 The MVP provides asynchronous status, reopening of retained answers and Copy.
 Host deep links/history, automatic Chat/Code/Work ingestion, a general answer

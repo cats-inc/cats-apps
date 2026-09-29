@@ -64,9 +64,11 @@ copy for manual use in Chat, Code or Work.
 - [ ] Independently verify Grok Bot's X Connector and Meta AI's authorized-content path.
 - [x] Verify an assisted Grok Bot bookmark round trip, with save-order/video limits.
 - [x] Confirm multiple frontends/backends in one App and direct App-owned API traffic.
-- [ ] Implement Platform component hosting and unified lifecycle, then Ask-owned services.
-- [ ] Build the Ask package with truthful states, retained answers and Copy.
-- [ ] Verify actual-package reopening, Desktop clipboard, account scope and recovery.
+- [x] Build an unpublished complete Ask/component-host prototype with retained answers.
+- [x] Validate local Windows package create/MCP/reopen/Copy fixtures.
+- [ ] Replace per-App ingress with shared Platform/Mobile/App routing and sandbox.
+- [ ] Revise tutorial for shared host setup and `/apps/cats.ask/mcp`.
+- [ ] Verify remote multi-App access, sandbox Copy, account scope and live Bot recovery.
 
 Each assistant needs its own evidence and availability status. Full offline
 operation, host navigation SDK, scheduling UI and automatic Chat/Code/Work use

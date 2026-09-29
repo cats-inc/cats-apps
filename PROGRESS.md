@@ -2,18 +2,18 @@
 
 ## Current Status
 
-Ask planning (2026-09-29): [ADR-003](docs/decisions/003-delegate-personal-questions-to-first-party-assistants.md),
+Ask (2026-09-29): [ADR-003](docs/decisions/003-delegate-personal-questions-to-first-party-assistants.md),
 [SPEC-004](docs/specs/SPEC-004-personal-assistant-questions-mvp.md) and
-[PLAN-005](docs/plans/PLAN-005-personal-assistant-questions-mvp.md) record the
-working identity `cats.ask` and the question / asynchronous answer / copy MVP.
-The Grok Bot assisted bookmark probe has matched return receipts; latest-save
-order is inferred, video understanding and autonomous initiation unverified.
-Cursor CLI OAuth/discovery passed but data calls returned `client-not-enrolled`.
-Ask now owns all its frontends/services/data/MCP in one install and management
-unit; frontend-to-own-backend traffic uses ordinary web requests. Next is the
-Platform multi-component contract and host implementation, then the complete Ask
-package. Spark/Meta remain unverified. No installed Ask implementation or release
-exists; navigation SDK and automatic Chat/Code/Work ingestion stay deferred.
+[PLAN-005](docs/plans/PLAN-005-personal-assistant-questions-mvp.md) now require one
+shared Platform/Mobile/App public origin/port/tunnel. Ask owns its complete package
+and direct APIs at `/apps/cats.ask/`; Platform owns routing, grants and ingress.
+The unpublished candidate passed isolated Windows package/MCP/Copy fixtures under
+the earlier per-App ingress. A4a shared ingress/tutorial/sandbox rework and remote
+acceptance are next, not implemented. The prior assisted Grok Bot bookmark probe
+does not prove the candidate's live Bot integration. Spark/Meta remain unverified;
+save ordering is inferred and video understanding/autonomous initiation untested.
+Cursor CLI data calls returned `client-not-enrolled`. No release or live-profile
+write; answer navigation SDK and automatic Chat/Code/Work ingestion stay deferred.
 
 Studio single-image slice (2026-09-28): standalone `cats.studio` renderer and
 deterministic package implemented. The actual archive passed isolated Platform

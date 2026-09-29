@@ -4,9 +4,9 @@
 
 | Document | State | Responsibility |
 |----------|-------|----------------|
-| [ADR-003](decisions/003-delegate-personal-questions-to-first-party-assistants.md) | MVP and unified App ownership confirmed; transport design draft | Ask owns UI/services/data/MCP in one installation; ordinary App API requests and host SDK capabilities |
-| [SPEC-004](specs/SPEC-004-personal-assistant-questions-mvp.md) | Grok Bot probe passed with limits; installed App pending | Grok-first tutorial/composer and assisted initiation; Spark/Meta remain unverified |
-| [PLAN-005](plans/PLAN-005-personal-assistant-questions-mvp.md) | Probe evidence recorded; component hosting and App pending | Platform multi-component contract, App-owned services, unified package and installed acceptance |
+| [ADR-003](decisions/003-delegate-personal-questions-to-first-party-assistants.md) | MVP, complete App and shared ingress confirmed | Ask owns UI/services/data/MCP in one installation; ordinary App API requests and host SDK capabilities |
+| [SPEC-004](specs/SPEC-004-personal-assistant-questions-mvp.md) | Local Windows prototype passed; shared ingress pending | Grok-first tutorial/composer and assisted initiation; Spark/Meta remain unverified |
+| [PLAN-005](plans/PLAN-005-personal-assistant-questions-mvp.md) | A4a shared ingress/tutorial/sandbox rework next | Platform multi-component contract, App-owned services, unified package and installed acceptance |
 | [Ask research baseline](research/2026-09-29-personal-assistant-delegation-baseline.md) | Historical baseline plus follow-up evidence | Bot receipts, CLI enrollment failure, current host limits and revised App ownership |
 | [PLAN-004](plans/PLAN-004-independent-app-distribution.md) | Planned; no implementation/publication | SDK consumption, official catalog and independent Usage/Studio delivery; governed by Platform ADR-121/SPEC-120 |
 | [ADR-001](decisions/001-own-official-utility-apps-and-coordinate-desktop-distribution.md) | Accepted | Official utility monorepo, individual packages, coordinated Desktop distribution |

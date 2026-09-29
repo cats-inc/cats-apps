@@ -12,6 +12,14 @@
 
 ## Package and Host Ownership
 
+Ask shared ingress is planned under Platform SPEC-122. URL prefixes do not
+isolate browser origins: require an opaque sandbox, scoped App/owner/generation
+view grants for ordinary fetch and distinct MCP connection/attempt credentials.
+No Platform cookies or tunnel/provider secrets go to the App; MCP tokens cannot
+read private App APIs or another App. Ingress changes retain questions/receipts
+and never silently resend. Revalidate Copy and direct navigation in the actual
+shared-origin sandbox before declaring acceptance.
+
 The host enforces trust, compatibility, permissions, activation, and lifecycle.
 A package cannot gain system trust merely by declaring it in its own manifest.
 Exact package contents and entrypoints must be validated before activation.

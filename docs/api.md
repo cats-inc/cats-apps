@@ -4,8 +4,9 @@
 
 Accepted extension (2026-09-29): Apps own their business APIs and may package
 multiple frontends/services/workers as one installation. Frontends use normal
-HTTP/streaming to their own services; Platform provides origin/routing/identity
-and lifecycle. The SDK remains the interface to Cats host capabilities. This is
+HTTP/streaming to their own services; Platform provides sandbox/routing/identity
+and lifecycle on one shared Platform/Mobile/App origin/port/tunnel. Ask uses
+`/apps/cats.ask/api/...` with view grants and `/apps/cats.ask/mcp` with MCP credentials. The SDK remains the interface to Cats host capabilities. This is
 the upcoming Platform SPEC-122 contract, not implemented by the v1 slice below.
 
 cats-apps serves no HTTP API and publishes no App SDK implementation.

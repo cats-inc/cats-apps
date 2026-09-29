@@ -10,8 +10,12 @@ tools. Only actual Runtime-backed execution uses Runtime capabilities.
 
 An external client reaches a declared, authenticated Ask endpoint. App frontends
 use Ask's private HTTP API directly; neither path requires adding Ask tools to
-Runtime's existing MCP. Public ingress configuration belongs to the App's setup
-and lifecycle, with no separate backend App installation. The completed standalone
-probe is evidence; packaged App hosting remains planned under Platform SPEC-122.
+Runtime's existing MCP. Public ingress belongs to Platform and is shared with
+Platform/Mobile and all Apps. Ask's `/apps/cats.ask/mcp` has its own connection/
+attempt credentials; private APIs need separate view grants. Removing Ask revokes
+its routes, not the shared tunnel. Tutorial shows host setup/status and connector
+instructions without collecting tunnel credentials. A local package prototype
+passed Windows fixtures; shared ingress and live candidate Bot are pending under
+Platform SPEC-122. No separate backend App installation is required.
 
 *Last updated: 2026-09-29*

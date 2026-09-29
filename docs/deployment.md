@@ -2,6 +2,14 @@
 
 ## Release boundaries
 
+Ask has an unpublished local candidate only. Its required public endpoint is
+Platform's shared origin plus `/apps/cats.ask/mcp`; Platform, remote Mobile and
+other Apps reuse the same public port/tunnel. Shared ingress and tutorial changes
+remain pending in [PLAN-005 A4a](plans/PLAN-005-personal-assistant-questions-mvp.md#a4a--shared-platform-ingress-correction-next).
+Do not deploy a separate Ask tunnel or infer a released host floor from the
+prototype. Host ingress settings/migration belong to Platform; App data remains
+Ask-owned. This documentation change does not provision ingress or publish Apps.
+
 cats-apps is a private npm workspace containing independently versioned Apps,
 not a single npm product release. Usage and Studio have separate workspaces. The root
 private package version does not determine App versions, and releasing one App
