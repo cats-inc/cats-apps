@@ -204,7 +204,8 @@ Published provenance: source revision
 `7d5455bb6b484b731becbc69b469e649fbfc433cf015586e0022c3045974c04e`.
 The release workflow passed docs/tests/build. The downloaded archive, GitHub
 asset digest, release lock and provenance agree; decoded payloads match the
-locally tested build. Use the published hash, not a different OS's gzip hash.
+locally tested build. Use the published hash: this archive predates the SDK encoder, and
+its Node zlib bytes depended on the building OS.
 
 The owner authorized the coordinated Desktop 0.2.5 unsigned preview with this
 archive, SDK 1.2.0 and Runtime revision
@@ -225,6 +226,18 @@ npm run build -- --version 0.4.0
 # cats-platform
 npm run desktop:package:windows -- --apps-lock ../cats-apps/dist/usage-0.4.0.lock.json --skip-mobile
 ```
+
+CI and the release workflow run `npm ci --ignore-scripts`, which installs the exact-pinned
+`@cats-inc/cats-platform` devDependency; run the same command before a local build. The builder
+encodes with its `encodeAppPackage`, whose bytes are identical on every OS, and refuses
+to write an archive that fails the installer's own `validateRendererAppPackage` against
+the App's declared `catsPlatform`/`appSdk` floor, or against the pinned Platform version and
+SDK when the App's ranges accept them; an App may still target an older host line.
+The provenance file records that SDK and both validated hosts. A floor older than the
+pinned release is checked with the pinned release's rules; earlier hosts' rules are not
+re-executed. Raising the pin can change bytes, so a released version is never rebuilt
+under a new pin. Archives built before this switch used Node zlib and do not match the
+SDK encoder's bytes for the same inputs; their published hashes stay authoritative.
 
 The lock, not a moving latest release, selects the App version. This local example
 selects only the App: a later Desktop release must also pin the matching Runtime
@@ -247,7 +260,7 @@ Desktop packaging consumes artifacts, not imported sibling source or a developer
 workspace path.
 
 `.catsapp` v1 is gzip-compressed JSON with the manifest, license and built payload
-files encoded as base64. The first renderer is self-contained HTML. Directory-only
+files encoded as base64, produced by the Platform SDK encoder. The first renderer is self-contained HTML. Directory-only
 manifest registration remains a development path; it does not execute source as a
 production App. Private GitHub assets need an independently authenticated download
 followed by local pin selection; the initial URL resolver handles public release assets.
@@ -271,4 +284,4 @@ on a network catalog.
 
 See [ADR-001](decisions/001-own-official-utility-apps-and-coordinate-desktop-distribution.md).
 
-*Last updated: 2026-09-28*
+*Last updated: 2026-09-29*

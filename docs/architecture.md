@@ -117,7 +117,10 @@ Account observations shared by several provider instances must not be summed twi
 
 Usage 0.1.1 and the shared builder are implemented. The `.catsapp` v1 archive is
 gzip-compressed JSON containing a manifest and base64 payload files; the first
-renderer is a self-contained HTML document. Host-injected SDK v1 is implemented in
+renderer is a self-contained HTML document. The builder assembles each renderer here,
+then encodes and validates it with the published `@cats-inc/cats-platform/app-sdk`
+entry from an exact-pinned devDependency ([Platform ADR-123](../../cats-platform/docs/decisions/123-expose-app-sdk-contract-as-platform-npm-subpath.md)), so this
+repository has no second copy of the format. Host-injected SDK v1 is implemented in
 cats-platform, not copied into this repository. The host owns the opaque-origin
 iframe, verified package activation, lifecycle and telemetry permission. General
 server/worker/action executors still return unsupported; see

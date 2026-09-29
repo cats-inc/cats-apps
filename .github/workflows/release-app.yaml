@@ -29,6 +29,8 @@ jobs:
           echo "slug=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
           echo "version=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
       - run: npm run check:docs
+      - name: Install the pinned Platform App SDK
+        run: npm ci --ignore-scripts
       - run: npm test
       - name: Build exactly the tagged version
         env:

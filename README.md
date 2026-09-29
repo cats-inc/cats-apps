@@ -40,6 +40,7 @@ blocked on CLI authentication; it is not advertised as a working collector.
   real window lengths, and independent provider/instance cooldowns. No model turns,
   credential extraction, automatic account polling, or direct provider API calls.
 - Deterministic `.catsapp` packaging and an App-tag release workflow are implemented.
+  Encoding and install validation come from the exact-pinned Platform App SDK.
 - cats-platform provides the real isolated renderer/SDK, managed install, and pinned
   Desktop package consumption. Remote catalog, active account polling and history remain deferred.
 - No provider probes, live user-profile installs, or release publication are performed by a build.
