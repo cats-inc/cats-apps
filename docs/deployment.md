@@ -19,8 +19,12 @@ copyright names `sammykenny2 and contributors`. Both the full manifest and root
 LICENSE enter the archive and source digest, so these edits change package hashes
 without changing App IDs. Published Usage 0.5.0 and Studio 0.2.0 remain immutable.
 Keep this correction source-only until each App's next authorized version bump;
-do not rebuild or replace those published versions or update Desktop pins from
-this source revision. App SDK validation requires a nonempty publisher name,
+do not replace published artifacts or update Desktop pins from this source
+revision. CI may build disposable verification archives from the pending source;
+those archives must not be promoted as replacements for an existing release.
+Run the normal PR checks; no-publication scope is not a reason to skip CI.
+Include the publisher correction in each App's next release notes.
+App SDK validation requires a nonempty publisher name,
 while artifact selection still pins App ID, version and archive SHA-256.
 
 Independent catalog delivery is planned in
