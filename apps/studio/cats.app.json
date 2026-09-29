@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "cats.studio",
   "displayName": "Studio",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "圖片工作室 · 描述想像，預覽圖片",
   "category": "user-app",
   "trustTier": "local-user",

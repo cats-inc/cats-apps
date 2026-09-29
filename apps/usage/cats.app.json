@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "cats.usage",
   "displayName": "Usage",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "用量總覽 · Runtime usage and provider-reported quota",
   "category": "user-app",
   "trustTier": "local-user",

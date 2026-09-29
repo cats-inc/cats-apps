@@ -20,17 +20,14 @@ authorize an App version bump or publication. Accumulate commits until an App
 release is selected, using existing user authorization for the required steps.
 Branch CI checks/builds and uploaded CI artifacts are not public App releases.
 
-**Pending publisher correction (2026-09-29).**
+**Publisher correction carried by Usage 0.5.1 and Studio 0.2.1 (2026-09-30).**
 
 Source manifests identify the individual maintainer `sammykenny2`; the root MIT
 copyright names `sammykenny2 and contributors`. Both the full manifest and root
-LICENSE enter the archive and source digest, so these edits change package hashes
-without changing App IDs. Published Usage 0.5.0 and Studio 0.2.0 remain immutable.
-Keep this correction source-only until each App's next authorized version bump;
-do not replace published artifacts or update Desktop pins from this source
-revision. CI may build disposable verification archives from the pending source;
-those archives must not be promoted as replacements for an existing release.
-Run the normal PR checks; no-publication scope is not a reason to skip CI.
+LICENSE enter the archive and source digest, so Usage 0.5.1 and Studio 0.2.1 are
+the first artifacts that carry the correction. Published Usage 0.5.0 and Studio
+0.2.0 remain immutable; the owner authorized deleting those two releases once the
+corrected versions are published and Desktop no longer pins them.
 Include the publisher correction in each App's next release notes.
 App SDK validation requires a nonempty publisher name,
 while artifact selection still pins App ID, version and archive SHA-256.
@@ -151,6 +148,17 @@ minors, and wildcard forms that omit a required patch minimum. See the
 [host compatibility guide](https://github.com/cats-inc/cats-platform/blob/main/docs/app-packages.md#host-and-sdk-compatibility).
 
 ## Current State
+
+Usage 0.5.1 and Studio 0.2.1 are prepared as compatible patch releases whose only
+purpose is the publisher and copyright correction above. Renderer payloads and
+permissions equal 0.5.0 and 0.2.0; `compatibility.catsPlatform` stays `^0.6.0` and
+the App SDK ranges stay `^1.2.0` (Usage) and `^1.3.0` (Studio). Under Platform
+[ADR-128](https://github.com/cats-inc/cats-platform/blob/main/docs/decisions/128-make-the-app-sdk-version-the-sole-app-compatibility-gate.md)
+the host reads `catsPlatform` as a minimum, so both install on Platform 0.6.x and
+0.7.x alike; the build still validates against the pinned Platform 0.6.0 SDK. The
+owner authorized these releases together with Runtime 0.4.0, Platform npm 0.7.0 and
+the Desktop 0.7.0 standard-profile preview, which selects Usage 0.5.1. Studio stays
+outside the default Desktop bundle. Release workflow results and published hashes follow.
 
 Studio 0.2.0 is [published](https://github.com/cats-inc/cats-apps/releases/tag/studio-v0.2.0)
 as Studio's first public release. Studio 0.1.0 was built and
