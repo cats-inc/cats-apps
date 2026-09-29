@@ -4,6 +4,10 @@
 
 | Document | State | Responsibility |
 |----------|-------|----------------|
+| [ADR-003](decisions/003-delegate-personal-questions-to-first-party-assistants.md) | Proposed; MVP scope confirmed | Ask / cats.ask working identity; delegate through the user's first-party assistant; asynchronous response and copy |
+| [SPEC-004](specs/SPEC-004-personal-assistant-questions-mvp.md) | Scope confirmed; design draft | Personal questions to Gemini Spark, Grok Bot and Meta AI; each integration unverified; navigation SDK and cross-product integration deferred |
+| [PLAN-005](plans/PLAN-005-personal-assistant-questions-mvp.md) | Planning documents prepared; no probes or implementation | Product round-trip evidence first, then host/runtime contracts, App UI and actual-package acceptance |
+| [Ask research baseline](research/2026-09-29-personal-assistant-delegation-baseline.md) | Evidence recorded; no authenticated Cats round trip | User observations, dated official sources, current SDK limits and open integration questions |
 | [PLAN-004](plans/PLAN-004-independent-app-distribution.md) | Planned; no implementation/publication | SDK consumption, official catalog and independent Usage/Studio delivery; governed by Platform ADR-121/SPEC-120 |
 | [ADR-001](decisions/001-own-official-utility-apps-and-coordinate-desktop-distribution.md) | Accepted | Official utility monorepo, individual packages, coordinated Desktop distribution |
 | [SPEC-001](specs/SPEC-001-official-utility-app-packages.md) | v1 implemented | Package outputs, workspace boundaries, and delivery requirements |
@@ -38,4 +42,4 @@ Protocol examples remain optional; [A2A](a2a/README.md) is a bootstrap pointer.
 Root state: [README](../README.md), [PROGRESS](../PROGRESS.md),
 [ROADMAP](../ROADMAP.md), and [CONTRIBUTING](../CONTRIBUTING.md).
 
-*Last updated: 2026-09-28*
+*Last updated: 2026-09-29*

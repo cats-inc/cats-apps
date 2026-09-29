@@ -2,6 +2,16 @@
 
 ## Current Status
 
+Ask planning (2026-09-29): [ADR-003](docs/decisions/003-delegate-personal-questions-to-first-party-assistants.md),
+[SPEC-004](docs/specs/SPEC-004-personal-assistant-questions-mvp.md) and
+[PLAN-005](docs/plans/PLAN-005-personal-assistant-questions-mvp.md) record the
+working identity `cats.ask` and the question / asynchronous answer / copy MVP.
+The user's first-party product observations and dated official sources are
+recorded separately from unverified Cats transports. No authenticated probes,
+App implementation, package version or release has been created. Next is A1:
+prove a Gemini Spark personal-context round trip, then independently investigate
+Grok Bot and Meta AI. Navigation SDK and Chat/Code/Work integration stay deferred.
+
 Studio single-image slice (2026-09-28): standalone `cats.studio` renderer and
 deterministic package implemented. The actual archive passed isolated Platform
 SDK/browser submit, image download, offline reopen, cancellation and Home checks.
@@ -66,6 +76,17 @@ Application releases and live App installs remain outside this foundation.
 Repository publication is a separate user-authorized GitHub task. The repository
 now enables automatic deletion of remote pull-request branches after merge.
 
+## Ask Planning Verification (2026-09-29)
+
+- Passed: `npm run check:docs` (42 Markdown files, 158 local targets;
+  37 sibling links skipped by the worktree-local check).
+- Passed: mapped link audit of all 13 changed/new documents (112 local and
+  7 sibling targets), including whitespace and final-newline checks.
+- Passed: `git diff --check`. The main checkout remains clean on `main`.
+- No App tests/builds, authenticated assistant probes or independent review were
+  performed. Planning was prepared on `docs/ask-mvp-scope`; the user subsequently
+  authorized commit and PR delivery with automatic merge after repository checks.
+
 ## Verification (2026-09-10)
 
 - Passed: `node --check scripts/check-docs.mjs`.
@@ -78,4 +99,4 @@ now enables automatic deletion of remote pull-request branches after merge.
 - App builds, provider/account probes, installed-renderer tests, and independent
   code review were not performed by this documentation/bootstrap task.
 
-*Last updated: 2026-09-10*
+*Last updated: 2026-09-29 (Ask planning; earlier verification history retained)*
