@@ -128,6 +128,16 @@ minors, and wildcard forms that omit a required patch minimum. See the
 
 ## Current State
 
+Studio 0.2.0 is prepared as Studio's first public release. Studio 0.1.0 was built and
+installed only locally, and its Platform ^0.5.11 declaration excludes host 0.6.0. Studio
+0.2.0 declares Platform ^0.6.0 and keeps App SDK ^1.3.0 and permissions `ui.route`,
+`ui.lobby`, `media.images`; its LICENSE and renderer payloads equal the 0.1.0 build and
+the manifests differ only in version and host range. The owner authorized publishing it.
+It stays outside the default Desktop bundle; the Market and catalog promotion in PLAN-004
+remain future work, so a Desktop user installs it through the local App installation.
+Preparation passed 12 App tests and the 0.2.0 build validated at host 0.6.0 with SDK 1.3.0.
+Release workflow results and published hashes follow.
+
 Usage 0.5.0 is [published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.5.0)
 for the Desktop 0.6.0 standard-profile preview. Platform 0.6.0 is a
 host minor ([ADR-124](../../cats-platform/docs/decisions/124-model-companion-as-a-cat-role-not-a-skill-profile.md)),
