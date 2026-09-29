@@ -128,6 +128,16 @@ minors, and wildcard forms that omit a required patch minimum. See the
 
 ## Current State
 
+Usage 0.5.0 is prepared for the Desktop 0.6.0 standard-profile preview. Platform 0.6.0 is a
+host minor ([ADR-124](../../cats-platform/docs/decisions/124-model-companion-as-a-cat-role-not-a-skill-profile.md)),
+and Usage 0.4.0's Platform ^0.5.0 declaration excludes it. Usage 0.5.0 declares Platform
+^0.6.0 and retains App SDK ^1.2.0; its LICENSE and renderer payloads equal Usage 0.4.0,
+and the manifests differ only in version and host range. It is the first release built
+with the pinned Platform 0.6.0 App SDK, so its archive bytes come from the SDK encoder.
+The owner authorized this App release together with Platform npm 0.6.0 and the Desktop
+0.6.0 preview. Preparation passed 12 App tests, and the 0.5.0 build validated at host 0.6.0
+with SDK 1.2.0 and 1.3.0. Release workflow results and published hashes follow.
+
 Usage 0.4.0 is [published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.4.0)
 for the Desktop 0.5.0 standard-profile preview. Desktop
 0.5.0 moves to the next host minor because it bundles Runtime 0.3.0, and Usage
