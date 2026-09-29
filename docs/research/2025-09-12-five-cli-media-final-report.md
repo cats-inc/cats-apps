@@ -11,8 +11,8 @@
 | CLI | 開發商 | 生圖 (文生圖) | 生影片 | 額度/門檻 | 實測檔案路徑 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Antigravity** | Google | **Yes**，`generate_image` -> **Imagen 3 寫死**，不能改模型ID | **No 原生**，要自備 `GOOGLE_API_KEY` 刷 **Veo 2** / Veo 3，約 $1.75-2.5 / 5秒 | settings.json 不能改模型ID，需額外付費Key | 無，需付費才有 |
-| **Grok Build** | xAI | **Yes**，`image_gen` -> **xAI Imagine**，支援 1:1, 16:9, 9:16, 3:2, 2:3 | **Yes (唯一全通)**，`image_to_video` 6秒/10秒 480p/720p 圖生影片 + `reference_to_video` 1-15秒 | **必須關掉 /privacy (ZDR)**，否則報錯 `Video generation tools are unavailable under zero data retention (ZDR)`。或自備 S3/GCS bucket | 圖：`/Users/sammykenny2/.grok/sessions/.../images/1.jpg`，影片：關閉privacy後成功生成 (videos/ 目錄) |
-| **Codex** | OpenAI | **Yes**，`image_gen__imagegen` -> **gpt-image-2** (官方記載)，無比例/解析度參數，只能靠prompt暗示 | **No 原生**，無 Sora 工具 | 吃 Codex Pro 一般額度，測試時已用26%剩74%，credits 0 | `/Users/sammykenny2/.codex/generated_images/01a091f5-1234-7122-8327-1f183874bed2/exec-861f1776-2c54-4fab-b45a-412fb93dbb8f.png` (1254x1254, 2.6M PNG) |
+| **Grok Build** | xAI | **Yes**，`image_gen` -> **xAI Imagine**，支援 1:1, 16:9, 9:16, 3:2, 2:3 | **Yes (唯一全通)**，`image_to_video` 6秒/10秒 480p/720p 圖生影片 + `reference_to_video` 1-15秒 | **必須關掉 /privacy (ZDR)**，否則報錯 `Video generation tools are unavailable under zero data retention (ZDR)`。或自備 S3/GCS bucket | 圖：`~/.grok/sessions/.../images/1.jpg`，影片：關閉privacy後成功生成 (videos/ 目錄) |
+| **Codex** | OpenAI | **Yes**，`image_gen__imagegen` -> **gpt-image-2** (官方記載)，無比例/解析度參數，只能靠prompt暗示 | **No 原生**，無 Sora 工具 | 吃 Codex Pro 一般額度，測試時已用26%剩74%，credits 0 | `~/.codex/generated_images/01a091f5-1234-7122-8327-1f183874bed2/exec-861f1776-2c54-4fab-b45a-412fb93dbb8f.png` (1254x1254, 2.6M PNG) |
 | **Claude Code** | Anthropic | **No**，工具清單無生圖工具，僅有上傳截圖/傳送檔案。可用 Bash 接本機 ImageMagick/Pillow 或外部 SD/Replicate | **No**，最接近是 Chrome gif_creator 錄製瀏覽器操作成GIF，非AI生成 | 需自備外部模型/API | 無 |
 | **Muse** | Meta | **No** | **No** | 需靠 fb-knowledge.md 等外掛珍藏 | 無 |
 | **Cursor** | Cursor | 未測試 | 未測試 | - | - |
