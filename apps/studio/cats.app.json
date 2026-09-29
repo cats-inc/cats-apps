@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "cats.studio",
   "displayName": "Studio",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "圖片工作室 · 描述想像，預覽圖片",
   "category": "user-app",
   "trustTier": "local-user",
   "publisher": { "name": "Cats Inc", "homepage": "https://github.com/cats-inc/cats-apps" },
-  "compatibility": { "catsPlatform": "^0.5.11", "appSdk": "^1.3.0" },
+  "compatibility": { "catsPlatform": "^0.6.0", "appSdk": "^1.3.0" },
   "entrypoints": { "renderer": "renderer/index.html" },
   "contributions": {
     "lobbyApps": [{ "id": "studio", "title": "Studio", "subtitle": "圖片工作室 · Grok 生圖", "routePath": "/apps/cats.studio", "icon": "image", "maturity": "preview" }]
