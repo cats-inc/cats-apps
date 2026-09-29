@@ -2,8 +2,9 @@
 
 ## Metadata
 
-- Status: Shared-ingress documents updated; implementation pending. Initial local Grok package/MCP/clipboard fixtures passed on Windows; shared-origin and live candidate Bot acceptance remain pending.
+- Status: Shared-ingress candidate implemented and independently reviewed. Local Platform/Mobile/two-App and installed Ask Windows Electron fixtures pass; live external tunnel/Bot and other-OS acceptance remain pending.
 - Working identity: Ask / `cats.ask`; initial unpublished development package 0.1.0; no release selected.
+- Delivery: commit, push and auto-merge PR authorized on 2026-09-29; no package publication or version bump.
 - Owner: cats-apps; Platform and Runtime own their corresponding integration work.
 - Decision: [ADR-003](../decisions/003-delegate-personal-questions-to-first-party-assistants.md).
 - Requirements: [SPEC-004](../specs/SPEC-004-personal-assistant-questions-mvp.md).
@@ -16,7 +17,8 @@ Grok Bot + X Connector 的人工啟動／MCP 回傳已通過獨立 probe，先�
 所有 Apps 共用入口，再重驗 `cats.ask` 套件。Ask 直接擁有自己的 API／儲存／MCP；SDK 僅用於宿主能力。
 Gemini Spark 與 Meta AI 保留各自驗證，不因同品牌或一般 API 成功而啟用。
 
-使用者先前已授權開 worktree 實作；這次共用入口修正要求文件先行，尚未改程式。
+使用者先前已授權開 worktree 實作；共用入口文件先行後，已核對 Code Canvas MCP
+提案並完成本機候選實作。Code 內部 MCP 不經公開入口；App MCP 由共用路由轉送。
 後續執行依使用者當時的授權與帳號可用性前進，不因本計畫自行開始長期排程或部署 relay。
 
 ## A0 — Scope and baseline
@@ -59,7 +61,7 @@ Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；協調 worktree �
 
 - [x] Platform：固定多前端／多服務／worker manifest、同 App 直接 HTTP／串流、
       原型 origin／授權、整體安裝更新／啟停／移除與 clipboard 能力；
-      共用入口與新 sandbox 尚待 A4a，不沿用原型的完成判定。
+      A4a 已補共用入口與新 sandbox 的本機驗收，真實外網另驗。
 - [x] Apps：固定 Ask 自有 API／資料 schema、adapter 交付、MCP 領取／回傳、
       狀態觀測、收據、去重與未知完成處理。Runtime 只在需要共通執行能力時參與。
 - [x] 固定 Ask request → 外部問題 → answer 的對應與回覆認證；
@@ -84,7 +86,7 @@ Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；協調 worktree �
 - [ ] 以隔離 fixture 測成功／部分／無權限／無內容、needs_user 與 unconfirmed。
 - [ ] 驗證重複送出、回覆重送、衝突／遲到回覆、停機恢復及重問建立新 attempt。
 - [ ] 驗證 disabled/version/account/connection 變更後的讀取與回覆收取政策，不洩漏其他帳號結果。
-- [x] 原型 App sandbox 的 Windows Electron clipboard 已通過；A4a 新 sandbox 須重驗。
+- [x] 原型與 A4a opaque sandbox 的 Windows Electron clipboard 都已通過。
 - [ ] 將其他通過 A1 的入口依同一問答契約接入，各自保留能力差異與驗收狀態。
 
 完成條件：App 元件與直接通訊契約通過 focused checks，已有 fixture 與真實 transport 證據。
@@ -106,13 +108,13 @@ Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；協調 worktree �
 
 - [x] 更新 ADR／SPEC／PLAN：整個 Platform、Mobile 與所有 Apps 共用一個入口，
       `/apps/<appId>/` 路由由宿主持有；每個 App 仍是單一套件與生命週期。
-- [ ] 配合 Platform PLAN-115 P4 固定 reachable base URL、view grant、shared
+- [x] 配合 Platform PLAN-115 P4 固定 reachable base URL、view grant、shared
       ingress status/setup 的精確 bootstrap 契約；自有 API 保持一般 fetch。
-- [ ] Tutorial 移除 Ask 專屬 ngrok token/setup；顯示 Platform 共用入口狀態，
+- [x] Tutorial 移除 Ask 專屬 ngrok token/setup；顯示 Platform 共用入口狀態，
       未設定時帶到 host 設定，完成後產生 `/apps/cats.ask/mcp` connector 指令。
-- [ ] 在 opaque sandbox 驗證 fetch／Copy／drill down／重新開啟，處理 grant 撤銷，
+- [x] 在 opaque sandbox 驗證 fetch／Copy／drill down／重新開啟，處理 grant 撤銷，
       不依賴 server localhost 或 Platform cookie。導航 SDK／答案深連結仍延後。
-- [ ] 配合 host 設定遷移與 URL 變更，保留既有 Ask data／receipt；需要使用者更新
+- [x] 配合 host 設定遷移與 URL 變更，保留既有 Ask data／receipt；需要使用者更新
       Bot connector 時清楚顯示，不自動重新提問或重設資料。
 - [ ] 通過 AC-10：單一外部入口上的 Platform/Mobile + Ask + 第二個 App/MCP，
       跨 App／auth 拒絕與 Ask 停用時其他服務不中斷；再做真實 Grok Bot 往返。
@@ -139,7 +141,23 @@ Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；協調 worktree �
 
 ## Resume checkpoint
 
-2026-09-29 共用入口修正：ADR/SPEC/PLAN 先行，A4a／Platform P4 尚未實作。
+2026-09-29 共用入口候選：Apps 16 tests、Ask archive build、文件檢查通過。
+Platform 的真實 router fixture 通過 Mobile auth + 兩個 App/MCP，同一入口上的
+跨權限拒絕、單 App 停用與 owner session 撤銷。此為本機轉送側測試，未宣稱
+外網 tunnel 或真實 Bot 已通過此版本。Platform 另測設定備份、原子寫入失敗與重啟恢復。
+
+Windows Electron 已使用 actual archive 驗證建立、close、MCP get/submit、reopen、
+Copy／貼上、Copy 拒絕提示及開啟 host 設定；opaque frame 無法讀 host DOM/cookie/storage。
+新 archive SHA-256：
+`0f3853ca845b5435faf2f091b79049d5f960c4f3921565501d06eb1bed91e217`。
+消費 build/pack 的候選 SDK tarball，未 import sibling source，release pin 未改。
+獨立審查修正設定導覽權限、連線狀態過期、一次性 ticket 重試與 host 關閉競態；
+複查無剩餘 blocker。未 commit、發布、改真實 profile 或重新查詢私人 X 內容。
+下一步為 A4a 最後一項的真實外網／Bot 驗收，再依發布授權處理 host/SDK 相容邊界。
+文件檢查：43 Markdown／161 local targets；兩 repo 的 9 份本輪修改文件另查
+59 個映射目標，全數存在；兩邊 whitespace check 通過。
+
+歷史 checkpoint — 2026-09-29 共用入口修正：當時 ADR/SPEC/PLAN 先行，A4a／Platform P4 尚未實作。
 以下為先前獨立 App origin／ingress 的歷史 fixture，不能作為 AC-10 或新 sandbox
 驗收；程式保留在原 worktrees，未發布。此次只做文件 diff／link 與獨立審查。
 

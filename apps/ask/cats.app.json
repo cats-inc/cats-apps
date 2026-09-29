@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "cats.ask",
+  "displayName": "Ask",
+  "version": "0.1.0",
+  "description": "向你的個人助理提問，收回答案與來源",
+  "category": "user-app",
+  "trustTier": "local-user",
+  "publisher": { "name": "sammykenny2", "homepage": "https://github.com/cats-inc/cats-apps" },
+  "compatibility": { "catsPlatform": "^0.6.1", "appSdk": "^1.3.0" },
+  "components": {
+    "schemaVersion": 1,
+    "primaryFrontend": "main",
+    "frontends": [{ "id": "main", "entrypoint": "renderer/index.html" }],
+    "services": [{
+      "id": "ask",
+      "entrypoint": "services/ask.mjs",
+      "routes": [
+        { "path": "/api", "methods": ["GET", "POST"], "exposure": "private" },
+        { "path": "/mcp", "methods": ["GET", "POST", "DELETE"], "exposure": "external" }
+      ]
+    }],
+    "workers": [],
+    "data": { "schemaVersion": 1, "migration": "services/migrate.mjs" }
+  },
+  "contributions": {
+    "lobbyApps": [{ "id": "ask", "title": "Ask", "subtitle": "向你的個人助理提問", "routePath": "/apps/cats.ask", "icon": "message-circle", "maturity": "preview" }]
+  },
+  "permissions": ["ui.route", "ui.lobby", "storage.appData", "clipboard.write"]
+}

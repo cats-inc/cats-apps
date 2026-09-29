@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Status: Shared-ingress correction documented (2026-09-29), implementation pending. An unpublished Grok candidate passed isolated Windows package fixtures under the earlier per-App ingress. Shared Platform/Mobile/App access, live candidate Bot and other providers remain pending.
+- Status: Shared-ingress candidate implemented (2026-09-29). Local Platform/Mobile/two-App integration and installed Ask Windows Electron fixtures pass. Live external tunnel/Bot, other operating systems and other providers remain pending; no release selected.
 - Owner: cats-apps for all Ask UI/services/data/MCP and package; cats-platform for component hosting/lifecycle and host capabilities; cats-runtime for optional shared execution capabilities.
 - Working identity: **Ask**, `cats.ask`, source slug `ask`; initial unpublished development package 0.1.0. No release authorized.
 - Decision: [ADR-003](../decisions/003-delegate-personal-questions-to-first-party-assistants.md).
@@ -161,7 +161,22 @@ AC-01–03 需分別記錄真實帳號的最小往返證據；fixture 成功只�
 登入、產品端批准或人工啟動可標示為 assisted；人工搬運回答不能算回收通道成功。
 任何入口仍未通過時，應回報其狀態與下一個實驗；不得將部分完成描述為完整三家支援。
 
-## Initial local Grok prototype (2026-09-29; shared ingress pending)
+## Shared-ingress candidate checkpoint (2026-09-29)
+
+Ask uses the Platform's `/apps/cats.ask/` mount. Its relative bootstrap base URL
+and view bearer authorize direct HTTP with credentials omitted; MCP uses its
+separate connection/attempt credentials. The tutorial shows shared readiness and
+the complete `/apps/cats.ask/mcp` URL, and opens host setup through
+`catsApp.openRemoteAccess()`. It never collects a tunnel authtoken.
+
+Copy uses the permission-checked `catsApp.clipboard.writeText` bridge.
+Connection-state refresh preserves composer text/focus, and initialization retry
+does not reload a consumed launch ticket. Actual installed Windows Electron
+acceptance includes opaque-frame isolation, close/MCP reply/reopen, real
+clipboard paste, denial feedback and host setup navigation. See PLAN-005 for
+archive identity and remaining live external acceptance.
+
+## Historical local Grok prototype (before shared ingress)
 
 The implementation branch introduces the initial private Ask package identity
 `0.1.0`; this is not a release or a bump of an existing App. Its archive requires
