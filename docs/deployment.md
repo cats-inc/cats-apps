@@ -114,32 +114,33 @@ Every App already has two required manifest declarations. In
 | Declaration | Meaning for this App |
 | --- | --- |
 | App `version` | Identifies this immutable App artifact; does not imply a matching Desktop version |
-| `compatibility.catsPlatform` | Platform/Desktop host version must be at least 0.5.0 and below 0.6.0 |
-| `compatibility.appSdk` | Host SDK interface version must be at least 1.2.0 and below 2.0.0 |
+| `compatibility.catsPlatform` | Minimum host: Platform/Desktop 0.5.0 or newer, across minors (the floor of the range) |
+| `compatibility.appSdk` | The compatibility gate: host SDK interface version must be at least 1.2.0 and below 2.0.0 |
 
-Desktop and Platform currently share a version source, so `catsPlatform` already
-expresses the Desktop host requirement. Keep `appSdk` separate: host features and
-SDK APIs can evolve at different rates. Both checks must pass during installation.
-These declarations state the supported range; they are not evidence that every
-combination was tested. Record actual verification with the release evidence.
+Since Platform [ADR-128](https://github.com/cats-inc/cats-platform/blob/main/docs/decisions/128-make-the-app-sdk-version-the-sole-app-compatibility-gate.md)
+the App SDK version is the only compatibility gate; `catsPlatform` is read as a
+minimum host version, so a Platform minor bump does not make a published App
+incompatible and does not by itself require an App re-release. Both checks still
+run during installation and Desktop packaging. These declarations state the
+supported range; they are not evidence that every combination was tested. Record
+actual verification with the release evidence.
 
 ### Version discipline
 
-- Specify the oldest version supplying the required behavior and a compatibility
-  upper boundary. For example, `^0.3.2` accepts stable 0.3.2 and later 0.3.x,
-  but not 0.4.0. It does not promise support for all future Desktop versions.
-- Keep the App-facing contract compatible within a 0.x minor line; an incompatible
-  host change must move to the next minor. For stable SDK 1.x, a breaking API
-  change must move to SDK 2.x. This is the adopted project discipline;
-  [SemVer itself leaves 0.x unstable](https://semver.org/#spec-item-4).
-- If compatibility within the line cannot yet be supported, use an exact verified
-  version such as `0.3.6` instead. Do not use a wide range to avoid stating uncertainty.
+- For `appSdk`, specify the oldest SDK supplying the required behavior plus an
+  upper boundary: `^1.2.0` accepts SDK 1.2.0 through 1.x, but not 2.0.0. For
+  `catsPlatform`, declare the oldest Platform the App was verified on; the same
+  grammar is accepted, but only its lower bound is enforced.
+- Platform owns the promise that anything an App can observe moves
+  `APP_SDK_VERSION` (minor for compatible additions, major for breaking changes).
+  [SemVer itself leaves 0.x unstable](https://semver.org/#spec-item-4); the SDK
+  line is what the App relies on.
+- If compatibility with an SDK line cannot yet be supported, use an exact verified
+  SDK version such as `1.3.0` instead. Do not use a wide range to avoid stating uncertainty.
 - Do not raise an App's minimum merely because Desktop or SDK has a newer release.
   Raise it when the App needs a newly introduced API, behavior or necessary fix.
 - A declared range change modifies the immutable App manifest. Publish it as a
   new App version when selected for release; never rewrite an existing archive.
-  Supporting a new host minor requires checking the contract and deliberately
-  updating the declaration, not assuming that every 0.x version is compatible.
 
 The [current host matcher](https://github.com/cats-inc/cats-platform/blob/main/packages/app-sdk/package.js)
 accepts exact stable versions, carets, `major.x` and `major.minor.x`. It is not a
