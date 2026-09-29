@@ -111,4 +111,9 @@ SDK ^1.2.0; its renderer and permissions equal 0.4.0. It builds with the pinned 
 Studio 0.2.0 moves Studio to the bounded Platform ^0.6.0 declaration, retaining SDK ^1.3.0;
 its renderer and permissions equal 0.1.0. It is Studio's first public release.
 
-*Last updated: 2026-09-29*
+Usage 0.5.1 and Studio 0.2.1 change only the publisher and copyright metadata that
+enter each archive; renderer payloads, permissions, Platform floors (`^0.6.0`) and
+SDK ranges equal the previous versions. Release and host verification are recorded in
+the deployment guide.
+
+*Last updated: 2026-09-30*
