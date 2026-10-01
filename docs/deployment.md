@@ -2,6 +2,12 @@
 
 ## Release boundaries
 
+Follow the [shared release preparation/completion policy](https://github.com/cats-inc/cats-one/blob/main/docs/release-guide.md#release-preparation-and-completion):
+prepare all release documentation and pins in the original version change.
+Verify publication using existing hosted Release/Actions/registry evidence, then
+report and finish. Do not add tracked publication reports, status-only commits
+or follow-up PRs, or chase unrelated main updates after verification.
+
 Ask has an unpublished local candidate only. Its required public endpoint is
 Platform's shared origin plus `/apps/cats.ask/mcp`; Platform, remote Mobile and
 other Apps reuse the same public port/tunnel. Shared ingress and tutorial changes
