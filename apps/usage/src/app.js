@@ -16,7 +16,7 @@ let disposed = false;
 let querying = null;
 const quotaQueries = new Map();
 const cooldownTimers = new Set();
-const providerLabels = { codex: 'Codex', copilot: 'Copilot', claude: 'Claude Code', kiro: 'Kiro', antigravity: 'Antigravity' };
+const providerLabels = { codex: 'Codex', copilot: 'Copilot', claude: 'Claude Code', kiro: 'Kiro', antigravity: 'Antigravity', grok: 'Grok', muse: 'Muse' };
 const queryMessage = (status, provider) => ({
   updated: word(`已透過 ${provider} CLI 取得額度回報`, `Allowance report received from ${provider} CLI`),
   cooldown: word('查詢冷卻中；保留上次數字', 'Query cooling down; keeping the last observation'),
@@ -59,7 +59,7 @@ function targetCard(target) {
     const balance = window.unlimited ? word('不限額', 'Unlimited') : `${percentage(value)}${value === null ? '' : '%'} ${word('剩餘', 'remaining')}`;
     const quantity = unit === 'credits' ? credits : number;
     const quantities = unit ? `<p>${word('已用', 'Used')} ${quantity(window.used)} / ${window.unlimited ? word('不限額', 'unlimited') : quantity(window.limit)} ${unit}${window.unlimited ? '' : ` · ${word('剩餘', 'remaining')} ${quantity(window.remaining)}`}</p>` : '';
-    return `<div class="window"><div class="window-title"><span>${esc(window.id)}${duration ? ` · ${duration}` : ''}</span><strong>${balance}</strong></div>${value === null ? '' : `<progress value="${value}" max="100" aria-label="${esc(window.id)} ${word('剩餘百分比', 'percent remaining')}"></progress>`}${quantities}<p>${elapsed ? word('已過回報的重設時間；目前沒有可靠的未來重設時間', 'Reported reset time has passed; no reliable future reset time is available') : window.resetsOn ? `${word('回報重設日期', 'Reported reset date')} ${resetDate(window.resetsOn)} · ${word('未提供確切時間', 'exact time unavailable')}` : `${word('預定重設', 'Resets')} ${date(window.resetsAt)}`}</p></div>`;
+    return `<div class="window"><div class="window-title"><span>${esc(window.id)}${duration ? ` · ${duration}` : ''}</span><strong>${balance}</strong></div>${value === null ? '' : `<progress value="${value}" max="100" aria-label="${esc(window.id)} ${word('剩餘百分比', 'percent remaining')}"></progress>`}${quantities}<p>${elapsed ? word('已過回報的重設時間；目前沒有可靠的未來重設時間', 'Reported reset time has passed; no reliable future reset time is available') : window.resetsOn ? `${word('回報重設日期', 'Reported reset date')} ${resetDate(window.resetsOn)} · ${word('未提供確切時間', 'exact time unavailable')}` : window.resetLabel ? `${word('CLI 回報重設', 'CLI-reported reset')} ${esc(window.resetLabel)} · ${word('未提供完整時間', 'full timestamp unavailable')}` : `${word('預定重設', 'Resets')} ${date(window.resetsAt)}`}</p></div>`;
   }).join('');
   const guardrails = target.guardrails.filter((rule) => rule.outcome !== 'allowed').map((rule) => `<p class="notice">${esc(rule.outcome)}${rule.cooldownUntil ? ` · ${word('冷卻至', 'cooldown until')} ${date(rule.cooldownUntil)}` : ''}</p>`).join('');
   const cooling = query?.nextRefreshAt && Date.parse(query.nextRefreshAt) > Date.now();
