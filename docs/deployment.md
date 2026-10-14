@@ -153,6 +153,31 @@ form instead of its comparator equivalent. Avoid `0.x`, which admits all 0.x
 minors, and wildcard forms that omit a required patch minimum. See the
 [host compatibility guide](https://github.com/cats-inc/cats-platform/blob/main/docs/app-packages.md#host-and-sdk-compatibility).
 
+## Usage 0.5.3 — Grok/Muse allowance view (2026-10-15)
+
+Usage 0.5.3 is the compatible patch selected for Desktop 0.8.2 standard-profile
+preview. It adds Grok/Muse labels and capability-gated queries, preserves Muse's
+explicit Current/Weekly zero percentages and escaped reset text, and keeps missing
+Grok allowance unavailable. It creates no model work or direct provider calls.
+Muse acquisition requires native Windows and an existing Git winpty helper;
+reset text does not establish a complete date/timezone or window duration.
+
+The host floor stays `^0.6.0`, SDK stays `^1.2.0`, and the builder stays exact
+published Platform 0.6.0. Older hosts retain their supported query buttons;
+Grok/Muse require the Desktop 0.8.2 / SDK 1.5 bridge and Runtime 0.5.2 source.
+This is an additive renderer change with no storage/configuration migration.
+The existing tag workflow must check docs, install the pinned SDK, test and build
+the exact version. Expected App tag: `usage-v0.5.3`; verify its Actions run and
+downloaded assets after publication. The manual App-release entry is deferred.
+
+- Expected asset: `usage-0.5.3.catsapp`
+- Expected SHA-256 from the deterministic candidate: `80255075c08a73a67e08c9772fa9edf381c8bc165364b81d9ad39d54ca6a3794`
+- Selected immutable download address: https://github.com/cats-inc/cats-apps/releases/download/usage-v0.5.3/usage-0.5.3.catsapp
+- The workflow records this bump's immutable merge commit in source provenance.
+- App trust: local-user package; no OS-signing profile. Desktop 0.8.2 selects
+  standard profile: expected macOS signed + notarized, Windows unsigned without
+  a certificate, Linux n/a. Release validation must use isolated profiles.
+
 ## Usage 0.5.2 — Kiro-capable allowance view (2026-10-14)
 
 Usage 0.5.2 is the selected compatible patch for the Desktop 0.8.1 standard-profile

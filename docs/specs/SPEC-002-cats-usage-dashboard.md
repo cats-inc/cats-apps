@@ -8,11 +8,16 @@
 | Owner | cats-apps |
 | Product name | Usage |
 | App ID | cats.usage |
-| Workspace / version | apps/usage / 0.5.2 (selected for Desktop 0.8.1 standard preview) |
+| Workspace / version | apps/usage / 0.5.3 (selected for Desktop 0.8.2 standard preview) |
 | Placement | Installed App under Lobby Apps |
 | Initial delivery | Built package included with a coordinated Desktop release |
 
 ## Summary
+
+Usage 0.5.3 selects the Grok/Muse source follow-up below for Desktop 0.8.2 with
+SDK 1.5 and Runtime 0.5.2. Current compatibility floors and the published builder
+pin remain valid through capability gating. Expected immutable App pin,
+limitations and release gates are in [deployment](../deployment.md#usage-053--grokmuse-allowance-view-2026-10-15).
 
 Source follow-up (2026-10-15): capability-gated Grok and Muse queries use the
 existing host operation. Grok currently returns unavailable because billing lacks
