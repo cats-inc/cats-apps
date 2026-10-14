@@ -13,7 +13,7 @@
 | [SPEC-001](specs/SPEC-001-official-utility-app-packages.md) | v1 implemented | Package outputs, workspace boundaries, and delivery requirements |
 | [PLAN-001](plans/PLAN-001-official-app-package-foundation.md) | Implemented; publication/catalog deferred | Repository, SDK consumption, package production, and Desktop handoff |
 | [SPEC-002](specs/SPEC-002-cats-usage-dashboard.md) | Usage 0.2.0 published | Usage identity, native quantities, data truth, and staged scope |
-| [PLAN-002](plans/PLAN-002-cats-usage-dashboard.md) | Kiro verification/history deferred | Usage MVP, account quotas, persistence, and installed validation |
+| [PLAN-002](plans/PLAN-002-cats-usage-dashboard.md) | Five native quota queries implemented; history deferred | Usage MVP, account quotas, persistence, and installed validation |
 | [ADR-002](decisions/002-cli-backed-media-studio-vertical-slice.md) | Accepted | Independent Studio beside Usage; bounded CLI image generation and SDK 1.3 |
 | [SPEC-003](specs/SPEC-003-media-studio-vertical-slice.md) | Implemented; installed Desktop verified | Single-image generate/preview/download/reopen; editing/video deferred |
 | [PLAN-003](plans/PLAN-003-media-studio-vertical-slice.md) | Isolated acceptance passed | Installed Desktop accepted; direct-main delivery; no additional paid calls |

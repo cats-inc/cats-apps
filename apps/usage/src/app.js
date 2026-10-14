@@ -30,6 +30,10 @@ const queryMessage = (status, provider) => ({
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const date = (value) => value && Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString(locale, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 const number = (value) => metric(value, locale);
+const credits = (value) => typeof value === 'number' && Number.isFinite(value) && value >= 0
+  ? new Intl.NumberFormat(locale, { maximumFractionDigits: 6 }).format(value) : '—';
+const resetDate = (value) => /^\d{4}-\d{2}-\d{2}$/u.test(value) && Number.isFinite(Date.parse(value))
+  ? new Date(value).toLocaleDateString(locale, { timeZone: 'UTC', year: 'numeric', month: 'short', day: 'numeric' }) : '—';
 const age = (value) => {
   const minutes = Math.max(0, Math.floor((Date.now() - Date.parse(value)) / 60000));
   return Number.isFinite(minutes) ? minutes < 1 ? word('剛剛', 'just now') : word(`${minutes} 分鐘前`, `${minutes}m ago`) : word('未取得', 'not observed');
@@ -52,8 +56,9 @@ function targetCard(target) {
       : minutes % 60 === 0 ? word(`${number(minutes / 60)} 小時`, `${number(minutes / 60)} hours`) : `${number(minutes)} min`;
     const unit = window.unit === 'requests' ? 'requests' : window.unit === 'credits' ? 'credits' : null;
     const balance = window.unlimited ? word('不限額', 'Unlimited') : `${number(value)}${value === null ? '' : '%'} ${word('剩餘', 'remaining')}`;
-    const quantities = unit ? `<p>${word('已用', 'Used')} ${number(window.used)} / ${window.unlimited ? word('不限額', 'unlimited') : number(window.limit)} ${unit}${window.unlimited ? '' : ` · ${word('剩餘', 'remaining')} ${number(window.remaining)}`}</p>` : '';
-    return `<div class="window"><div class="window-title"><span>${esc(window.id)}${duration ? ` · ${duration}` : ''}</span><strong>${balance}</strong></div>${value === null ? '' : `<progress value="${value}" max="100" aria-label="${esc(window.id)} ${word('剩餘百分比', 'percent remaining')}"></progress>`}${quantities}<p>${elapsed ? word('已過回報的重設時間；目前沒有可靠的未來重設時間', 'Reported reset time has passed; no reliable future reset time is available') : `${word('預定重設', 'Resets')} ${date(window.resetsAt)}`}</p></div>`;
+    const quantity = unit === 'credits' ? credits : number;
+    const quantities = unit ? `<p>${word('已用', 'Used')} ${quantity(window.used)} / ${window.unlimited ? word('不限額', 'unlimited') : quantity(window.limit)} ${unit}${window.unlimited ? '' : ` · ${word('剩餘', 'remaining')} ${quantity(window.remaining)}`}</p>` : '';
+    return `<div class="window"><div class="window-title"><span>${esc(window.id)}${duration ? ` · ${duration}` : ''}</span><strong>${balance}</strong></div>${value === null ? '' : `<progress value="${value}" max="100" aria-label="${esc(window.id)} ${word('剩餘百分比', 'percent remaining')}"></progress>`}${quantities}<p>${elapsed ? word('已過回報的重設時間；目前沒有可靠的未來重設時間', 'Reported reset time has passed; no reliable future reset time is available') : window.resetsOn ? `${word('回報重設日期', 'Reported reset date')} ${resetDate(window.resetsOn)} · ${word('未提供確切時間', 'exact time unavailable')}` : `${word('預定重設', 'Resets')} ${date(window.resetsAt)}`}</p></div>`;
   }).join('');
   const guardrails = target.guardrails.filter((rule) => rule.outcome !== 'allowed').map((rule) => `<p class="notice">${esc(rule.outcome)}${rule.cooldownUntil ? ` · ${word('冷卻至', 'cooldown until')} ${date(rule.cooldownUntil)}` : ''}</p>`).join('');
   const cooling = query?.nextRefreshAt && Date.parse(query.nextRefreshAt) > Date.now();

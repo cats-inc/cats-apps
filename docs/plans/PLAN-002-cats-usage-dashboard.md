@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Usage 0.2.0 published and selected for Desktop 0.2.5 preview; Kiro verification and remaining U2/U3 deferred |
+| Status | Usage 0.2.0 published and selected for Desktop 0.2.5 preview; Kiro V3 query implemented; remaining U2/U3 deferred |
 | Owner | cats-apps |
 | Related spec | SPEC-002 |
 | Cross-repository dependencies | Platform PLAN-106; runtime PLAN-038 |
@@ -57,7 +57,7 @@ Follow-up 2026-09-11 (implementation/verification only):
 - [x] Require SDK ^1.2.0 and increment immutable package version to 0.2.0.
 - [x] Add multi-provider same-instance, no-auto-query and native-quantity VM tests.
 - [x] Complete built-package browser smoke and final independent review.
-- [ ] Kiro: authenticated success fixture and verified mapping before advertising a button.
+- [x] Kiro: authenticated V3 success and credit/date mapping verified 2026-10-14; capability-gated button and decimal/date rendering tested.
 
 Live numeric verification and the Kiro auth blocker are recorded in
 [Runtime research](../../../cats-runtime/docs/research/2026-09-11-additional-cli-quota-queries.md).
@@ -157,6 +157,7 @@ without a separately authorized collector-validation task.
 
 | Date | Update |
 |------|--------|
+| 2026-10-14 | Kiro V3 quota query connected through Runtime/host with fractional credits and reported calendar-only reset date. Six focused Usage tests passed, including deterministic package construction; independent cross-layer review found no P1/P2 issues. Runtime live collector/HTTP/client validation used one account query, no session/model turn. No publication or installed update. |
 | 2026-09-11 | Published Usage 0.2.0 from `1affcf38e427f636e1eedb45bf3d1ac4e78eeb4f`: release workflow docs/tests/build passed. Downloaded archive, lock, provenance and GitHub digest agree on SHA-256 `7d5455bb6b484b731becbc69b469e649fbfc433cf015586e0022c3045974c04e`; decoded payload matches the locally tested build. Desktop 0.2.5 selection and OS gates are owned by Platform PLAN-106. No installed update performed. |
 | 2026-09-11 | Unreleased Usage 0.2.0 adds Copilot/Claude/Antigravity refresh through SDK 1.2, native quantities and provider+instance isolation. Six App tests and authenticated built-package browser checks passed; independent review completed. Kiro remains unenabled pending authenticated evidence. |
 | 2026-09-11 | Usage 0.1.1 released from Apps commit `1a06d51523e0175f65a3a062be3581a659ada2ef`; workflow docs/tests/build passed. Downloaded archive, release lock, provenance and GitHub asset digest agree. Desktop 0.2.4 version/hash selection and three-platform release gates are tracked in Platform PLAN-106; no local installed update performed. |

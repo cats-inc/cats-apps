@@ -37,14 +37,17 @@ windows, incidents, guardrails, and memory coverage. Unknown metrics are null;
 account linkage remains unverified; no cross-instance quota sum is exposed.
 See the [host package guide](../../cats-platform/docs/app-packages.md).
 
-SDK 1.1 adds `usage.refreshQuota({provider:"codex",instance})`, backed by
+SDK v1 provides `usage.refreshQuota({provider,instance})` for the verified native
+Codex/Copilot/Claude/Antigravity/Kiro collectors, backed by
 `POST /api/apps/:id/usage/refresh?version=<exact-version>` and Runtime
 `POST /usage/refresh`. It requires both read and `runtime.telemetry.refresh`
 permissions and returns `{status,nextRefreshAt,snapshot}`. The fixed selector
 cannot carry commands, credentials or arbitrary URLs. Runtime invokes only native
-Codex CLI App Server account reads, with an 8-second deadline plus cleanup and
+CLI-owned quota-only account reads, with an 8-second deadline plus cleanup and
 60-second cooldown. The App neither reads CLI credentials nor calls provider APIs.
-Opening/polling Usage remains passive; only the Codex button requests fresh quota.
+Opening/polling Usage remains passive; only a capability-gated provider button
+requests fresh quota. Kiro retains decimal credits and optional `resetsOn` calendar
+reset date, labelled with exact time unavailable rather than an invented `resetsAt`.
 
 Account quotas, history, and refresh semantics are specified in
 [runtime SPEC-029](../../cats-runtime/docs/specs/SPEC-029-provider-account-quota-and-usage-snapshots.md).
@@ -55,4 +58,4 @@ The initial dashboard is read-only. Collector scheduling/configuration and any
 operation that contacts provider accounts remain host/runtime-owned. Cached UI
 refresh is separate from requesting a fresh upstream probe.
 
-*Last updated: 2026-09-29*
+*Last updated: 2026-10-14*

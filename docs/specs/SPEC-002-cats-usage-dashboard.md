@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Explicit native Codex/Copilot/Claude/Antigravity queries implemented; Kiro verification/history deferred |
+| Status | Explicit native Codex/Copilot/Claude/Antigravity/Kiro queries implemented; history deferred |
 | Owner | cats-apps |
 | Product name | Usage |
 | App ID | cats.usage |
@@ -35,8 +35,11 @@ requests (used/limit/remaining) and explicit unlimited entitlement without a fak
 100% balance. Missing values remain unknown and elapsed reset times remain stale.
 Claude fixed account windows use 0–100 utilization; dynamic model/extra billing
 windows are not yet covered. Antigravity's model-pool names do not imply support
-for the retired Gemini CLI. Kiro is not enabled: its no-session account probe
-returned an authentication-related failure, so no verified numeric fixture exists.
+for the retired Gemini CLI. Kiro V3 was verified and connected on 2026-10-14:
+its query button shows decimal credits and calendar-only reset dates with exact
+time unavailable. Runtime supplies optional `resetsOn` without inventing a reset
+instant. Bonus/add-on credits and overage billing remain unmapped. See
+[Kiro evidence](../../../cats-runtime/docs/research/2026-10-14-kiro-v3-account-quota.md).
 New collectors refuse custom startup arguments and non-native transports.
 The [Runtime evidence](../../../cats-runtime/docs/research/2026-09-11-additional-cli-quota-queries.md)
 records live Windows observations and limitations; it does not imply native
