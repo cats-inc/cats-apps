@@ -51,7 +51,7 @@ test('Codex button alone queries; polling stays passive; real windows, failures 
   hidden(); timer(); await settle(); assert.equal(queries, count);
 });
 
-test('provider capability gates queries and same-named instances have independent cooldowns', async () => {
+for (const kiroSupported of [false, true]) test(`provider gates/cooldowns on ${kiroSupported ? 'Kiro-capable' : 'older'} SDK host`, async () => {
   const elements = new Map();
   const element = (id) => {
     if (!elements.has(id)) elements.set(id, { listeners: {}, addEventListener(type, fn) { this.listeners[type] = fn; } });
@@ -65,13 +65,13 @@ test('provider capability gates queries and same-named instances have independen
   const emptyUsage = { observations: 0, costs: [], confidence: {} };
   const snapshot = { schemaVersion: 1, generatedAt: new Date().toISOString(), runtime: { epoch: 'fixture' }, coverage: {},
     totals: emptyUsage, targets: providers.map((provider) => ({ provider, instance: 'default', backend: 'cli', usage: emptyUsage,
-      quota: { status: 'unavailable', windows: [], refreshSupported: provider !== 'cursor' }, guardrails: [] })), sessions: [], incidents: [] };
+      quota: { status: 'unavailable', windows: [], refreshSupported: provider !== 'cursor' && (provider !== 'kiro' || kiroSupported) }, guardrails: [] })), sessions: [], incidents: [] };
   const queries = []; let timer; let hide;
   const context = vm.createContext({ ...model, console, Intl, Date, Map, Set, Number,
     document: { documentElement: { dataset: {} }, getElementById: element, visibilityState: 'visible' },
     window: { addEventListener(_type, fn) { hide = fn; } },
     setInterval(fn) { timer = fn; return 1; }, clearInterval() {}, setTimeout() { return 2; }, clearTimeout() {},
-    catsApp: { locale: 'zh-TW', theme: 'light', sdkVersion: '1.2.0', usage: {
+    catsApp: { locale: 'zh-TW', theme: 'light', sdkVersion: kiroSupported ? '1.4.0' : '1.3.0', usage: {
       async getSnapshot() { return structuredClone(snapshot); },
       async refreshQuota(target) {
         queries.push(JSON.parse(JSON.stringify(target)));
@@ -80,7 +80,7 @@ test('provider capability gates queries and same-named instances have independen
         quota.windows = target.provider === 'copilot' ? [
           { id: 'premium_interactions', unit: 'requests', used: 0, limit: 1500, remaining: 1500, usedPercent: 0 },
           { id: 'chat', unit: 'requests', used: 0, unlimited: true },
-        ] : target.provider === 'kiro' ? [{ id: 'credits', unit: 'credits', used: 0.37, limit: 1000, remaining: 999.63, usedPercent: 0.037, resetsOn: '2099-11-01', resetsAt: null }] : [{ id: 'weekly', usedPercent: target.provider === 'claude' ? 6 : 22, windowMinutes: 10080 }];
+        ] : target.provider === 'kiro' ? [{ id: 'credits', unit: 'credits', used: 0.37, limit: 1000, remaining: 999.63, usedPercent: 0.037, resetsOn: '2099-11-01', resetsAt: null }] : [{ id: 'weekly', usedPercent: target.provider === 'claude' ? 6 : 22, windowMinutes: 10080, resetsAt: '2099-11-01T00:00:00Z' }];
         return { status: 'updated', nextRefreshAt: new Date(Date.now() + 60000).toISOString(), snapshot: structuredClone(snapshot) };
       },
     } },
@@ -90,12 +90,23 @@ test('provider capability gates queries and same-named instances have independen
   await settle(); timer(); await settle();
   assert.equal(queries.length, 0);
   assert.doesNotMatch(root.innerHTML, /data-query-provider="cursor"/);
-  for (const index of [1, 2, 3, 4]) { buttons[index].listeners.click(); await settle(); }
-  assert.deepEqual(queries, ['copilot', 'claude', 'antigravity', 'kiro'].map((provider) => ({ provider, instance: 'default' })));
-  assert.match(root.innerHTML, /已用 0.37 \/ 1,000 credits · 剩餘 999.63/);
-  assert.match(root.innerHTML, /回報重設日期.*2099.*未提供確切時間/);
+  const supported = kiroSupported ? [0, 1, 2, 3, 4] : [0, 1, 2, 3];
+  for (const index of supported) { buttons[index].listeners.click(); await settle(); }
+  const expected = supported.map(index => providers[index]);
+  assert.deepEqual(queries, expected.map((provider) => ({ provider, instance: 'default' })));
+  if (kiroSupported) {
+    assert.match(root.innerHTML, /已用 0.37 \/ 1,000 credits · 剩餘 999.63/);
+    assert.match(root.innerHTML, /99\.963% 剩餘/);
+    assert.match(root.innerHTML, /回報重設日期.*2099.*未提供確切時間/);
+  } else {
+    assert.doesNotMatch(root.innerHTML, /data-query-provider="kiro"/);
+    buttons[4].listeners.click(); await settle();
+    assert.equal(queries.length, 4);
+    assert.match(root.innerHTML, /預定重設/);
+    assert.doesNotMatch(root.innerHTML, /回報重設日期/);
+  }
   assert.match(root.innerHTML, /1,500 requests/); assert.match(root.innerHTML, /不限額/);
   assert.match(root.innerHTML, /94%/); assert.match(root.innerHTML, /78%/);
-  buttons[1].listeners.click(); buttons[5].listeners.click(); await settle(); assert.equal(queries.length, 4);
-  hide(); buttons[0].listeners.click(); timer(); await settle(); assert.equal(queries.length, 4);
+  buttons[1].listeners.click(); buttons[5].listeners.click(); await settle(); assert.equal(queries.length, expected.length);
+  hide(); buttons[0].listeners.click(); timer(); await settle(); assert.equal(queries.length, expected.length);
 });

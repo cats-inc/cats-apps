@@ -55,7 +55,8 @@ function targetCard(target) {
     const duration = !minutes ? '' : minutes % 1440 === 0 ? word(`${number(minutes / 1440)} 天`, `${number(minutes / 1440)} days`)
       : minutes % 60 === 0 ? word(`${number(minutes / 60)} 小時`, `${number(minutes / 60)} hours`) : `${number(minutes)} min`;
     const unit = window.unit === 'requests' ? 'requests' : window.unit === 'credits' ? 'credits' : null;
-    const balance = window.unlimited ? word('不限額', 'Unlimited') : `${number(value)}${value === null ? '' : '%'} ${word('剩餘', 'remaining')}`;
+    const percentage = unit === 'credits' ? credits : number;
+    const balance = window.unlimited ? word('不限額', 'Unlimited') : `${percentage(value)}${value === null ? '' : '%'} ${word('剩餘', 'remaining')}`;
     const quantity = unit === 'credits' ? credits : number;
     const quantities = unit ? `<p>${word('已用', 'Used')} ${quantity(window.used)} / ${window.unlimited ? word('不限額', 'unlimited') : quantity(window.limit)} ${unit}${window.unlimited ? '' : ` · ${word('剩餘', 'remaining')} ${quantity(window.remaining)}`}</p>` : '';
     return `<div class="window"><div class="window-title"><span>${esc(window.id)}${duration ? ` · ${duration}` : ''}</span><strong>${balance}</strong></div>${value === null ? '' : `<progress value="${value}" max="100" aria-label="${esc(window.id)} ${word('剩餘百分比', 'percent remaining')}"></progress>`}${quantities}<p>${elapsed ? word('已過回報的重設時間；目前沒有可靠的未來重設時間', 'Reported reset time has passed; no reliable future reset time is available') : window.resetsOn ? `${word('回報重設日期', 'Reported reset date')} ${resetDate(window.resetsOn)} · ${word('未提供確切時間', 'exact time unavailable')}` : `${word('預定重設', 'Resets')} ${date(window.resetsAt)}`}</p></div>`;
