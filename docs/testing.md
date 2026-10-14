@@ -1,5 +1,14 @@
 # Testing
 
+Grok/Muse source validation (2026-10-15): 13 focused Usage/query/SDK-build tests
+passed, covering optional capabilities, passive polling, truthful missing Grok
+allowance, Muse explicit zero percentages and escaped native reset labels. A
+private Usage candidate build passed the production host in isolated Edge with
+Grok/Muse fixtures, permissions, filters, offline/stale/restart, narrow layout and
+disable revocation. The archive uses a separate output directory; published 0.5.2
+bytes are unchanged. [Live CLI evidence](../../cats-runtime/docs/research/2026-10-15-grok-muse-account-quota.md)
+is separate from those browser fixtures and created no model turn.
+
 Ask's historical local Windows fixture is recorded in
 [PLAN-005](plans/PLAN-005-personal-assistant-questions-mvp.md). Shared ingress
 requires new AC-10 evidence: one origin/port/tunnel serving Platform/Mobile plus

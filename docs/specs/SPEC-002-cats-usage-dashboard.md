@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Explicit native Codex/Copilot/Claude/Antigravity/Kiro queries implemented; history deferred |
+| Status | Seven CLI query seams supported in source; six numeric providers verified, Grok currently unavailable; history deferred |
 | Owner | cats-apps |
 | Product name | Usage |
 | App ID | cats.usage |
@@ -13,6 +13,19 @@
 | Initial delivery | Built package included with a coordinated Desktop release |
 
 ## Summary
+
+Source follow-up (2026-10-15): capability-gated Grok and Muse queries use the
+existing host operation. Grok currently returns unavailable because billing lacks
+included-allowance numbers; the UI invents neither zero nor 100% remaining. Muse
+native Windows reports Current/Weekly percentages from a fresh Turns 0 CLI;
+optional resetLabel is escaped and labelled as CLI text without complete time.
+No reset instant, timezone or window duration is inferred. Older hosts omit these
+capabilities and keep their existing provider buttons. Current host/SDK floors
+remain valid because both provider support and resetLabel are optional. The
+private candidate build was tested separately from immutable published 0.5.2;
+eventual publication requires a new Usage patch and the host's next compatible
+SDK minor. No version/pin/publication/installation changes in this source slice.
+See [live Runtime evidence](../../../cats-runtime/docs/research/2026-10-15-grok-muse-account-quota.md).
 
 Usage 0.5.2 is the selected Kiro-capable renderer for Desktop 0.8.1. Its existing
 host/SDK floors and published Platform 0.6.0 builder remain valid: Kiro queries

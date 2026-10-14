@@ -48,6 +48,22 @@ or an exported HTML file alone is insufficient.
 
 ### Phase 3: U2 Provider Account Quotas
 
+Grok/Muse source follow-up (2026-10-15):
+
+- [x] Add provider labels and capability-gated query behavior for Grok/Muse.
+- [x] Keep Grok missing numeric data unavailable without a synthetic balance.
+- [x] Preserve Muse zero usage and escaped native reset labels with full time unavailable.
+- [x] Verify old-host/no-capability behavior, passive polling and provider+instance routing.
+- [x] Pass 13 focused Usage/query/SDK-build tests and a private deterministic candidate build.
+- [x] Pass actual archive through the production host renderer in isolated Edge, with missing/zero/reset-label, lifecycle and narrow-layout fixtures.
+- [x] Complete independent cross-layer review; no remaining P1/P2 production findings.
+- [ ] Publish a new immutable Usage patch only after release authorization; coordinate SDK/provider support and Desktop selection separately.
+
+[Runtime evidence](../../../cats-runtime/docs/research/2026-10-15-grok-muse-account-quota.md)
+records live Grok unavailable and Muse Current/Weekly 0% used, with no model work.
+Muse currently requires native Windows plus installed Git winpty. This slice does
+not change versions, published bytes, selected Desktop pins or installed state.
+
 Follow-up 2026-09-11 (implementation/verification only):
 
 - [x] Generalize query buttons to Runtime-advertised Codex/Copilot/Claude/Antigravity targets.

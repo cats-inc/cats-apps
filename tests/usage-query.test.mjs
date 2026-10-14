@@ -51,6 +51,53 @@ test('Codex button alone queries; polling stays passive; real windows, failures 
   hidden(); timer(); await settle(); assert.equal(queries, count);
 });
 
+for (const provider of ['grok', 'muse']) test(`${provider} query uses host capability and renders only reported allowance`, async () => {
+  const elements = new Map();
+  const element = id => {
+    if (!elements.has(id)) elements.set(id, { listeners: {}, addEventListener(type, fn) { this.listeners[type] = fn; } });
+    return elements.get(id);
+  };
+  const button = element('query'); button.dataset = { queryQuota: 'default', queryProvider: provider };
+  const root = element('app'); root.setAttribute = () => {}; root.querySelectorAll = () => [button];
+  const usage = { observations: 0, costs: [], confidence: {} };
+  const quota = { status: 'unavailable', windows: [], refreshSupported: false };
+  const snapshot = { schemaVersion: 1, generatedAt: new Date().toISOString(), runtime: { epoch: 'fixture' }, coverage: {},
+    totals: usage, targets: [{ provider, instance: 'default', backend: 'cli', usage, quota, guardrails: [] }], sessions: [], incidents: [] };
+  let queries = 0, timer;
+  const context = vm.createContext({ ...model, console, Intl, Date, Map, Set, Number,
+    document: { documentElement: { dataset: {} }, getElementById: element, visibilityState: 'visible' },
+    window: { addEventListener() {} }, setInterval(callback) { timer = callback; return 1; }, clearInterval() {}, setTimeout() {}, clearTimeout() {},
+    catsApp: { locale: 'zh-TW', theme: 'light', sdkVersion: '1.4.0', version: '0.5.2', usage: {
+      async getSnapshot() { return structuredClone(snapshot); },
+      async refreshQuota(target) {
+        queries++; assert.deepEqual(JSON.parse(JSON.stringify(target)), { provider, instance: 'default' });
+        if (provider === 'muse') Object.assign(quota, { status: 'available', freshness: 'fresh', observedAt: new Date().toISOString(), source: 'muse.tui.usage', windows: [
+          { id: 'current', usedPercent: 0, resetsAt: null, resetLabel: 'at 7:27 AM' },
+          { id: 'weekly', usedPercent: 0, resetsAt: null, resetLabel: 'Oct 19 at 8:00 AM' },
+        ] });
+        return { status: provider === 'muse' ? 'updated' : 'unavailable', nextRefreshAt: null, snapshot: structuredClone(snapshot) };
+      },
+    } },
+  });
+  vm.runInContext((await readFile(new URL('../apps/usage/src/app.js', import.meta.url), 'utf8')).replace(/^import .*;\s*/u, ''), context);
+  const settle = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
+  await settle();
+  assert.doesNotMatch(root.innerHTML, /data-query-provider=/);
+  button.listeners.click(); await settle(); assert.equal(queries, 0);
+  quota.refreshSupported = true; timer(); await settle();
+  assert.match(root.innerHTML, new RegExp(`data-query-provider="${provider}"`));
+  button.listeners.click(); await settle(); assert.equal(queries, 1);
+  if (provider === 'muse') {
+    assert.match(root.innerHTML, /100% 剩餘/);
+    assert.match(root.innerHTML, /CLI 回報重設 at 7:27 AM.*未提供完整時間/);
+    assert.match(root.innerHTML, /Oct 19 at 8:00 AM/);
+    quota.windows[0].resetLabel = '<script>PRIVATE</script>'; timer(); await settle();
+    assert.doesNotMatch(root.innerHTML, /<script>PRIVATE<\/script>/);
+    assert.match(root.innerHTML, /&lt;script&gt;PRIVATE/);
+  } else assert.doesNotMatch(root.innerHTML, /100% 剩餘/);
+  timer(); await settle(); assert.equal(queries, 1);
+});
+
 for (const kiroSupported of [false, true]) test(`provider gates/cooldowns on ${kiroSupported ? 'Kiro-capable' : 'older'} SDK host`, async () => {
   const elements = new Map();
   const element = (id) => {
