@@ -8,11 +8,17 @@
 | Owner | cats-apps |
 | Product name | Usage |
 | App ID | cats.usage |
-| Workspace / version | apps/usage / 0.2.0 (published; selected for Desktop 0.2.5 preview) |
+| Workspace / version | apps/usage / 0.5.2 (selected for Desktop 0.8.1 standard preview) |
 | Placement | Installed App under Lobby Apps |
 | Initial delivery | Built package included with a coordinated Desktop release |
 
 ## Summary
+
+Usage 0.5.2 is the selected Kiro-capable renderer for Desktop 0.8.1. Its existing
+host/SDK floors and published Platform 0.6.0 builder remain valid: Kiro queries
+are gated by host capability, and calendar-only resets are optional. Older hosts
+retain the four existing query providers. Release details and immutable hash are
+in [deployment](../deployment.md#usage-052--kiro-capable-allowance-view-2026-10-14).
 
 Delivered on 2026-09-10: real packaged renderer, overview/provider/session filters,
 per-currency cost, confidence/coverage, incidents/guardrails, unknown/zero/offline/

@@ -153,6 +153,36 @@ form instead of its comparator equivalent. Avoid `0.x`, which admits all 0.x
 minors, and wildcard forms that omit a required patch minimum. See the
 [host compatibility guide](https://github.com/cats-inc/cats-platform/blob/main/docs/app-packages.md#host-and-sdk-compatibility).
 
+## Usage 0.5.2 — Kiro-capable allowance view (2026-10-14)
+
+Usage 0.5.2 is the selected compatible patch for the Desktop 0.8.1 standard-profile
+preview. It adds capability-gated Kiro quota queries, preserves fractional credit
+quantities and their percentage precision, and labels reported calendar reset dates with exact time unavailable.
+The maintainer publisher and copyright correction from 0.5.1 stays in the archive.
+No storage/configuration format changes or data migration are involved.
+
+The manifest keeps host floor `^0.6.0` and SDK `^1.2.0`, and the builder keeps
+exact published Platform 0.6.0: no new build/public SDK symbol is used. On older
+hosts the existing four quota providers work and Kiro has no query button; absent
+`resetsOn` uses timestamp rendering. Kiro requires the new Platform 0.8.1/SDK 1.4
+bridge and Runtime 0.5.1 collector. The App never calls a provider directly.
+
+Local validation: 11 focused query/presentation/SDK-build tests passed, including
+old/new host capability checks and deterministic source-free construction. The final
+archive passed the isolated Platform browser acceptance for Kiro credits, date-only
+reset display, precise percentages and existing App lifecycle behavior. Native
+Kiro collection was separately live-verified without a session or model turn.
+The tagged workflow runs docs, pinned SDK install, App tests and exact-version
+build. Publication results: `usage-v0.5.2` and its release workflow.
+
+- Asset: `usage-0.5.2.catsapp`
+- SHA-256: `6338ece00357f8eaff44b18fc42ef28647cce8242e5ede88bce48f6e1744c597`
+- URL: https://github.com/cats-inc/cats-apps/releases/download/usage-v0.5.2/usage-0.5.2.catsapp
+- Source: immutable merge commit of this Usage bump, recorded by provenance.
+- App trust: local-user package; it has no OS-signing profile. Desktop 0.8.1 uses
+  standard profile (macOS signed + notarized; Windows unsigned: no certificate;
+  Linux n/a). No installed App is replaced during validation or publication.
+
 ## Current State
 
 Usage 0.5.1 ([published](https://github.com/cats-inc/cats-apps/releases/tag/usage-v0.5.1))
