@@ -57,7 +57,7 @@ test('provider capability gates queries and same-named instances have independen
     if (!elements.has(id)) elements.set(id, { listeners: {}, addEventListener(type, fn) { this.listeners[type] = fn; } });
     return elements.get(id);
   };
-  const providers = ['codex', 'copilot', 'claude', 'antigravity', 'kiro'];
+  const providers = ['codex', 'copilot', 'claude', 'antigravity', 'kiro', 'cursor'];
   const buttons = providers.map((provider) => Object.assign(element(`query-${provider}`), {
     dataset: { queryQuota: 'default', queryProvider: provider },
   }));
@@ -65,7 +65,7 @@ test('provider capability gates queries and same-named instances have independen
   const emptyUsage = { observations: 0, costs: [], confidence: {} };
   const snapshot = { schemaVersion: 1, generatedAt: new Date().toISOString(), runtime: { epoch: 'fixture' }, coverage: {},
     totals: emptyUsage, targets: providers.map((provider) => ({ provider, instance: 'default', backend: 'cli', usage: emptyUsage,
-      quota: { status: 'unavailable', windows: [], refreshSupported: provider !== 'kiro' }, guardrails: [] })), sessions: [], incidents: [] };
+      quota: { status: 'unavailable', windows: [], refreshSupported: provider !== 'cursor' }, guardrails: [] })), sessions: [], incidents: [] };
   const queries = []; let timer; let hide;
   const context = vm.createContext({ ...model, console, Intl, Date, Map, Set, Number,
     document: { documentElement: { dataset: {} }, getElementById: element, visibilityState: 'visible' },
@@ -80,7 +80,7 @@ test('provider capability gates queries and same-named instances have independen
         quota.windows = target.provider === 'copilot' ? [
           { id: 'premium_interactions', unit: 'requests', used: 0, limit: 1500, remaining: 1500, usedPercent: 0 },
           { id: 'chat', unit: 'requests', used: 0, unlimited: true },
-        ] : [{ id: 'weekly', usedPercent: target.provider === 'claude' ? 6 : 22, windowMinutes: 10080 }];
+        ] : target.provider === 'kiro' ? [{ id: 'credits', unit: 'credits', used: 0.37, limit: 1000, remaining: 999.63, usedPercent: 0.037, resetsOn: '2099-11-01', resetsAt: null }] : [{ id: 'weekly', usedPercent: target.provider === 'claude' ? 6 : 22, windowMinutes: 10080 }];
         return { status: 'updated', nextRefreshAt: new Date(Date.now() + 60000).toISOString(), snapshot: structuredClone(snapshot) };
       },
     } },
@@ -89,11 +89,13 @@ test('provider capability gates queries and same-named instances have independen
   const settle = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
   await settle(); timer(); await settle();
   assert.equal(queries.length, 0);
-  assert.doesNotMatch(root.innerHTML, /data-query-provider="kiro"/);
-  for (const index of [1, 2, 3]) { buttons[index].listeners.click(); await settle(); }
-  assert.deepEqual(queries, ['copilot', 'claude', 'antigravity'].map((provider) => ({ provider, instance: 'default' })));
+  assert.doesNotMatch(root.innerHTML, /data-query-provider="cursor"/);
+  for (const index of [1, 2, 3, 4]) { buttons[index].listeners.click(); await settle(); }
+  assert.deepEqual(queries, ['copilot', 'claude', 'antigravity', 'kiro'].map((provider) => ({ provider, instance: 'default' })));
+  assert.match(root.innerHTML, /已用 0.37 \/ 1,000 credits · 剩餘 999.63/);
+  assert.match(root.innerHTML, /回報重設日期.*2099.*未提供確切時間/);
   assert.match(root.innerHTML, /1,500 requests/); assert.match(root.innerHTML, /不限額/);
   assert.match(root.innerHTML, /94%/); assert.match(root.innerHTML, /78%/);
-  buttons[1].listeners.click(); buttons[4].listeners.click(); await settle(); assert.equal(queries.length, 3);
-  hide(); buttons[0].listeners.click(); timer(); await settle(); assert.equal(queries.length, 3);
+  buttons[1].listeners.click(); buttons[5].listeners.click(); await settle(); assert.equal(queries.length, 4);
+  hide(); buttons[0].listeners.click(); timer(); await settle(); assert.equal(queries.length, 4);
 });
