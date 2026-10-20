@@ -148,5 +148,8 @@ workflow 尚未執行，目錄也尚未發布；Platform 的 preview Market 另�
 同日獨立審查後：build 套用 Platform 的欄位上限並只保留 publisher 的 `name`／`homepage`；
 key 腳本可用 `--secret-name` 暫存新 key，workflow 依 `CATALOG_SIGNING_SECRET` 變數選 secret，
 且只對 `main` 最新 commit 簽章；secret 已寫入但公鑰寫檔失敗時，錯誤訊息保留公鑰以便補回。
+第二次審查後：key 腳本不再覆寫既有 secret，第二把起預設存成 `CATALOG_SIGNING_KEY_<KEY_ID>`；
+workflow 改為比對簽章輸入是否仍與 `main` 相同，並把 package 與 Node 版本檔納入觸發路徑。
+使用者要求後，GitHub Pages 已以 Actions 為 source 啟用，`github-pages` environment 只允許 `main`。
 
 *Last updated: 2026-10-20*

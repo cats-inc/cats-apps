@@ -8,7 +8,7 @@ import { encodeAppPackage } from '@cats-inc/cats-platform/app-sdk';
 import {
   CATALOG_TTL_MS, buildCatalog, buildCatalogPayload, parseArgs, signCatalog, validateCatalogSource, verifyCatalogEnvelope,
 } from '../scripts/build-catalog.mjs';
-import { createAndStoreCatalogKey, parseKeyArgs } from '../scripts/new-catalog-key.mjs';
+import { createAndStoreCatalogKey, parseKeyArgs, secretNameForKey } from '../scripts/new-catalog-key.mjs';
 
 const readJson = async (url) => JSON.parse(await readFile(new URL(url, import.meta.url), 'utf8'));
 const vectorKey = await readJson('./fixtures/app-catalog/test-key.json');
@@ -166,29 +166,36 @@ test('the committed catalog source and key list are well formed', async () => {
   }
 });
 
-test('the key script stores the secret before publishing its public key', async (t) => {
+test('the key script stores the secret before publishing its public key and never replaces one', async (t) => {
   const dir = await mkdtemp(path.join(tmpdir(), 'catalog-key-'));
   t.after(() => rm(dir, { recursive: true, force: true }));
   const keysPath = path.join(dir, 'signing-keys.json');
   await writeFile(keysPath, JSON.stringify({ schemaVersion: 1, keys: [] }));
-  await assert.rejects(createAndStoreCatalogKey('rotated-key', { keysPath, storeSecret: async () => { throw new Error('gh failed'); } }), /gh failed/);
+  const secrets = new Map();
+  const gh = { listSecrets: async () => [...secrets.keys()], storeSecret: async (name, value) => { secrets.set(name, value); } };
+  await assert.rejects(createAndStoreCatalogKey('first-key', { keysPath, ...gh, storeSecret: async () => { throw new Error('gh failed'); } }), /gh failed/);
   assert.deepEqual(JSON.parse(await readFile(keysPath, 'utf8')).keys, []);
-  let secret = '';
-  let secretName = '';
-  const entry = await createAndStoreCatalogKey('rotated-key', { keysPath, secretName: 'CATALOG_SIGNING_KEY_NEXT',
-    storeSecret: async (name, value) => { secretName = name; secret = value; } });
-  assert.equal(secretName, 'CATALOG_SIGNING_KEY_NEXT');
-  assert.match(secret, /^-----BEGIN PRIVATE KEY-----/);
-  assert.deepEqual(JSON.parse(await readFile(keysPath, 'utf8')).keys, [entry]);
-  const envelope = signCatalog(vectorPayload, secret, [entry]);
-  assert.equal(envelope.keyId, 'rotated-key');
-  await assert.rejects(createAndStoreCatalogKey('rotated-key', { keysPath, storeSecret: async () => {} }), /already exists/);
-  await assert.rejects(createAndStoreCatalogKey('No', { keysPath, storeSecret: async () => {} }), /Key ID must be/);
-  await assert.rejects(createAndStoreCatalogKey('another-key', { keysPath, secretName: 'lower', storeSecret: async () => {} }), /Secret name must be/);
+
+  // The first key is the active CATALOG_SIGNING_KEY; later keys get their own secret.
+  const first = await createAndStoreCatalogKey('first-key', { keysPath, ...gh });
+  assert.equal(first.secretName, 'CATALOG_SIGNING_KEY');
+  const rotated = await createAndStoreCatalogKey('rotated-key', { keysPath, ...gh });
+  assert.equal(rotated.secretName, secretNameForKey('rotated-key'));
+  assert.equal(rotated.secretName, 'CATALOG_SIGNING_KEY_ROTATED_KEY');
+  assert.match(secrets.get('CATALOG_SIGNING_KEY_ROTATED_KEY'), /^-----BEGIN PRIVATE KEY-----/);
+  assert.deepEqual(JSON.parse(await readFile(keysPath, 'utf8')).keys, [first.entry, rotated.entry]);
+  assert.equal(signCatalog(vectorPayload, secrets.get('CATALOG_SIGNING_KEY_ROTATED_KEY'), [rotated.entry]).keyId, 'rotated-key');
+  const active = secrets.get('CATALOG_SIGNING_KEY');
+  await assert.rejects(createAndStoreCatalogKey('third-key', { keysPath, ...gh, secretName: 'CATALOG_SIGNING_KEY' }), /already exists; choose a new name/);
+  assert.equal(secrets.get('CATALOG_SIGNING_KEY'), active);
+
+  await assert.rejects(createAndStoreCatalogKey('rotated-key', { keysPath, ...gh }), /Key ID already exists/);
+  await assert.rejects(createAndStoreCatalogKey('No', { keysPath, ...gh }), /Key ID must be/);
+  await assert.rejects(createAndStoreCatalogKey('another-key', { keysPath, ...gh, secretName: 'lower' }), /Secret name must be/);
   // A stored secret whose public key cannot be recorded stays recoverable from the error.
   const orphanPath = path.join(dir, 'orphan.json');
   await writeFile(orphanPath, JSON.stringify({ schemaVersion: 1, keys: [] }));
-  await assert.rejects(createAndStoreCatalogKey('orphan-key', { keysPath: orphanPath, storeSecret: async () => { await writeFile(orphanPath, 'not json'); } }),
+  await assert.rejects(createAndStoreCatalogKey('orphan-key', { keysPath: orphanPath, listSecrets: async () => [], storeSecret: async () => { await writeFile(orphanPath, 'not json'); } }),
     /The secret CATALOG_SIGNING_KEY was stored; add this public key by hand: {"keyId":"orphan-key"/);
   assert.deepEqual(parseKeyArgs(['--key-id', 'next', '--secret-name', 'CATALOG_SIGNING_KEY_NEXT']), { keyId: 'next', secretName: 'CATALOG_SIGNING_KEY_NEXT' });
   assert.throws(() => parseKeyArgs(['--secret-name', 'X']), /Missing --key-id/);

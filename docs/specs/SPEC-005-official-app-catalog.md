@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Status: Implemented, not yet published; GitHub Pages is not enabled (2026-10-20).
+- Status: Implemented, not yet published; GitHub Pages enabled with Actions as its source (2026-10-20).
 - Owner: cats-apps produces and signs the catalog; cats-platform consumes it and owns the trust root.
 - Decision: [Platform ADR-121](../../../cats-platform/docs/decisions/121-distribute-apps-independently-with-host-owned-lifecycle.md).
 - Requirements: [Platform SPEC-120 FR-09](../../../cats-platform/docs/specs/SPEC-120-app-market-and-lifecycle.md).
@@ -25,16 +25,17 @@ by itself, and the catalog never changes a Desktop's bundled App selection.
   which writes the secret through `gh` and never prints or stores the private key.
 - Trust: Platform embeds the same public key in `src/platform/apps/catalogTrust.ts`.
   Rotating to a new key or moving the endpoint requires a Desktop release first. A new
-  key is staged under another secret name and activated with the `CATALOG_SIGNING_SECRET`
-  repository variable (see the deployment SOP).
+  key is stored under its own secret (the script never overwrites one) and activated with
+  the `CATALOG_SIGNING_SECRET` repository variable (see the deployment SOP).
 - Promotion: a pull request edits `catalog/apps.json`; the publish workflow verifies
   every listed artifact on the pull request and signs and deploys on `main`.
 - Expiry: each build sets `issuedAt`, `expiresAt = issuedAt + 30 days` and
   `revision = issuedAt` in epoch seconds. A weekly scheduled run re-signs the catalog.
   GitHub pauses scheduled workflows after 60 days without repository activity, so a
   quiet repository needs a manual `workflow_dispatch` run before the catalog expires.
-- Signing runs only for the current tip of `main`, never for another branch or an older
-  commit, so a re-run cannot re-list a withdrawn version under a newer revision.
+- Signing runs only from `main` and only while the run's catalog inputs match `main`, so
+  another branch or a superseded commit cannot re-list a withdrawn version under a newer
+  revision. Pages deploys only from `main` through the `github-pages` environment.
 - Custody limit: an Actions secret protects against tampering on Pages or in transit,
   not against a compromised repository or workflow. A protected environment with
   required approval, or offline signing, is a later hardening step.

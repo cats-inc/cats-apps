@@ -440,22 +440,29 @@ One-time repository settings:
 - `CATALOG_SIGNING_KEY` was set on 2026-10-20 with
   `node scripts/new-catalog-key.mjs --key-id cats-apps-catalog-2026-10`, which also
   added the public key to `catalog/signing-keys.json`.
-- GitHub Pages must use **GitHub Actions** as its source (Settings > Pages). Pages is
-  not enabled yet, so the published path returns 404 until the first deployment.
+- GitHub Pages was enabled on 2026-10-20 with **GitHub Actions** as its source
+  (`gh api --method POST repos/cats-inc/cats-apps/pages -f build_type=workflow`). GitHub
+  created the `github-pages` environment, which allows deployments from `main` only.
+  The published path returns 404 until the first deployment.
 
-The publish job signs only when the run is for the current tip of `main`; a dispatch
-from another branch or a re-run of an older commit fails before signing.
+The publish job signs only from `main`, and only when the run's catalog inputs (the
+catalog, build script, workflow and Node/package files) still match `main`. A dispatch
+from another branch, or a re-run of a commit whose inputs `main` has since changed,
+fails before signing; the newer commit's own run publishes. The trigger paths list the
+same inputs, so every change to them starts a run.
 
-Key rotation keeps the active key signing until Desktops trust the new one:
+Key rotation keeps the active key signing until Desktops trust the new one. The key
+script never overwrites an existing secret, and after the first key it stores each new
+key as `CATALOG_SIGNING_KEY_<KEY_ID>` (uppercase, other characters as `_`):
 
-1. `node scripts/new-catalog-key.mjs --key-id <new-id> --secret-name CATALOG_SIGNING_KEY_NEXT`
-   stores the new private key under a separate secret and appends its public key to
-   `catalog/signing-keys.json`. Merge that change; the workflow still signs with the
-   old key, because it picks the secret named by the `CATALOG_SIGNING_SECRET`
-   repository variable (default `CATALOG_SIGNING_KEY`).
+1. `node scripts/new-catalog-key.mjs --key-id <new-id>` stores the new private key under
+   its own secret, prints that name and appends the public key to
+   `catalog/signing-keys.json`. Merge that change; the workflow keeps signing with the
+   secret named by the `CATALOG_SIGNING_SECRET` repository variable (default
+   `CATALOG_SIGNING_KEY`), which is still the old key.
 2. Add the new public key to Platform `src/platform/apps/catalogTrust.ts` and ship it in
    a Desktop release. Wait until supported Desktops have it.
-3. Set the `CATALOG_SIGNING_SECRET` variable to `CATALOG_SIGNING_KEY_NEXT` and run the
+3. Set the `CATALOG_SIGNING_SECRET` variable to the new secret's name and run the
    workflow. Desktops without the new key keep their last verified catalog until it
    expires, so step 2 must come first.
 4. Remove the old key from the trust root and `signing-keys.json` in later releases, and

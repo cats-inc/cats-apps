@@ -8,7 +8,7 @@
 | [SPEC-004](specs/SPEC-004-personal-assistant-questions-mvp.md) | Local Windows prototype passed; shared ingress pending | Grok-first tutorial/composer and assisted initiation; Spark/Meta remain unverified |
 | [PLAN-005](plans/PLAN-005-personal-assistant-questions-mvp.md) | A4a shared ingress/tutorial/sandbox rework next | Platform multi-component contract, App-owned services, unified package and installed acceptance |
 | [Ask research baseline](research/2026-09-29-personal-assistant-delegation-baseline.md) | Historical baseline plus follow-up evidence | Bot receipts, CLI enrollment failure, current host limits and revised App ownership |
-| [SPEC-005](specs/SPEC-005-official-app-catalog.md) | Implemented; Pages not enabled, unpublished | Signed official catalog: source, build, schema v1, key and promotion |
+| [SPEC-005](specs/SPEC-005-official-app-catalog.md) | Implemented; Pages enabled, not yet published | Signed official catalog: source, build, schema v1, key and promotion |
 | [PLAN-004](plans/PLAN-004-independent-app-distribution.md) | A2 catalog implemented, unpublished; A1/A3/A4 open | SDK consumption, official catalog and independent Usage/Studio delivery; governed by Platform ADR-121/SPEC-120 |
 | [ADR-001](decisions/001-own-official-utility-apps-and-coordinate-desktop-distribution.md) | Accepted | Official utility monorepo, individual packages, coordinated Desktop distribution |
 | [SPEC-001](specs/SPEC-001-official-utility-app-packages.md) | v1 implemented | Package outputs, workspace boundaries, and delivery requirements |
