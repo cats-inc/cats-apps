@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "publisher": { "name": "sammykenny2", "homepage": "https://github.com/cats-inc/cats-apps" },
+  "apps": [
+    {
+      "id": "cats.usage",
+      "channels": { "stable": "0.5.3" },
+      "versions": [
+        {
+          "version": "0.5.3",
+          "artifact": {
+            "url": "https://github.com/cats-inc/cats-apps/releases/download/usage-v0.5.3/usage-0.5.3.catsapp",
+            "size": 15062,
+            "sha256": "80255075c08a73a67e08c9772fa9edf381c8bc165364b81d9ad39d54ca6a3794"
+          },
+          "notes": "新增 Grok 與 Muse CLI 額度查詢。"
+        }
+      ]
+    },
+    {
+      "id": "cats.studio",
+      "channels": { "stable": "0.2.1" },
+      "versions": [
+        {
+          "version": "0.2.1",
+          "artifact": {
+            "url": "https://github.com/cats-inc/cats-apps/releases/download/studio-v0.2.1/studio-0.2.1.catsapp",
+            "size": 122651,
+            "sha256": "be0ae730c0948bf5dde7a5a519321bc86506a0bcea595783c7f8df66dc0dcb21"
+          },
+          "notes": "用 Grok 產生單張圖片；本版修正發行者與著作權資訊。"
+        }
+      ]
+    }
+  ]
+}

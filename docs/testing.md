@@ -22,6 +22,10 @@ archive, SDK and host with an isolated fixture Runtime. Pass the Studio lock and
 the existing sample JPEG; this check never calls Grok. Use a separate output
 directory when rebuilding an unpublished version with changed bytes.
 
+`tests/catalog.test.mjs` covers the catalog source rules, the artifact-derived build, signing
+and the contract vector shared with Platform; it never contacts GitHub. The publish
+workflow verifies the real release artifacts (`node scripts/build-catalog.mjs --dry-run`).
+
 `tests/sdk-build.test.mjs` builds Usage and Studio through the pinned Platform App SDK,
 checks the exact pin, the range-floor resolution for the host grammar, and that each
 archive passes the installer's validation at its declared floor and, when its ranges accept it,

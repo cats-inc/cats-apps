@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Status: Planned; documentation only, implementation/publication not started.
+- Status: In progress; A2 catalog implemented and unpublished (2026-10-20); A1/A3/A4 open.
 - Owner: cats-apps；宿主生命周期／Market／SDK 由 cats-platform 負責。
 - Governing decision: [Platform ADR-121](../../../cats-platform/docs/decisions/121-distribute-apps-independently-with-host-owned-lifecycle.md).
 - Requirements: [Platform SPEC-120](../../../cats-platform/docs/specs/SPEC-120-app-market-and-lifecycle.md).
@@ -61,13 +61,15 @@ lock 與來源紀錄。Usage 0.4.0 已發布，Studio 0.1.0 有本機 artifact �
 
 - [ ] 維護 Usage／Studio 介紹、圖示、權限摘要、需求與中英文 release notes。
 - [ ] 每版本記錄 App ID、immutable URL、size、SHA-256、來源 commit、相容範圍與所需能力。
-- [ ] stable／preview 指向已驗證精確版本，與 GitHub repo-wide latest 分開。
-- [ ] 實作 catalog schema 檢查與已發布 artifact identity 檢查，拒絕重複／覆寫版本。
-- [ ] promotion workflow 產生遞增 revision／expiry、簽章並原子發布目錄；key 不進 repo。
-- [ ] 用暫存 key 測試換 key、撤回／恢復版本、過期與錯誤 metadata；正式 trust 由 Platform 決定。
+- [x] stable／preview 指向已驗證精確版本，與 GitHub repo-wide latest 分開。
+- [x] 實作 catalog schema 檢查與已發布 artifact identity 檢查，拒絕重複／覆寫版本。
+- [x] promotion workflow 產生遞增 revision／expiry、簽章並原子發布目錄；key 不進 repo。
+- [x] 用暫存 key 測試換 key、撤回／恢復版本、過期與錯誤 metadata；正式 trust 由 Platform 決定。
 
 Catalog promotion 是發布動作，App tag 發布不自動選入目錄或 Desktop；目錄撤回也不刪作品。
-本機 fixture endpoint 與 key 不能混入正式 metadata。公開 endpoint／key 管理在發布準備時確定。
+本機 fixture endpoint 與 key 不能混入正式 metadata。Endpoint 與 key 於 2026-10-20 決定，見
+[SPEC-005](../specs/SPEC-005-official-app-catalog.md)；介紹與權限取自 artifact manifest，
+notes 目前只有中文，來源 commit 尚未寫入目錄，因此前兩項仍未完成。
 
 ## A3 — Independent release candidates
 
@@ -135,4 +137,19 @@ host，以及範圍接受時 pin 的 host。新增 `tests/sdk-build.test.mjs`，
 先執行 `npm ci --ignore-scripts`。以 registry 上的 Platform 0.6.0 驗證：12 項 App 測試通過。
 沒有改 App 版本、manifest 或 release。
 
-*Last updated: 2026-09-29*
+2026-10-20：使用者要求實作 catalog workflow、程式與文件並暫不推送，同時授權產生正式 key。
+新增 `catalog/apps.json`（Usage 0.5.3、Studio 0.2.1）、`catalog/signing-keys.json`、
+`scripts/build-catalog.mjs`、`scripts/new-catalog-key.mjs`、`.github/workflows/publish-catalog.yaml`、
+`tests/catalog.test.mjs` 與和 Platform 共用的 contract vector；`CATALOG_SIGNING_KEY` 已由腳本
+寫入 repo secret（keyId `cats-apps-catalog-2026-10`）。`node scripts/build-catalog.mjs --dry-run`
+實際下載兩個已發布 artifact，size、SHA-256 與 manifest identity 都相符。本機 `npm test`、
+`npm run check:docs` 與 `git diff --check` 的結果記於本次交付回報。Pages 尚未啟用，
+workflow 尚未執行，目錄也尚未發布；Platform 的 preview Market 另記於 PLAN-112。
+同日獨立審查後：build 套用 Platform 的欄位上限並只保留 publisher 的 `name`／`homepage`；
+key 腳本可用 `--secret-name` 暫存新 key，workflow 依 `CATALOG_SIGNING_SECRET` 變數選 secret，
+且只對 `main` 最新 commit 簽章；secret 已寫入但公鑰寫檔失敗時，錯誤訊息保留公鑰以便補回。
+第二次審查後：key 腳本不再覆寫既有 secret，第二把起預設存成 `CATALOG_SIGNING_KEY_<KEY_ID>`；
+workflow 改為比對簽章輸入是否仍與 `main` 相同，並把 package 與 Node 版本檔納入觸發路徑。
+使用者要求後，GitHub Pages 已以 Actions 為 source 啟用，`github-pages` environment 只允許 `main`。
+
+*Last updated: 2026-10-20*

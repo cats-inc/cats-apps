@@ -1,0 +1,77 @@
+name: Publish the App catalog
+
+# Promotion is a reviewed change to catalog/apps.json. A pull request verifies every
+# listed artifact without the signing key; main signs and deploys the catalog to Pages
+# at catalog/v1/catalog.json. The weekly run re-signs it before the 30-day expiry.
+# GitHub pauses scheduled workflows after 60 days without repository activity.
+on:
+  pull_request:
+    branches: [main]
+    paths: ['catalog/**', 'scripts/build-catalog.mjs', 'package.json', 'package-lock.json', '.nvmrc', '.github/workflows/publish-catalog.yaml']
+  push:
+    branches: [main]
+    paths: ['catalog/**', 'scripts/build-catalog.mjs', 'package.json', 'package-lock.json', '.nvmrc', '.github/workflows/publish-catalog.yaml']
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One catalog build at a time keeps the time-based revision increasing.
+concurrency:
+  group: app-catalog-${{ github.event_name == 'pull_request' && github.ref || 'publish' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Install the pinned Platform App SDK
+        run: npm ci --ignore-scripts
+      - name: Test the catalog tooling
+        run: node --test tests/catalog.test.mjs
+      - name: Verify the listed artifacts
+        if: github.event_name == 'pull_request'
+        run: node scripts/build-catalog.mjs --dry-run
+      # Sign only what main currently holds: a dispatch from another branch, or a re-run of
+      # a commit whose signing inputs main has since changed, would otherwise sign unreviewed
+      # or superseded content under a newer revision. Unrelated later commits are fine.
+      - name: Refuse anything but the signing inputs on main
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" != refs/heads/main ]; then echo 'The catalog is signed only from main.'; exit 1; fi
+          git fetch --no-tags --depth=1 origin main
+          if ! git diff --quiet "$GITHUB_SHA" FETCH_HEAD -- catalog scripts/build-catalog.mjs package.json package-lock.json .nvmrc .github/workflows/publish-catalog.yaml; then
+            echo "main has newer catalog inputs than $GITHUB_SHA; its own run publishes them."; exit 1
+          fi
+      # CATALOG_SIGNING_SECRET (a repository variable) names the active key's secret during
+      # a rotation; see the Official App catalog SOP.
+      - name: Build and sign the catalog
+        if: github.event_name != 'pull_request'
+        env:
+          CATALOG_SIGNING_KEY: ${{ secrets[vars.CATALOG_SIGNING_SECRET || 'CATALOG_SIGNING_KEY'] }}
+        run: node scripts/build-catalog.mjs --output-dir site
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}catalog/v1/catalog.json
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

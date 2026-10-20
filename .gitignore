@@ -8,6 +8,7 @@
 # Node and build artifacts
 node_modules/
 dist/
+site/
 build/
 coverage/
 .npm/
