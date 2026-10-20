@@ -8,7 +8,7 @@ import { encodeAppPackage } from '@cats-inc/cats-platform/app-sdk';
 import {
   CATALOG_TTL_MS, buildCatalog, buildCatalogPayload, parseArgs, signCatalog, validateCatalogSource, verifyCatalogEnvelope,
 } from '../scripts/build-catalog.mjs';
-import { createAndStoreCatalogKey } from '../scripts/new-catalog-key.mjs';
+import { createAndStoreCatalogKey, parseKeyArgs } from '../scripts/new-catalog-key.mjs';
 
 const readJson = async (url) => JSON.parse(await readFile(new URL(url, import.meta.url), 'utf8'));
 const vectorKey = await readJson('./fixtures/app-catalog/test-key.json');
@@ -18,13 +18,18 @@ const publisher = { name: 'Cats test', homepage: 'https://github.com/cats-inc/ca
 const releaseUrl = (slug, version) => `https://github.com/cats-inc/cats-apps/releases/download/${slug}-v${version}/${slug}-${version}.catsapp`;
 
 function artifact(version, permissions = ['ui.route', 'ui.lobby']) {
+  return artifactWith(version, { permissions });
+}
+
+function artifactWith(version, overrides) {
   const manifest = {
     schemaVersion: 1, id: 'cats.sample', displayName: 'Sample', version, description: 'A sample App',
     category: 'user-app', trustTier: 'local-user', publisher,
     compatibility: { catsPlatform: '^0.6.0', appSdk: '^1.2.0' },
     entrypoints: { renderer: 'renderer/index.html' },
     contributions: { lobbyApps: [{ id: 'sample', title: 'Sample', routePath: '/apps/cats.sample', icon: 'star' }] },
-    permissions,
+    permissions: ['ui.route', 'ui.lobby'],
+    ...overrides,
   };
   const bytes = encodeAppPackage({ manifest, files: [{ path: 'renderer/index.html', data: Buffer.from(`<p>${version}</p>`) }] });
   return { bytes, sha256: createHash('sha256').update(bytes).digest('hex') };
@@ -77,6 +82,14 @@ test('the build derives manifest fields, pins every artifact and stamps the issu
   // The same inputs and issue time produce the same signed bytes.
   const again = await buildCatalogPayload(sampleSource(entries), { now, fetchArtifact: servedBy(entries) });
   assert.equal(JSON.stringify(again), JSON.stringify(payload));
+});
+
+test('the build applies the consumer limits and keeps only catalog publisher fields', async () => {
+  const long = { version: '1.0.0', built: artifactWith('1.0.0', { description: 'x'.repeat(501) }) };
+  await assert.rejects(buildCatalogPayload(sampleSource([long]), { fetchArtifact: servedBy([long]) }), /description: must be a non-empty string of at most 500/);
+  const extra = { version: '1.0.0', built: artifactWith('1.0.0', { publisher: { ...publisher, email: 'cats@example.com' } }) };
+  const payload = await buildCatalogPayload(sampleSource([extra]), { fetchArtifact: servedBy([extra]) });
+  assert.deepEqual(payload.apps[0].versions[0].publisher, publisher);
 });
 
 test('the build rejects an artifact that does not match its pin', async () => {
@@ -161,11 +174,22 @@ test('the key script stores the secret before publishing its public key', async 
   await assert.rejects(createAndStoreCatalogKey('rotated-key', { keysPath, storeSecret: async () => { throw new Error('gh failed'); } }), /gh failed/);
   assert.deepEqual(JSON.parse(await readFile(keysPath, 'utf8')).keys, []);
   let secret = '';
-  const entry = await createAndStoreCatalogKey('rotated-key', { keysPath, storeSecret: async (value) => { secret = value; } });
+  let secretName = '';
+  const entry = await createAndStoreCatalogKey('rotated-key', { keysPath, secretName: 'CATALOG_SIGNING_KEY_NEXT',
+    storeSecret: async (name, value) => { secretName = name; secret = value; } });
+  assert.equal(secretName, 'CATALOG_SIGNING_KEY_NEXT');
   assert.match(secret, /^-----BEGIN PRIVATE KEY-----/);
   assert.deepEqual(JSON.parse(await readFile(keysPath, 'utf8')).keys, [entry]);
   const envelope = signCatalog(vectorPayload, secret, [entry]);
   assert.equal(envelope.keyId, 'rotated-key');
   await assert.rejects(createAndStoreCatalogKey('rotated-key', { keysPath, storeSecret: async () => {} }), /already exists/);
   await assert.rejects(createAndStoreCatalogKey('No', { keysPath, storeSecret: async () => {} }), /Key ID must be/);
+  await assert.rejects(createAndStoreCatalogKey('another-key', { keysPath, secretName: 'lower', storeSecret: async () => {} }), /Secret name must be/);
+  // A stored secret whose public key cannot be recorded stays recoverable from the error.
+  const orphanPath = path.join(dir, 'orphan.json');
+  await writeFile(orphanPath, JSON.stringify({ schemaVersion: 1, keys: [] }));
+  await assert.rejects(createAndStoreCatalogKey('orphan-key', { keysPath: orphanPath, storeSecret: async () => { await writeFile(orphanPath, 'not json'); } }),
+    /The secret CATALOG_SIGNING_KEY was stored; add this public key by hand: {"keyId":"orphan-key"/);
+  assert.deepEqual(parseKeyArgs(['--key-id', 'next', '--secret-name', 'CATALOG_SIGNING_KEY_NEXT']), { keyId: 'next', secretName: 'CATALOG_SIGNING_KEY_NEXT' });
+  assert.throws(() => parseKeyArgs(['--secret-name', 'X']), /Missing --key-id/);
 });

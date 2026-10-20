@@ -38,10 +38,21 @@ jobs:
       - name: Verify the listed artifacts
         if: github.event_name == 'pull_request'
         run: node scripts/build-catalog.mjs --dry-run
+      # Sign only the current main: a dispatch from another branch or a re-run of an old
+      # commit would otherwise sign unreviewed or superseded content with a newer revision.
+      - name: Refuse anything but the current main
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" != refs/heads/main ]; then echo 'The catalog is signed only from main.'; exit 1; fi
+          tip=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$tip" != "$GITHUB_SHA" ]; then echo "main is at $tip; refusing to sign $GITHUB_SHA."; exit 1; fi
+      # CATALOG_SIGNING_SECRET (a repository variable) names the active key's secret during
+      # a rotation; see the Official App catalog SOP.
       - name: Build and sign the catalog
         if: github.event_name != 'pull_request'
         env:
-          CATALOG_SIGNING_KEY: ${{ secrets.CATALOG_SIGNING_KEY }}
+          CATALOG_SIGNING_KEY: ${{ secrets[vars.CATALOG_SIGNING_SECRET || 'CATALOG_SIGNING_KEY'] }}
         run: node scripts/build-catalog.mjs --output-dir site
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
@@ -50,7 +61,7 @@ jobs:
 
   deploy:
     needs: build
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       pages: write

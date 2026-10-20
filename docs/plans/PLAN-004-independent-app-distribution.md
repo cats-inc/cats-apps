@@ -145,5 +145,8 @@ host，以及範圍接受時 pin 的 host。新增 `tests/sdk-build.test.mjs`，
 實際下載兩個已發布 artifact，size、SHA-256 與 manifest identity 都相符。本機 `npm test`、
 `npm run check:docs` 與 `git diff --check` 的結果記於本次交付回報。Pages 尚未啟用，
 workflow 尚未執行，目錄也尚未發布；Platform 的 preview Market 另記於 PLAN-112。
+同日獨立審查後：build 套用 Platform 的欄位上限並只保留 publisher 的 `name`／`homepage`；
+key 腳本可用 `--secret-name` 暫存新 key，workflow 依 `CATALOG_SIGNING_SECRET` 變數選 secret，
+且只對 `main` 最新 commit 簽章；secret 已寫入但公鑰寫檔失敗時，錯誤訊息保留公鑰以便補回。
 
 *Last updated: 2026-10-20*

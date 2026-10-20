@@ -443,10 +443,23 @@ One-time repository settings:
 - GitHub Pages must use **GitHub Actions** as its source (Settings > Pages). Pages is
   not enabled yet, so the published path returns 404 until the first deployment.
 
-Key rotation: create a new key ID with the same script, ship its public key in a
-Desktop release (`src/platform/apps/catalogTrust.ts`), and only then let the workflow
-sign with it. Desktops that do not trust the new key keep their last verified catalog
-until it expires.
+The publish job signs only when the run is for the current tip of `main`; a dispatch
+from another branch or a re-run of an older commit fails before signing.
+
+Key rotation keeps the active key signing until Desktops trust the new one:
+
+1. `node scripts/new-catalog-key.mjs --key-id <new-id> --secret-name CATALOG_SIGNING_KEY_NEXT`
+   stores the new private key under a separate secret and appends its public key to
+   `catalog/signing-keys.json`. Merge that change; the workflow still signs with the
+   old key, because it picks the secret named by the `CATALOG_SIGNING_SECRET`
+   repository variable (default `CATALOG_SIGNING_KEY`).
+2. Add the new public key to Platform `src/platform/apps/catalogTrust.ts` and ship it in
+   a Desktop release. Wait until supported Desktops have it.
+3. Set the `CATALOG_SIGNING_SECRET` variable to `CATALOG_SIGNING_KEY_NEXT` and run the
+   workflow. Desktops without the new key keep their last verified catalog until it
+   expires, so step 2 must come first.
+4. Remove the old key from the trust root and `signing-keys.json` in later releases, and
+   delete its secret.
 
 See [ADR-001](decisions/001-own-official-utility-apps-and-coordinate-desktop-distribution.md).
 

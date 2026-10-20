@@ -24,13 +24,17 @@ by itself, and the catalog never changes a Desktop's bundled App selection.
   `cats-apps-catalog-2026-10`, created 2026-10-20 with `scripts/new-catalog-key.mjs`,
   which writes the secret through `gh` and never prints or stores the private key.
 - Trust: Platform embeds the same public key in `src/platform/apps/catalogTrust.ts`.
-  Rotating to a new key or moving the endpoint requires a Desktop release first.
+  Rotating to a new key or moving the endpoint requires a Desktop release first. A new
+  key is staged under another secret name and activated with the `CATALOG_SIGNING_SECRET`
+  repository variable (see the deployment SOP).
 - Promotion: a pull request edits `catalog/apps.json`; the publish workflow verifies
   every listed artifact on the pull request and signs and deploys on `main`.
 - Expiry: each build sets `issuedAt`, `expiresAt = issuedAt + 30 days` and
   `revision = issuedAt` in epoch seconds. A weekly scheduled run re-signs the catalog.
   GitHub pauses scheduled workflows after 60 days without repository activity, so a
   quiet repository needs a manual `workflow_dispatch` run before the catalog expires.
+- Signing runs only for the current tip of `main`, never for another branch or an older
+  commit, so a re-run cannot re-list a withdrawn version under a newer revision.
 - Custody limit: an Actions secret protects against tampering on Pages or in transit,
   not against a compromised repository or workflow. A protected environment with
   required approval, or offline signing, is a later hardening step.
@@ -56,7 +60,10 @@ SHA-256 and manifest identity through the pinned Platform SDK, and copies the
 remaining fields from the artifact's own manifest: `displayName`, `description`,
 lobby `icon`, `compatibility`, `permissions` and `publisher`. App-level fields
 come from the stable version. The payload is built field by field in a fixed
-order, so the same source, artifacts and issue time produce the same bytes. The
+order, so the same source, artifacts and issue time produce the same bytes. Derived
+fields must fit the consumer limits (name 100, description 500, icon 40 characters; at
+most 32 permissions), and the publisher keeps only `name` and an https `homepage`, so
+one oversized manifest cannot make every Desktop reject the catalog. The
 signing key must match a key in `catalog/signing-keys.json`, and the result is
 verified again before it is written to `site/catalog/v1/catalog.json`.
 

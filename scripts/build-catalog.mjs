@@ -107,14 +107,27 @@ export async function downloadArtifact(url, size) {
   return bytes;
 }
 
+// Apply the consumer's limits (Platform catalog.ts) here: one oversized manifest field would
+// otherwise make every Desktop reject the whole catalog. The publisher keeps only the fields
+// the catalog defines, so extra manifest publisher data never fails the build.
 function manifestFields(manifest) {
+  const at = `${manifest.id}@${manifest.version}`;
+  const icon = manifest.contributions?.lobbyApps?.[0]?.icon;
+  if (!Array.isArray(manifest.permissions) || manifest.permissions.length > 32) fail(`${at}.permissions`, 'must list at most 32 permissions.');
+  const homepage = manifest.publisher?.homepage;
   return {
-    displayName: manifest.displayName,
-    description: manifest.description ?? '',
-    icon: manifest.contributions?.lobbyApps?.[0]?.icon ?? null,
-    compatibility: { catsPlatform: manifest.compatibility.catsPlatform, appSdk: manifest.compatibility.appSdk },
-    permissions: [...manifest.permissions],
-    publisher: publisher(manifest.publisher, `${manifest.id}@${manifest.version}.publisher`),
+    displayName: text(manifest.displayName, `${at}.displayName`, 100),
+    description: manifest.description === undefined || manifest.description === '' ? '' : text(manifest.description, `${at}.description`, 500),
+    icon: icon === undefined ? null : text(icon, `${at}.icon`, 40),
+    compatibility: {
+      catsPlatform: text(manifest.compatibility.catsPlatform, `${at}.compatibility.catsPlatform`, 40),
+      appSdk: text(manifest.compatibility.appSdk, `${at}.compatibility.appSdk`, 40),
+    },
+    permissions: manifest.permissions.map((permission, index) => text(permission, `${at}.permissions[${index}]`, 100)),
+    publisher: {
+      name: text(manifest.publisher?.name, `${at}.publisher.name`, 200),
+      ...(typeof homepage === 'string' && homepage.startsWith('https://') ? { homepage } : {}),
+    },
   };
 }
 
