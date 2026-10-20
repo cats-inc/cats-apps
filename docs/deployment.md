@@ -40,9 +40,10 @@ while artifact selection still pins App ID, version and archive SHA-256.
 
 Independent catalog delivery is planned in
 [PLAN-004](plans/PLAN-004-independent-app-distribution.md). Artifact publication,
-catalog promotion and Desktop bundle selection are separate actions. The new
-Market flow is not implemented; the tag workflow below remains the current App
-release mechanism. Usage will stay preinstalled and also available in Market;
+catalog promotion and Desktop bundle selection are separate actions. The signed
+catalog and an unreleased Platform Market preview exist (see
+[Official App catalog](#official-app-catalog)); the tag workflow below remains the
+App release mechanism. Usage will stay preinstalled and also available in Market;
 Studio will be optional and excluded from the default Desktop bundle.
 
 For a selected App, keep these three values synchronized:
@@ -413,17 +414,40 @@ explicit release actions, not implied by adding an implementation. Existing
 Desktop 0.2.2/0.2.3 selections remain on Usage 0.1.0; publishing Usage 0.1.1 alone
 does not replace bytes in an already published Desktop installer.
 
-## Later Remote Distribution
+## Official App catalog
 
-The official App Catalog may be published alongside release artifacts. It describes
-available apps, compatible versions, download URLs, sizes, and checksums.
-cats-platform consumes it, validates downloads, and manages updates; its local
-installed registry remains a separate record.
+The catalog lists the published App versions that Cats Desktop's Market may install.
+Its contract is [SPEC-005](specs/SPEC-005-official-app-catalog.md); Platform's
+consumer rules are in [SPEC-120 FR-09](../../cats-platform/docs/specs/SPEC-120-app-market-and-lifecycle.md).
+Bundled delivery does not depend on it, and promotion never changes Desktop pins.
 
-Remote discovery, independent app updates, signatures, and marketplace governance
-require later implementation. Initial bundled utility delivery does not depend
-on a network catalog.
+- Source: `catalog/apps.json`. Promote by pull request: add the version with the
+  exact release asset URL, size and SHA-256 from the published lock file, then point
+  `channels.stable` at it. Withdraw a version with `withdrawn { reason, at }` instead
+  of deleting it, and move the channel to a current version first.
+- Pull requests run `Publish the App catalog` in verify-only mode, downloading every
+  listed artifact. Merging to `main` signs the catalog with `CATALOG_SIGNING_KEY` and
+  deploys it to `https://cats-inc.github.io/cats-apps/catalog/v1/catalog.json`.
+- The catalog expires 30 days after it is signed. The weekly schedule re-signs it;
+  GitHub pauses schedules after 60 days without repository activity, so run the
+  workflow manually (`workflow_dispatch`) when the repository has been quiet.
+- Local check: `node scripts/build-catalog.mjs --dry-run` prints the derived payload
+  without a key. `node --test tests/catalog.test.mjs` covers the source rules, the
+  build and the contract vector shared with Platform.
+
+One-time repository settings:
+
+- `CATALOG_SIGNING_KEY` was set on 2026-10-20 with
+  `node scripts/new-catalog-key.mjs --key-id cats-apps-catalog-2026-10`, which also
+  added the public key to `catalog/signing-keys.json`.
+- GitHub Pages must use **GitHub Actions** as its source (Settings > Pages). Pages is
+  not enabled yet, so the published path returns 404 until the first deployment.
+
+Key rotation: create a new key ID with the same script, ship its public key in a
+Desktop release (`src/platform/apps/catalogTrust.ts`), and only then let the workflow
+sign with it. Desktops that do not trust the new key keep their last verified catalog
+until it expires.
 
 See [ADR-001](decisions/001-own-official-utility-apps-and-coordinate-desktop-distribution.md).
 
-*Last updated: 2026-09-29*
+*Last updated: 2026-10-20*

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "keys": [
+    {
+      "keyId": "cats-apps-catalog-2026-10",
+      "algorithm": "ed25519",
+      "publicKey": "R8YfBK7QRnCus2VloaqbFfTfRn7AGxelCbn-wwHGFpY"
+    }
+  ]
+}
