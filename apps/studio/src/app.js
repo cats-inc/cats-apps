@@ -1,4 +1,4 @@
-import { MAX_PROMPT_LENGTH, SAMPLE_PROMPT, SAMPLE_IMAGE, PROMPT_IDEAS, promptLength, normalizeCapabilities, normalizeJob, findOperation, defaultService, validateDraft, buildSubmission, fitBox, ratioBox, formatBytes } from './model.js';
+import { MAX_PROMPT_LENGTH, SAMPLE_PROMPT, SAMPLE_IMAGE, PROMPT_IDEAS, promptLength, normalizeCapabilities, normalizeJob, findOperation, defaultService, validateDraft, buildSubmission, isDefinitiveSubmitError, matchPendingJob, initialSelection, pruneSources, draftSources, fitBox, ratioBox, formatBytes } from './model.js';
 
 const sdk = globalThis.catsApp;
 const zh = !sdk?.locale || sdk.locale.startsWith('zh');
@@ -25,8 +25,7 @@ const STATUS_LABELS = {
 };
 const TRANSPARENCY_LABELS = { opaque: word('不透明', 'Opaque'), transparent: word('含透明像素', 'Has transparency'), unknown: word('未知', 'Unknown') };
 const OFFLINE_TEXT = word('生成服務暫時無法連線，已保存的作品仍可查看及下載。', 'Generation is unavailable. Saved images can still be viewed and downloaded.');
-const DEFINITIVE_SUBMIT_ERRORS = ['invalid_image_request', 'image_service_busy', 'image_storage_limit', 'app_context_revoked', 'image_request_conflict',
-  'source_unavailable', 'source_unsupported', 'source_count_invalid', 'option_unsupported'];
+const REASON_LABELS = { not_configured: word('尚未設定', 'not set up'), not_installed: word('尚未安裝', 'not installed'), disabled: word('已停用', 'disabled'), signed_out: word('尚未登入', 'not signed in') };
 
 function errorText(code, name = word('服務', 'the service')) {
   return ({
@@ -190,7 +189,7 @@ let followedStatus = null;
 let shownImageId = null;
 let jobsSignature = '';
 let previewSignature = '';
-let pendingSignature = '';
+let pendingShown = false;
 
 const current = () => {
   const service = capabilities.services.find((item) => item.key === serviceKey) ?? null;
@@ -201,21 +200,34 @@ const operationKey = () => `${serviceKey}|${current().operation?.id}`;
 const savedWorks = () => jobs.filter((job) => job.status === 'succeeded' && job.output);
 const editTargets = () => capabilities.services.filter((service) => service.available && service.operations.some((operation) => operation.id === 'image.edit'));
 const blocked = () => busy || !!pending || jobs.some((job) => job.active);
-const say = (message) => { feedback.textContent = message; };
+// Repeating an identical message would make screen readers announce it again on every poll.
+const say = (message) => { if (feedback.textContent !== message) feedback.textContent = message; };
+function keepFocus(render) {
+  const key = document.activeElement?.dataset?.focusKey;
+  render();
+  const active = document.activeElement;
+  if (key && (!active || active === document.body)) document.querySelector(`[data-focus-key="${CSS.escape(key)}"]`)?.focus();
+}
 
 function draft() {
   const { operation } = current();
-  return { serviceKey, operation: operation?.id, prompt: prompt.value, sourceIds,
+  return { serviceKey, operation: operation?.id, prompt: prompt.value, sourceIds: draftSources(operation, sourceIds),
     aspectRatio: operation?.ratio.mode === 'choose' ? ratioByOperation.get(operationKey()) : null,
     transparentBackground: !!operation?.transparency && transparentBackground, agentConfigId: agentConfigByOperation.get(operationKey()) ?? operation?.agentConfigs[0]?.id ?? null };
 }
 
 // Image bytes are read lazily and kept in a small cache; the preview's entry is never evicted.
+// The host bridge allows only a few pending requests, so all reads share two slots and user actions always fit.
 const imageUrls = new Map();
+const imageReads = new Map();
 const visibleThumbs = new Set();
-const loadQueue = [];
-let loading = 0;
+const readWaiters = [];
+let reading = 0;
+const readSlot = (urgent) => new Promise((resolve) => { if (reading < 2) { reading++; resolve(); } else if (urgent) readWaiters.unshift(resolve); else readWaiters.push(resolve); });
+const releaseSlot = () => { const next = readWaiters.shift(); if (next) next(); else reading--; };
 function rememberUrl(id, url) {
+  const previous = imageUrls.get(id);
+  if (previous && previous !== url) URL.revokeObjectURL(previous);
   imageUrls.delete(id); imageUrls.set(id, url);
   for (const [key, value] of imageUrls) {
     if (imageUrls.size <= 36) break;
@@ -223,29 +235,31 @@ function rememberUrl(id, url) {
     URL.revokeObjectURL(value); imageUrls.delete(key);
   }
 }
-async function imageUrl(id) {
-  if (imageUrls.has(id)) { const url = imageUrls.get(id); rememberUrl(id, url); return url; }
-  const image = await sdk.images.read(id);
-  if (disposed) throw new Error('disposed');
-  const url = URL.createObjectURL(new Blob([image.bytes], { type: image.mimeType }));
-  rememberUrl(id, url); return url;
-}
-function pumpThumbs() {
-  while (loading < 2 && loadQueue.length) {
-    const img = loadQueue.shift();
-    if (!img.isConnected || img.getAttribute('src')) continue;
-    loading++;
-    imageUrl(img.dataset.jobId).then((url) => { if (img.isConnected) img.src = url; }).catch(() => { img.closest('.thumb')?.classList.add('thumb-failed'); })
-      .finally(() => { loading--; pumpThumbs(); });
+function imageUrl(id, urgent = false) {
+  if (imageUrls.has(id)) { const url = imageUrls.get(id); rememberUrl(id, url); return Promise.resolve(url); }
+  if (!imageReads.has(id)) {
+    imageReads.set(id, (async () => {
+      await readSlot(urgent);
+      try {
+        const image = await sdk.images.read(id);
+        if (disposed) throw new Error('disposed');
+        const url = URL.createObjectURL(new Blob([image.bytes], { type: image.mimeType }));
+        rememberUrl(id, url); return url;
+      } finally { releaseSlot(); imageReads.delete(id); }
+    })());
   }
+  return imageReads.get(id);
+}
+function loadThumb(img) {
+  if (img.getAttribute('src')) return;
+  imageUrl(img.dataset.jobId).then((url) => { if (img.isConnected) img.src = url; }).catch(() => img.closest('.thumb, .source')?.classList.add('thumb-failed'));
 }
 const thumbObserver = 'IntersectionObserver' in globalThis ? new IntersectionObserver((entries) => {
   for (const entry of entries) {
     const id = entry.target.dataset.jobId;
-    if (entry.isIntersecting) { visibleThumbs.add(id); if (!entry.target.getAttribute('src')) loadQueue.push(entry.target); }
+    if (entry.isIntersecting) { visibleThumbs.add(id); loadThumb(entry.target); }
     else visibleThumbs.delete(id);
   }
-  pumpThumbs();
 }, { rootMargin: '240px' }) : null;
 function thumbnail(job, maxWidth, maxHeight) {
   const img = el('img', { alt: '', width: job.output.width, height: job.output.height, dataset: { jobId: job.id } });
@@ -253,7 +267,7 @@ function thumbnail(job, maxWidth, maxHeight) {
   img.style.width = `${box.width}px`; img.style.height = `${box.height}px`;
   if (imageUrls.has(job.id)) img.src = imageUrls.get(job.id);
   else if (thumbObserver) thumbObserver.observe(img);
-  else { loadQueue.push(img); queueMicrotask(pumpThumbs); }
+  else queueMicrotask(() => loadThumb(img));
   return img;
 }
 
@@ -266,10 +280,10 @@ function renderServices() {
     const first = service.operations[0];
     const label = service.alias ? `${service.name}（${service.alias}）` : service.name;
     const tile = el('button', { type: 'button', class: 'service-tile', 'aria-pressed': service.key === serviceKey ? 'true' : 'false', disabled: !service.available,
-      dataset: { service: service.key }, onclick: () => selectService(service.key) },
+      dataset: { service: service.key, focusKey: `service-${service.key}` }, onclick: () => selectService(service.key) },
     glyph(first.ratio.mode, first.ratio.options),
     el('span', { class: 'tile-text' }, el('span', { class: 'tile-name', text: label }),
-      el('span', { class: 'note', text: service.available ? ratioSummary(first) : `${word('暫時無法使用', 'Unavailable')}：${service.reason}` }),
+      el('span', { class: 'note', text: service.available ? ratioSummary(first) : word('暫時無法使用', 'Unavailable') + (REASON_LABELS[service.reason] ? word(`：${REASON_LABELS[service.reason]}`, `: ${REASON_LABELS[service.reason]}`) : '') }),
       el('span', { class: 'verbs' }, ...service.operations.map((operation) => el('span', { class: 'verb', text: OPERATION_COPY[operation.id].label })))));
     container.append(tile);
   }
@@ -282,7 +296,7 @@ function renderOperation() {
   const operations = $('operations'); operations.replaceChildren();
   // A single operation needs no switch; the heading and hint already name it.
   for (const item of service?.operations.length > 1 ? service.operations : []) {
-    operations.append(el('button', { type: 'button', 'aria-pressed': item.id === operation?.id ? 'true' : 'false', onclick: () => selectOperation(item.id), text: OPERATION_COPY[item.id].label }));
+    operations.append(el('button', { type: 'button', 'aria-pressed': item.id === operation?.id ? 'true' : 'false', dataset: { focusKey: `operation-${item.id}` }, onclick: () => selectOperation(item.id), text: OPERATION_COPY[item.id].label }));
   }
   $('operation-hint').textContent = operation ? copy.hint : '';
   $('prompt-label').textContent = copy.field;
@@ -304,15 +318,15 @@ function renderSources({ reveal = false } = {}) {
   const { operation } = current();
   if (!operation || operation.inputs.max === 0) return;
   const works = savedWorks();
-  sourceIds = sourceIds.filter((id) => works.some((work) => work.id === id)).slice(0, operation.inputs.max);
+  const picked = draftSources(operation, sourceIds);
   const single = operation.inputs.max === 1;
-  const count = single ? (sourceIds.length ? word('已選 1 張', '1 selected') : word('選 1 張', 'Pick 1'))
-    : word(`已選 ${sourceIds.length} 張（需要 ${operation.inputs.min}–${operation.inputs.max} 張）`, `${sourceIds.length} selected (${operation.inputs.min}–${operation.inputs.max} needed)`);
+  const count = single ? (picked.length ? word('已選 1 張', '1 selected') : word('選 1 張', 'Pick 1'))
+    : word(`已選 ${picked.length} 張（需要 ${operation.inputs.min}–${operation.inputs.max} 張）`, `${picked.length} selected (${operation.inputs.min}–${operation.inputs.max} needed)`);
   container.append(el('div', { class: 'field-row' }, el('span', { id: 'sources-label', class: 'field-label', text: single ? word('原圖', 'Source image') : word('參考圖（依選取順序）', 'Reference images, in order') }), el('span', { class: 'note', text: count })));
   if (!works.length) { container.append(el('p', { class: 'note', text: word('還沒有已保存的作品。先生成一張，再回來修改。', 'No saved images yet. Generate one first, then come back to edit it.') })); return; }
   const list = el('div', { class: 'source-list', role: 'group', 'aria-labelledby': 'sources-label' });
   for (const work of works) {
-    const position = sourceIds.indexOf(work.id);
+    const position = picked.indexOf(work.id);
     list.append(el('button', { type: 'button', class: 'source', 'aria-pressed': position >= 0 ? 'true' : 'false', dataset: { focusKey: `source-${work.id}` },
       'aria-label': `${position >= 0 ? word(`第 ${position + 1} 張，`, `Image ${position + 1}, `) : ''}${work.name}：${work.prompt}`, onclick: () => toggleSource(work.id) },
     thumbnail(work, 72, 72), position >= 0 && !single ? el('span', { class: 'order', text: String(position + 1) }) : null));
@@ -339,7 +353,7 @@ function renderParameters() {
         const box = option === 'auto' ? null : ratioBox(option, 16);
         const mark = el('span', { class: box ? 'ratio-mark' : 'ratio-mark dashed', 'aria-hidden': 'true' });
         mark.style.width = `${box?.width ?? 15}px`; mark.style.height = `${box?.height ?? 15}px`;
-        return el('button', { type: 'button', class: 'ratio-option', 'aria-pressed': option === chosen ? 'true' : 'false', onclick: () => { ratioByOperation.set(key, option); renderParameters(); controls(); } }, mark, el('span', { text: label(option) }));
+        return el('button', { type: 'button', class: 'ratio-option', 'aria-pressed': option === chosen ? 'true' : 'false', dataset: { focusKey: `ratio-${option}` }, onclick: () => { ratioByOperation.set(key, option); keepFocus(renderParameters); controls(); } }, mark, el('span', { text: label(option) }));
       })));
     } else {
       const select = el('select', { 'aria-labelledby': 'ratio-label', onchange: (event) => { ratioByOperation.set(key, event.target.value); controls(); } },
@@ -348,7 +362,7 @@ function renderParameters() {
     }
   } else {
     let text = { native: word(`${options[0]}（服務固定）`, `${options[0]} (fixed by the service)`), service: word('由服務決定', 'Decided by the service'), source: word('沿用原圖比例', 'Same as the source image') }[mode];
-    const source = mode === 'source' ? savedWorks().find((work) => work.id === sourceIds[0]) : null;
+    const source = mode === 'source' ? savedWorks().find((work) => work.id === draftSources(operation, sourceIds)[0]) : null;
     if (source) text = word(`沿用原圖比例（${source.output.width} × ${source.output.height}）`, `Same as the source (${source.output.width} × ${source.output.height})`);
     const box = mode === 'native' ? ratioBox(options[0], 20) : source ? ratioBox(`${source.output.width}:${source.output.height}`, 20) : null;
     const mark = el('span', { class: box ? 'ratio-mark' : 'ratio-mark dashed', 'aria-hidden': 'true' });
@@ -389,7 +403,7 @@ function renderAgent() {
 
 function controls() {
   const validation = validateDraft(capabilities, draft(), jobs);
-  const length = promptLength(prompt.value);
+  const length = promptLength(prompt.value.trim());
   $('prompt-count').textContent = `${length} / ${capabilities.maxPromptLength}`;
   $('prompt-count').classList.toggle('over', length > capabilities.maxPromptLength);
   generate.disabled = blocked() || !validation.ok;
@@ -404,25 +418,28 @@ function controls() {
 }
 
 function renderPending() {
-  const signature = JSON.stringify([!!pending?.unconfirmed, busy]);
-  if (signature === pendingSignature) return;
-  pendingSignature = signature;
-  const container = $('pending'); container.replaceChildren();
-  if (!pending?.unconfirmed) return;
-  container.append(el('p', { class: 'note', text: word('送出結果尚未確認。按「確認送出結果」只會以同一個請求向 Cats 確認，不會建立第二張。', 'The submission is unconfirmed. Confirm sends the same request again so Cats can match it; no second image is created.') }),
-    button(word('確認送出結果', 'Confirm submission'), () => void send(), { disabled: busy }));
+  const unconfirmed = !!pending?.unconfirmed;
+  if (unconfirmed !== pendingShown) {
+    pendingShown = unconfirmed;
+    keepFocus(() => {
+      const container = $('pending'); container.replaceChildren();
+      if (unconfirmed) container.append(el('p', { class: 'note', text: word('送出結果尚未確認。按「確認送出結果」只會以同一個請求向 Cats 確認，不會建立第二張。', 'The submission is unconfirmed. Confirm sends the same request again so Cats can match it; no second image is created.') }),
+        button(word('確認送出結果', 'Confirm submission'), () => void send(), { id: 'confirm-submit', dataset: { focusKey: 'pending-confirm' } }));
+    });
+  }
+  const confirm = $('confirm-submit');
+  if (confirm) confirm.disabled = busy;
 }
 
 function applyPrompt(value) { prompt.value = value; prompt.focus(); controls(); }
-function selectService(key) { serviceKey = key; say(''); renderServices(); renderOperation(); controls(); }
+function selectService(key) { serviceKey = key; say(''); keepFocus(() => { renderServices(); renderOperation(); }); controls(); }
 function selectOperation(id) {
   operationByService.set(serviceKey, id);
-  if (id === 'image.edit') sourceIds = sourceIds.slice(0, 1);
-  renderServices(); renderOperation(); controls();
+  keepFocus(() => { renderServices(); renderOperation(); }); controls();
 }
 function toggleSource(id) {
   const { operation } = current();
-  const position = sourceIds.indexOf(id);
+  const position = draftSources(operation, sourceIds).indexOf(id);
   if (operation.inputs.max === 1) sourceIds = position >= 0 ? [] : [id];
   else if (position >= 0) sourceIds = sourceIds.filter((item) => item !== id);
   else if (sourceIds.length >= operation.inputs.max) { say(word(`這個服務最多使用 ${operation.inputs.max} 張參考。`, `This service accepts up to ${operation.inputs.max} references.`)); return; }
@@ -443,7 +460,7 @@ async function perform(action) {
   if (busy || disposed) return;
   busy = true; controls();
   try { await action(); } catch (error) { if (!disposed) say(errorText(error.message, current().service?.name)); }
-  finally { busy = false; if (!disposed) { controls(); renderJobs(); renderPreview(); } }
+  finally { busy = false; if (!disposed) keepFocus(() => { controls(); renderJobs(); renderPreview(); }); }
 }
 
 function requestId() {
@@ -459,9 +476,9 @@ async function send() {
   await perform(async () => {
     try {
       const job = upsert(await sdk.images.submit(pending.payload));
-      pending = null; follow(job);
+      pending = null; follow(job); schedule();
     } catch (error) {
-      if (DEFINITIVE_SUBMIT_ERRORS.includes(error.message)) { pending = null; throw error; }
+      if (isDefinitiveSubmitError(error.message)) { pending = null; throw error; }
       pending.unconfirmed = true;
       throw new Error('submission_unconfirmed');
     }
@@ -476,9 +493,12 @@ function submitDraft(values) {
 function retry(job) {
   const { service, operation } = findOperation(capabilities, job.serviceKey, job.operation);
   if (!service?.available || !operation) { say(errorText(service ? 'operation_unavailable' : 'service_unavailable', job.name)); return; }
+  // Generate another repeats the original agent configuration or refuses; it never swaps it silently.
+  const config = operation.agentConfigs.find((item) => item.id === job.agentConfigId) ?? (operation.agentConfigs.length === 1 && !job.agentConfigId ? operation.agentConfigs[0] : null);
+  if (!config) { say(errorText('option_unsupported', job.name)); return; }
   submitDraft({ serviceKey: job.serviceKey, operation: job.operation, prompt: job.prompt, sourceIds: job.sources.map((source) => source.id),
     aspectRatio: operation.ratio.mode === 'choose' && operation.ratio.options.includes(job.requestedRatio) ? job.requestedRatio : null,
-    transparentBackground: operation.transparency && job.requestedTransparency, agentConfigId: null });
+    transparentBackground: operation.transparency && job.requestedTransparency, agentConfigId: config.id });
 }
 
 const elapsed = (from) => {
@@ -492,7 +512,14 @@ function facts(list, rows) {
 }
 
 async function showImage(job) {
-  const url = await imageUrl(job.id);
+  let url;
+  try { url = await imageUrl(job.id, true); }
+  catch {
+    if (disposed || selectedId !== job.id) return;
+    $('preview-progress').replaceChildren(el('p', { class: 'note', text: word('無法讀取這張圖片。可以重新讀取，或稍後重新整理。', 'This image could not be read. Try again or refresh later.') }),
+      button(word('重新讀取', 'Read again'), () => { $('preview-progress').replaceChildren(el('p', { class: 'note', text: word('正在讀取圖片…', 'Loading the image…') })); void showImage(job); }, { dataset: { focusKey: 'preview-read' } }));
+    return;
+  }
   if (disposed || selectedId !== job.id) return;
   shownImageId = job.id;
   previewImage.src = url; previewImage.alt = job.prompt;
@@ -500,13 +527,15 @@ async function showImage(job) {
   const dialogImage = dialog.querySelector('img');
   dialogImage.src = url; dialogImage.alt = job.prompt; dialogImage.width = job.output.width; dialogImage.height = job.output.height;
   const measured = $('preview-image');
+  measured.hidden = false; $('preview-progress').hidden = true;
   measured.classList.remove('is-fresh'); void measured.offsetWidth; measured.classList.add('is-fresh');
 }
 
 function renderPreview(force = false) {
   const job = jobs.find((entry) => entry.id === selectedId) ?? null;
   if (selectedId && !job) selectedId = null;
-  const signature = JSON.stringify([selectedId, job?.status, job?.updatedAt, job?.warnings, blocked(), editTargets().length]);
+  // Running jobs change updatedAt on every poll; their view only depends on the status.
+  const signature = JSON.stringify([selectedId, job?.status, job?.active ? null : job?.updatedAt, job?.warnings, blocked(), editTargets().length]);
   if (!force && signature === previewSignature) return;
   previewSignature = signature;
   const status = $('preview-status');
@@ -522,10 +551,11 @@ function renderPreview(force = false) {
     $('preview-service').textContent = '';
     if (shownImageId) { shownImageId = null; previewImage.src = SAMPLE_IMAGE; previewImage.width = previewImage.height = 1024; dialog.querySelector('img').src = SAMPLE_IMAGE; }
     previewImage.alt = word('淺藍色背景前坐著一隻橘貓的平面插畫', 'Flat illustration of an orange cat sitting on a light blue background');
+    dialog.querySelector('img').alt = previewImage.alt;
     $('ruler-width').textContent = '1024 px'; $('ruler-height').textContent = '1024 px';
     $('preview-image').querySelector('.image-button').classList.remove('checker');
     facts($('preview-facts'), [[word('格式', 'Format'), 'JPEG'], [word('尺寸', 'Size'), '1024 × 1024'], [word('比例', 'Ratio'), '1:1'], [word('透明度', 'Transparency'), TRANSPARENCY_LABELS.opaque]]);
-    actions.append(button(word('放大檢視', 'Enlarge'), openDialog), button(word('複用描述', 'Reuse prompt'), () => reuse({ prompt: SAMPLE_PROMPT })));
+    actions.append(button(word('放大檢視', 'Enlarge'), openDialog, { dataset: { focusKey: 'preview-zoom' } }), button(word('複用描述', 'Reuse prompt'), () => reuse({ prompt: SAMPLE_PROMPT }), { dataset: { focusKey: 'preview-reuse' } }));
     $('sample-note').textContent = word('先前實測產生的範例圖片。修改左側描述不會改變這張範例。', 'An image from an earlier generation test. Editing the prompt does not change this sample.');
     return;
   }
@@ -553,9 +583,15 @@ function renderPreview(force = false) {
     $('preview-image').querySelector('.image-button').classList.toggle('checker', job.output.format === 'PNG');
     facts($('preview-facts'), [[word('格式', 'Format'), job.output.format], [word('尺寸', 'Size'), `${job.output.width} × ${job.output.height}`],
       [word('比例', 'Ratio'), job.output.ratio], [word('透明度', 'Transparency'), TRANSPARENCY_LABELS[job.output.transparency]]]);
-    actions.append(...present(button(word('放大檢視', 'Enlarge'), openDialog), button(word('下載原檔', 'Download original'), () => perform(() => sdk.images.export(job.id))),
-      editTargets().length ? button(word('以此修圖', 'Edit this image'), () => editWork(job), { class: 'quiet emphasis' }) : null, button(word('複用描述', 'Reuse prompt'), () => reuse(job))));
-    if (shownImageId !== job.id) void showImage(job).catch(() => say(errorText('image_service_unavailable')));
+    actions.append(...present(button(word('放大檢視', 'Enlarge'), openDialog, { dataset: { focusKey: 'preview-zoom' } }),
+      button(word('下載原檔', 'Download original'), () => perform(() => sdk.images.export(job.id)), { dataset: { focusKey: 'preview-download' } }),
+      editTargets().length ? button(word('以此修圖', 'Edit this image'), () => editWork(job), { class: 'quiet emphasis', dataset: { focusKey: 'preview-edit' } }) : null,
+      button(word('複用描述', 'Reuse prompt'), () => reuse(job), { dataset: { focusKey: 'preview-reuse' } })));
+    if (shownImageId !== job.id) {
+      imageView.hidden = true; progress.hidden = false;
+      progress.replaceChildren(el('p', { class: 'note', text: word('正在讀取圖片…', 'Loading the image…') }));
+      void showImage(job);
+    }
     return;
   }
   facts($('preview-facts'), []);
@@ -566,20 +602,20 @@ function renderPreview(force = false) {
       collecting: word('圖片已產生，正在檢查並保存原檔。取消仍會優先處理。', 'The image exists and the original is being checked and saved. Cancelling still takes priority.'),
       cancelling: word('正在等待服務停止。取消完成前不會顯示新圖片。', 'Waiting for the service to stop. No new image appears before cancelling finishes.'),
     };
-    const box = ratioBox(job.requestedRatio && job.requestedRatio !== 'auto' ? job.requestedRatio : '4:3', 220);
+    const box = (job.requestedRatio !== 'auto' && ratioBox(job.requestedRatio, 220)) || ratioBox('4:3', 220);
     const frame = el('div', { class: 'progress-frame' }, el('span', { id: 'elapsed', class: 'count large', text: job.status === 'running' ? elapsed(job.createdAt) : '…' }));
     Object.assign(frame.style, { width: `${box.width}px`, height: `${box.height}px` });
     progress.replaceChildren(...present(frame, el('p', { class: 'state-title', text: STATUS_LABELS[job.status] }), el('p', { class: 'note', text: notes[job.status] }),
-      ['running', 'collecting'].includes(job.status) ? button(word('取消', 'Cancel'), () => perform(async () => { upsert(await sdk.images.cancel(job.id)); await reload(); })) : null));
+      ['running', 'collecting'].includes(job.status) ? button(word('取消', 'Cancel'), () => perform(async () => { upsert(await sdk.images.cancel(job.id)); await reload(); }), { dataset: { focusKey: 'preview-cancel' } }) : null));
     return;
   }
   const reason = job.status === 'interrupted' ? word('無法確認執行結果，可能已使用額度；沒有重新生成。「確認結果」只會讀取原請求。', 'The outcome is unconfirmed and allowance may have been used. Nothing was regenerated; Check outcome only reads the original request.')
     : errorText(job.error ?? job.status, job.name);
   ended.replaceChildren(...present(el('p', { class: 'state-title', text: { failed: word('這次沒有產生圖片', 'No image this time'), interrupted: STATUS_LABELS.interrupted, cancelled: STATUS_LABELS.cancelled }[job.status] ?? STATUS_LABELS[job.status] }),
     el('p', { class: 'note', text: reason }),
-    el('div', { class: 'actions' }, job.status === 'interrupted' ? button(word('確認結果', 'Check outcome'), () => perform(async () => { upsert(await sdk.images.refresh(job.id)); await reload(); })) : null,
-      ['failed', 'cancelled'].includes(job.status) ? button(word('再生成一張', 'Generate another'), () => retry(job), { disabled: blocked() }) : null,
-      button(word('複用描述', 'Reuse prompt'), () => reuse(job))),
+    el('div', { class: 'actions' }, job.status === 'interrupted' ? button(word('確認結果', 'Check outcome'), () => perform(async () => { upsert(await sdk.images.refresh(job.id)); await reload(); }), { dataset: { focusKey: 'preview-check' } }) : null,
+      ['failed', 'cancelled'].includes(job.status) ? button(word('再生成一張', 'Generate another'), () => retry(job), { disabled: blocked(), dataset: { focusKey: 'preview-retry' } }) : null,
+      button(word('複用描述', 'Reuse prompt'), () => reuse(job), { dataset: { focusKey: 'preview-reuse' } })),
     ['failed', 'cancelled'].includes(job.status) ? el('p', { class: 'note', text: word('「再生成一張」會建立新的請求，可能再次使用額度。', 'Generate another creates a new request and may use allowance again.') }) : null));
 }
 
@@ -595,7 +631,6 @@ function renderJobs(force = false) {
   serviceSelect.replaceChildren(el('option', { value: 'all', text: word('全部服務', 'All services') }), ...providers.map(([provider, name]) => el('option', { value: provider, text: name })));
   serviceSelect.value = providers.some(([provider]) => provider === service) ? service : 'all';
   $('library-count').textContent = word(`保存在這台電腦。${jobs.length} 件，最多保存 100 件。`, `Saved on this computer. ${jobs.length} of up to 100.`);
-  const focusKey = document.activeElement?.dataset?.focusKey;
   const container = $('jobs'); container.replaceChildren();
   const visible = jobs.filter((job) => (serviceSelect.value === 'all' || job.provider === serviceSelect.value)
     && (status === 'all' || (status === 'saved' && job.output) || (status === 'open' && (job.active || job.status === 'interrupted')) || (status === 'ended' && ['failed', 'cancelled'].includes(job.status)))
@@ -605,7 +640,7 @@ function renderJobs(force = false) {
   for (const job of visible) {
     const note = job.warnings.includes('response_timeout_after_image') ? word('圖片已保存，但生成回應逾時。', 'Saved, but the generation response timed out.')
       : job.status === 'failed' ? errorText(job.error, job.name) : job.status === 'interrupted' ? errorText('execution_interrupted') : job.status === 'cancelled' ? word('已使用的額度不一定會退還。', 'Used allowance may not be refunded.') : '';
-    const select = () => { selectedId = job.id; renderJobs(true); renderPreview(true); };
+    const select = () => { selectedId = job.id; keepFocus(() => { renderJobs(true); renderPreview(true); }); };
     container.append(el('article', { class: job.id === selectedId ? 'work selected' : 'work', 'aria-current': job.id === selectedId ? 'true' : null },
       el('button', { type: 'button', class: 'thumb', onclick: select, dataset: { focusKey: `view-${job.id}` }, 'aria-label': `${job.output ? word('預覽', 'Preview') : word('查看', 'View')}：${job.prompt}` },
         job.output ? thumbnail(job, 196, 124) : el('span', { class: 'thumb-status', text: STATUS_LABELS[job.status] ?? job.status })),
@@ -619,7 +654,6 @@ function renderJobs(force = false) {
         ['failed', 'cancelled'].includes(job.status) ? button(word('再生成一張', 'Generate another'), () => retry(job), { disabled: blocked(), dataset: { focusKey: `retry-${job.id}` } }) : null,
         button(word('複用描述', 'Reuse prompt'), () => reuse(job), { dataset: { focusKey: `reuse-${job.id}` } }))));
   }
-  if (focusKey) container.querySelector(`[data-focus-key="${CSS.escape(focusKey)}"]`)?.focus();
 }
 
 function announce() {
@@ -633,31 +667,35 @@ function announce() {
 async function reload() {
   jobs = (await sdk.images.list()).jobs.map(normalizeJob);
   if (pending && !pending.unconfirmed) return;
-  const matched = pending && jobs.find((job) => job.requestId === pending.payload.requestId);
+  const matched = matchPendingJob(pending, jobs);
   if (matched) { pending = null; follow(matched); }
 }
 
 async function loadCapabilities() {
   try { capabilities = normalizeCapabilities(await sdk.images.getCapabilities()); capabilitiesOffline = false; }
   catch { capabilities = normalizeCapabilities(null); capabilitiesOffline = true; }
-  const previous = serviceKey;
-  serviceKey = defaultService(capabilities, serviceKey);
-  if (previous && previous !== serviceKey) say(word('原本選的服務已不在清單中，請確認目前選擇的服務。', 'The service you picked is no longer listed. Check the selected service.'));
+  // Offline keeps the user's choice so it survives until capabilities return (CAP-06).
+  if (!capabilitiesOffline) {
+    const previous = serviceKey;
+    serviceKey = defaultService(capabilities, serviceKey);
+    if (previous && previous !== serviceKey) say(word('原本選的服務已不在清單中，請確認目前選擇的服務。', 'The service you picked is no longer listed. Check the selected service.'));
+  }
   $('service-status').textContent = capabilitiesOffline ? OFFLINE_TEXT
     : capabilities.services.some((service) => service.available) ? ''
       : capabilities.reason === 'unsupported_schema' ? word('這個版本的 Cats 提供的生成服務格式不受支援，已保存的作品仍可查看及下載。', 'This Cats version offers an unsupported generation format. Saved images can still be viewed and downloaded.')
         : word('尚未設定支援生圖的服務。請先到 Cats 的 Runtime 設定完成安裝與登入。', 'No image service is configured. Install and sign in through Cats Runtime settings.');
-  renderServices(); renderOperation();
+  keepFocus(() => { renderServices(); renderOperation(); });
 }
 
 async function refresh(recheck = false) {
   await perform(async () => {
     if (!sdk?.images) throw new Error('image_service_unavailable');
     await reload();
-    if (!loaded) { selectedId ??= jobs.find((job) => job.output)?.id ?? null; }
+    if (!loaded) selectedId ??= initialSelection(jobs);
     if (!loaded || recheck) await loadCapabilities();
     loaded = true;
-    sourceIds = sourceIds.filter((id) => jobs.some((job) => job.id === id && job.output));
+    const { kept, removed } = pruneSources(sourceIds, jobs);
+    if (removed.length) { sourceIds = kept; keepFocus(() => { renderSources(); renderParameters(); }); say(errorText('source_unavailable')); }
     announce();
   });
 }
@@ -679,7 +717,12 @@ $('refresh').addEventListener('click', () => void refresh(true));
 for (const id of ['work-search', 'work-service', 'work-status']) $(id).addEventListener('input', () => renderJobs());
 
 let timer = null;
-const schedule = () => { timer = setTimeout(async () => { if (!busy) await refresh(); if (!disposed) schedule(); }, jobs.some((job) => job.active) || pending ? 3000 : 10000); };
+// Each poll picks its delay when it is scheduled; submitting reschedules so the first status update comes quickly.
+function schedule() {
+  clearTimeout(timer);
+  if (disposed) return;
+  timer = setTimeout(async () => { try { if (!busy) await refresh(); } finally { schedule(); } }, jobs.some((job) => job.active) || pending ? 3000 : 10000);
+}
 const ticker = setInterval(() => {
   const job = jobs.find((entry) => entry.id === selectedId);
   if (job?.status === 'running' && $('elapsed')) $('elapsed').textContent = elapsed(job.createdAt);
@@ -690,4 +733,4 @@ window.addEventListener('pagehide', () => {
   imageUrls.clear();
 });
 renderOperation(); controls(); renderPreview();
-void refresh().then(() => { if (!disposed) schedule(); });
+void refresh().finally(schedule);

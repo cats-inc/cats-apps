@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildSubmission, defaultService, normalizeCapabilities, normalizeJob, promptLength, ratioText, validateDraft } from '../apps/studio/src/model.js';
+import { buildSubmission, defaultService, draftSources, initialSelection, isDefinitiveSubmitError, matchPendingJob, normalizeCapabilities, normalizeJob, promptLength, pruneSources, ratioText, validateDraft } from '../apps/studio/src/model.js';
 import { SCHEMA_ONE_CAPABILITIES, SCHEMA_TWO_CAPABILITIES, SCHEMA_TWO_JOBS, SCHEMA_TWO_TODAY } from './fixtures/studio-image-fixtures.mjs';
 
 const operations = (service) => service.operations.map((operation) => operation.id);
@@ -108,4 +108,34 @@ test('jobs report measured format, ratio, transparency, warnings and lineage', (
   assert.equal(normalizeJob({ ...SCHEMA_TWO_JOBS[3], output: { ...SCHEMA_TWO_JOBS[3].output, transparency: 'has-transparency' } }).output.transparency, 'transparent');
   assert.equal(normalizeJob({ ...SCHEMA_TWO_JOBS[3], output: { ...SCHEMA_TWO_JOBS[3].output, mimeType: 'image/gif' } }).output, null, 'unverified formats are not shown as images');
   assert.equal(ratioText(1001, 997), '1.00:1');
+});
+
+test('free-form instance names are kept and malformed requested ratios are dropped', () => {
+  const capabilities = normalizeCapabilities({ ...SCHEMA_ONE_CAPABILITIES, targets: [{ provider: 'grok', instance: 'work account', agentModel: 'grok-4.7' }] });
+  assert.deepEqual(capabilities.services.map((service) => service.key), ['work account']);
+  assert.deepEqual(buildSubmission(capabilities, { requestId: 'r', serviceKey: 'work account', operation: 'image.generate', prompt: 'cat', sourceIds: [] }), { requestId: 'r', instance: 'work account', prompt: 'cat' });
+  assert.equal(normalizeCapabilities({ ...SCHEMA_ONE_CAPABILITIES, targets: [{ provider: 'grok', instance: 'bad\nname' }] }).services.length, 0);
+  assert.equal(normalizeJob({ ...SCHEMA_TWO_JOBS[2], options: { aspectRatio: '<b>' } }).requestedRatio, null);
+});
+
+test('submission outcomes: only definitive errors drop a pending request; a listed requestId resolves it', () => {
+  for (const code of ['invalid_image_request', 'image_service_busy', 'image_request_conflict', 'source_unavailable']) assert.equal(isDefinitiveSubmitError(code), true, code);
+  for (const code of ['network_error', 'Too many pending app requests.', undefined]) assert.equal(isDefinitiveSubmitError(code), false, String(code));
+  const pending = { payload: { requestId: 'request-job-grok-1' }, unconfirmed: true };
+  assert.equal(matchPendingJob(pending, works)?.id, 'job-grok-1');
+  assert.equal(matchPendingJob({ payload: { requestId: 'unknown' } }, works), null);
+  assert.equal(matchPendingJob(null, works), null);
+});
+
+test('first open selects the latest saved image; sources are pruned and limited per operation', () => {
+  assert.equal(initialSelection(works), 'job-grok-edit', 'interrupted and failed jobs are skipped');
+  assert.equal(initialSelection([]), null);
+  assert.deepEqual(pruneSources(['job-grok-1', 'job-grok-2', 'gone'], works), { kept: ['job-grok-1'], removed: ['job-grok-2', 'gone'] });
+  const capabilities = normalizeCapabilities(SCHEMA_TWO_CAPABILITIES);
+  const grok = capabilities.services.find((service) => service.provider === 'grok');
+  const [generate, edit, compose] = grok.operations;
+  assert.deepEqual(draftSources(generate, ['a', 'b']), [], 'picks made for compose are not sent with a generation');
+  assert.deepEqual(draftSources(edit, ['a', 'b']), ['a']);
+  assert.deepEqual(draftSources(compose, ['a', 'b']), ['a', 'b']);
+  assert.equal(validateDraft(capabilities, { serviceKey: 'grok-native', operation: 'image.generate', prompt: 'cat', sourceIds: draftSources(generate, ['job-grok-1']) }, works).ok, true);
 });

@@ -11,9 +11,13 @@ export const OPERATIONS = ['image.generate', 'image.edit', 'image.compose'];
 const OPERATION_INPUTS = { 'image.generate': [0, 0], 'image.edit': [1, 1], 'image.compose': [2, Infinity] };
 const RATIO_MODES = ['choose', 'native', 'service', 'source'];
 const RATIO_PATTERN = /^(auto|\d{1,2}(\.\d)?:\d{1,2}(\.\d)?)$/;
-const ID_PATTERN = /^[A-Za-z0-9._:/-]{1,128}$/;
+// Instance and target IDs are host-defined (Runtime instances are free-form keys); only bound their length and control characters.
+const validKey = (value) => typeof value === 'string' && value.length > 0 && value.length <= 100 && !/[\u0000-\u001f\u007f]/.test(value);
 const PROVIDER_NAMES = { grok: 'Grok', muse: 'Muse', antigravity: 'Antigravity', codex: 'Codex' };
 export const ACTIVE_STATUSES = ['submitting', 'running', 'collecting', 'cancelling'];
+// Submit errors that prove nothing was accepted for this request; anything else leaves the outcome unconfirmed.
+export const DEFINITIVE_SUBMIT_ERRORS = ['invalid_image_request', 'image_service_busy', 'image_storage_limit', 'app_context_revoked', 'image_request_conflict',
+  'source_unavailable', 'source_unsupported', 'source_count_invalid', 'option_unsupported'];
 
 export function promptLength(value) {
   return Array.from(value).length;
@@ -45,7 +49,7 @@ function inputsOf(raw, operation) {
 }
 
 function agentConfigsOf(raw) {
-  const configs = (Array.isArray(raw) ? raw : []).filter((config) => config && ID_PATTERN.test(config.id ?? '') && cleanText(config.model, 80))
+  const configs = (Array.isArray(raw) ? raw : []).filter((config) => config && validKey(config.id) && cleanText(config.model, 80))
     .map((config) => ({ id: config.id, model: config.model.trim(), effort: cleanText(config.effort, 24), label: cleanText(config.label, 80) }));
   return configs.length ? configs : null;
 }
@@ -58,7 +62,7 @@ function emptyCapabilities(schemaVersion, reason) {
 function fromSchemaOne(raw) {
   if (raw.operation !== 'image.generate' || !Array.isArray(raw.targets)) return emptyCapabilities(1, 'invalid_capabilities');
   const ratio = RATIO_PATTERN.test(raw.aspectRatio ?? '') && raw.aspectRatio !== 'auto' ? raw.aspectRatio : '1:1';
-  const targets = raw.targets.filter((target) => cleanText(target?.provider, 40) && ID_PATTERN.test(target?.instance ?? ''));
+  const targets = raw.targets.filter((target) => cleanText(target?.provider, 40) && validKey(target?.instance));
   const perProvider = new Map();
   for (const target of targets) perProvider.set(target.provider, (perProvider.get(target.provider) ?? 0) + 1);
   const services = targets.map((target) => {
@@ -81,14 +85,14 @@ function fromSchemaOne(raw) {
 function fromSchemaTwo(raw) {
   if (!Array.isArray(raw.targets) || !Array.isArray(raw.profiles)) return emptyCapabilities(2, 'invalid_capabilities');
   const perProvider = new Map();
-  const targets = raw.targets.filter((target) => ID_PATTERN.test(target?.id ?? '') && cleanText(target?.provider, 40));
+  const targets = raw.targets.filter((target) => validKey(target?.id) && cleanText(target?.provider, 40));
   for (const target of targets) perProvider.set(target.provider, (perProvider.get(target.provider) ?? 0) + 1);
   const services = [];
   for (const target of targets) {
     const operations = [];
     for (const operation of OPERATIONS) {
       const profile = raw.profiles.find((item) => item?.operation === operation && Array.isArray(item.targetIds) && item.targetIds.includes(target.id));
-      if (!profile || !ID_PATTERN.test(profile.id ?? '') || !ID_PATTERN.test(String(profile.revision ?? ''))) continue;
+      if (!profile || !validKey(profile.id) || !validKey(String(profile.revision ?? ''))) continue;
       const ratio = ratioModeOf(profile.aspectRatio, operation);
       const declaredInputs = inputsOf(profile.inputs, operation);
       const configs = agentConfigsOf(profile.agentConfigs);
@@ -197,7 +201,7 @@ export function normalizeJob(job) {
   const schemaTwo = job?.schemaVersion === 2;
   const operation = schemaTwo && OPERATIONS.includes(job.operation) ? job.operation : 'image.generate';
   const provider = cleanText(job?.provider, 40) ?? 'grok';
-  const sources = schemaTwo && Array.isArray(job.sources) ? job.sources.filter((source) => ID_PATTERN.test(source?.id ?? '')).map((source) => ({ id: source.id, sha256: source.sha256 ?? null })) : [];
+  const sources = schemaTwo && Array.isArray(job.sources) ? job.sources.filter((source) => validKey(source?.id)).map((source) => ({ id: source.id, sha256: source.sha256 ?? null })) : [];
   const options = schemaTwo && job.options && typeof job.options === 'object' ? job.options : {};
   return {
     id: job.id, requestId: job.requestId, prompt: typeof job.prompt === 'string' ? job.prompt : '',
@@ -206,9 +210,34 @@ export function normalizeJob(job) {
     warnings: Array.isArray(job.warnings) ? job.warnings.filter((warning) => typeof warning === 'string') : [],
     executionOutcome: cleanText(job.executionOutcome, 24), createdAt: job.createdAt, updatedAt: job.updatedAt,
     agentModel: cleanText(job.agentModel, 80), agentEffort: cleanText(job.agentEffort, 24), sources,
-    requestedRatio: schemaTwo ? (typeof options.aspectRatio === 'string' ? options.aspectRatio : null) : '1:1',
+    requestedRatio: schemaTwo ? (RATIO_PATTERN.test(options.aspectRatio ?? '') ? options.aspectRatio : null) : '1:1',
+    agentConfigId: schemaTwo && validKey(job.agentConfigId) ? job.agentConfigId : null,
     requestedTransparency: options.transparentBackground === true,
     output: job.status === 'succeeded' ? normalizeOutput(job.output) : null,
     active: ACTIVE_STATUSES.includes(job.status),
   };
+}
+
+export function isDefinitiveSubmitError(code) {
+  return DEFINITIVE_SUBMIT_ERRORS.includes(code);
+}
+
+// A pending submission is resolved only by a listed job with the same requestId.
+export function matchPendingJob(pending, jobs) {
+  return pending ? jobs.find((job) => job.requestId === pending.payload.requestId) ?? null : null;
+}
+
+// First open shows the latest saved image; afterwards only the user or an explicit submit changes the selection.
+export function initialSelection(jobs) {
+  return jobs.find((job) => job.output)?.id ?? null;
+}
+
+export function pruneSources(sourceIds, jobs) {
+  const saved = new Set(jobs.filter((job) => job.status === 'succeeded' && job.output).map((job) => job.id));
+  return { kept: sourceIds.filter((id) => saved.has(id)), removed: sourceIds.filter((id) => !saved.has(id)) };
+}
+
+// Sources picked for another operation stay in the draft but are only sent when this operation takes them.
+export function draftSources(operation, sourceIds) {
+  return operation ? sourceIds.slice(0, operation.inputs.max) : [];
 }
