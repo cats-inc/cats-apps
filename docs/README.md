@@ -4,6 +4,12 @@
 
 | Document | State | Responsibility |
 |----------|-------|----------------|
+| [Five-provider Studio probe summary](research/2026-10-23-studio-cli-media-probe-summary.md) | Current evidence and gaps across five providers | Single entry point for model pairs, tool controls, output contracts, real artifact and Studio implications |
+| [Eight-session Studio inquiry](research/2026-10-23-eight-session-cli-media-probe.md) | Eight Desktop conversations; no media generation | Compare Muse, Antigravity, Claude and Codex tool surfaces, model pairs and integration gaps |
+| [Studio sample replacement](research/2026-10-23-grok47-xhigh-studio-sample.md) | One authorized image generated; source sample replaced | Original-byte provenance, Grok 4.7 / Extra High selection and separate candidate-package validation |
+| [Grok 4.5 / Low comparison](research/2026-10-23-grok45-low-media-probe-comparison.md) | Separate Desktop inquiry; no media generation | Compare exposed tools, schema interpretation and document coverage with 4.7 / Extra High |
+| [Studio Grok inquiry](research/2026-10-23-grok-media-capability-probe.md) | Desktop capability inquiry; no new media generation | Tool contracts, resolution limits, privacy/storage preconditions and expansion candidates |
+| [CLI media probe SOP](research/2026-10-23-cli-media-probe-playbook.md) | Reusable research procedure | Case cards, staged prompts, output/delegation contracts, failure recovery and bounded artifact verification |
 | [ADR-003](decisions/003-delegate-personal-questions-to-first-party-assistants.md) | MVP, complete App and shared ingress confirmed | Ask owns UI/services/data/MCP in one installation; ordinary App API requests and host SDK capabilities |
 | [SPEC-004](specs/SPEC-004-personal-assistant-questions-mvp.md) | Local Windows prototype passed; shared ingress pending | Grok-first tutorial/composer and assisted initiation; Spark/Meta remain unverified |
 | [PLAN-005](plans/PLAN-005-personal-assistant-questions-mvp.md) | A4a shared ingress/tutorial/sandbox rework next | Platform multi-component contract, App-owned services, unified package and installed acceptance |
@@ -43,4 +49,4 @@ Protocol examples remain optional; [A2A](a2a/README.md) is a bootstrap pointer.
 Root state: [README](../README.md), [PROGRESS](../PROGRESS.md),
 [ROADMAP](../ROADMAP.md), and [CONTRIBUTING](../CONTRIBUTING.md).
 
-*Last updated: 2026-10-20*
+*Last updated: 2026-10-23*

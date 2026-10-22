@@ -7,6 +7,14 @@
 - Spec: [SPEC-003](../specs/SPEC-003-media-studio-vertical-slice.md).
 - Decision: [ADR-002](../decisions/002-cli-backed-media-studio-vertical-slice.md).
 
+2026-10-23 follow-up: the owner chose Grok 4.7 / Extra High (non-Fast) and authorized
+one new sample through the existing Desktop Chat. The original JPEG replaces the
+source sample and the isolated candidate package/host checks pass. See
+[sample provenance and current scope](../research/2026-10-23-grok47-xhigh-studio-sample.md).
+The no-additional-generation limits below describe the September implementation;
+this new authorization permits only that one sample, without publication or an
+installed update.
+
 ## Delivery checklist
 
 - [x] One bounded Grok native image spike: valid 1024×1024 JPEG, 98,234 bytes; no retry.
@@ -49,6 +57,12 @@ publication are not part of this delivery. The canonical Desktop bundle pin rema
 until a separately authorized immutable Studio publication/selection.
 
 ## Deferred follow-up
+
+Discovery input for the next Studio design is recorded in the
+[five-provider probe summary](../research/2026-10-23-studio-cli-media-probe-summary.md)
+and [repeatable probe SOP](../research/2026-10-23-cli-media-probe-playbook.md).
+Model-pair inquiries are complete; new provider artifact tests and an expanded
+App/SDK/Runtime contract remain separate from this implemented slice.
 
 - App lifecycle／Market delivery now has an owner plan:
   [PLAN-004](PLAN-004-independent-app-distribution.md), governed by Platform SPEC-120.

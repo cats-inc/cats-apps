@@ -23,5 +23,11 @@ Research filenames follow `YYYY-MM-DD-topic.md`, matching the sibling Cats repos
 
 | Date | Topic | Scope |
 |------|-------|-------|
+| 2026-10-23 | [Five-provider Studio summary](2026-10-23-studio-cli-media-probe-summary.md) | Grok, Muse, Antigravity, Claude and Codex: selected model pairs, evidence levels, native controls, collection contracts and next artifact gaps |
+| 2026-10-23 | [Eight-session CLI media inquiry](2026-10-23-eight-session-cli-media-probe.md) | Two selected models each for Muse, Antigravity, Claude and Codex through Desktop; tool/schema comparison, idle-refusal recovery and untested artifact boundaries |
+| 2026-10-23 | [Grok 4.7 / Extra High Studio sample](2026-10-23-grok47-xhigh-studio-sample.md) | One separately authorized image, verified original JPEG, source sample replacement and Runtime profile selection; no publication or installed update |
+| 2026-10-23 | [Grok 4.5 / Low comparison](2026-10-23-grok45-low-media-probe-comparison.md) | Separate Desktop inquiry with matched discovery prompt; capability, schema precision and source-coverage comparison against 4.7 / Extra High |
+| 2026-10-23 | [Grok media inquiry through Desktop](2026-10-23-grok-media-capability-probe.md) | Grok 4.7 / Extra High capability inquiry, schema/documentation conflicts, historical artifact baseline and Studio expansion candidates; no new media generation |
+| 2026-10-23 | [CLI media probe SOP](2026-10-23-cli-media-probe-playbook.md) | Repeatable case preparation, staged discovery/schema/output prompts, failure handling, comparison limits and artifact measurement cards |
 | 2026-09-29 | [Personal assistant delegation baseline](2026-09-29-personal-assistant-delegation-baseline.md) | Historical baseline, Bot probe and CLI failure checkpoint, revised complete-App ownership |
 | 2025-09-12 | [Five CLI media capability test report](2025-09-12-five-cli-media-final-report.md) | User-provided image/video test observations; original report date retained, source evidence and CLI versions not included |

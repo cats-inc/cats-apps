@@ -53,6 +53,18 @@ and [Runtime SPEC-033](../../../cats-runtime/docs/specs/SPEC-033-bounded-image-g
 
 ## Acceptance evidence and limits
 
+The 2026-10-23 [five-provider probe summary](../research/2026-10-23-studio-cli-media-probe-summary.md)
+and [reusable SOP](../research/2026-10-23-cli-media-probe-playbook.md) record current
+tool, output-location and model-pair evidence. These findings do not expand the
+implemented single-image contract or enable untested provider operations.
+
+2026-10-23: the owner selected Grok 4.7 / Extra High (non-Fast) and authorized one
+image in the existing Desktop Chat research conversation. The verified original
+JPEG replaces the source preview sample; Runtime's execution profile changes to
+grok-4.7 / xhigh. See [sample provenance and scope](../research/2026-10-23-grok47-xhigh-studio-sample.md).
+This is separate from the original implementation allowance below and does not
+claim a fresh paid App-to-CLI job or authorize a version bump/publication.
+
 The [earlier one-image spike](../../../cats-runtime/docs/research/2026-09-28-grok-single-image-spike.md)
 proved native Grok 1.0.41 image output (1024×1024 JPEG). Its one permitted paid attempt is
 already used. No additional live CLI generation is authorized for this implementation.
