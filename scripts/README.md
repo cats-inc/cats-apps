@@ -6,6 +6,7 @@
 | build-catalog.mjs | Verify catalog/apps.json against its release artifacts and sign the official catalog |
 | new-catalog-key.mjs | Create the catalog signing key, store it as the CATALOG_SIGNING_KEY secret and record its public key |
 | check-docs.mjs | Dependency-free workspace/documentation validation; npm run check:docs |
+| testing/preview-studio.mjs | Write a standalone Studio preview driven by fixture capabilities and jobs (development only; never packaged, never calls a CLI) |
 | windows/Sync-AgentSkills.ps1 | Bootstrap-provided skill synchronization; use only when skills are added/changed |
 | windows/Remove-MergedBranches.ps1 | Explicit branch maintenance, with preview |
 | linux/ and macos/ helpers | Bootstrap-provided equivalents |
