@@ -145,6 +145,12 @@ Stale UI projection alone is not a reason to resend a completed request.
 
 ## Implications and remaining evidence
 
+The owner's subsequent planning request is captured in
+[ADR-004](../decisions/004-expand-studio-with-verified-image-profiles.md),
+[SPEC-006](../specs/SPEC-006-studio-image-workspace.md) and
+[PLAN-006](../plans/PLAN-006-studio-image-workspace.md). Those proposed documents
+are the implementation/UI handoff; this summary remains the evidence record.
+
 Studio currently implements one native Grok square-image operation. Research does
 not enable the other providers in its production capabilities. `grok/native`
 identifies provider/instance, not a media model.

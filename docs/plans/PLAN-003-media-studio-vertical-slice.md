@@ -66,6 +66,13 @@ until a separately authorized immutable Studio publication/selection.
 
 ## Deferred follow-up
 
+The proposed image-workspace expansion now has its own
+[PLAN-006](PLAN-006-studio-image-workspace.md),
+[SPEC-006](../specs/SPEC-006-studio-image-workspace.md) and
+[ADR-004](../decisions/004-expand-studio-with-verified-image-profiles.md).
+Use that handoff for the new UI and provider work; this plan retains the delivered
+single-Grok history. The successor implementation has not started.
+
 Discovery input for the next Studio design is recorded in the
 [five-provider probe summary](../research/2026-10-23-studio-cli-media-probe-summary.md)
 and [repeatable probe SOP](../research/2026-10-23-cli-media-probe-playbook.md).

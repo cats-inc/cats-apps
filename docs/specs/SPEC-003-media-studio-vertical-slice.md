@@ -7,6 +7,10 @@
 - Decision: [ADR-002](../decisions/002-cli-backed-media-studio-vertical-slice.md).
 - Plan: [PLAN-003](../plans/PLAN-003-media-studio-vertical-slice.md).
 
+The next-stage [SPEC-006](SPEC-006-studio-image-workspace.md) plans the
+multi-provider image workspace, PNG/non-square handling and contract upgrades.
+It is a draft handoff, not an expansion of the implemented contract below.
+
 ## Approved scope
 
 使用者已核准完整實作與必要的 SDK／Runtime／Desktop 更新，並確認 Studio 是 Cats Home

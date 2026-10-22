@@ -36,22 +36,30 @@ Desktop. Keep app source ownership separate from the host and provider runtime.
 A public marketplace, third-party execution model, and an individual release
 workflow for every utility are not prerequisites for Phase 2.
 
-## Planned Media Studio Vertical Slice
+## Studio: delivered slice and planned image workspace
 
-The 2026-09-28 planning request adds a separate App track alongside Usage.
-Cats Studio is a working name; the draft contracts do not represent shipped capabilities.
+The standalone `cats.studio` single-Grok image slice is implemented, with SDK,
+retained works and installed recovery evidence in
+[PLAN-003](docs/plans/PLAN-003-media-studio-vertical-slice.md). Later Chat probes
+verified one image each from Grok 4.7/xhigh, Muse Spark 1.3/xhigh, Antigravity
+Gemini 3.8 Flash/high and Codex GPT-6.1-Sol/xhigh. These probes do not enable new
+providers in Studio or establish a new App-to-live-CLI acceptance run.
 
-- [ ] Verify Grok image generation, editing and image-to-video through the Runtime CLI path.
-- [ ] Define and implement owner-scoped App jobs/assets SDK and durable media delivery.
-- [ ] Complete generation, editing, a 6-second/480p clip, export and retained works in one App.
-- [ ] Validate the built installed package, recovery, access boundaries and compatibility.
+The 2026-10-23 next-stage handoff is
+[ADR-004](docs/decisions/004-expand-studio-with-verified-image-profiles.md),
+[SPEC-006](docs/specs/SPEC-006-studio-image-workspace.md) and
+[PLAN-006](docs/plans/PLAN-006-studio-image-workspace.md).
 
-See [ADR-002](docs/decisions/002-cli-backed-media-studio-vertical-slice.md),
-[SPEC-003](docs/specs/SPEC-003-media-studio-vertical-slice.md) and
-[PLAN-003](docs/plans/PLAN-003-media-studio-vertical-slice.md).
-A single-image adapter spike passed on 2026-09-28. Further live generation is deferred
-under the owner's allowance constraint; App implementation, editing/video validation
-and publication remain pending.
+- [x] Record the multi-provider evidence, UI/contract proposal and implementation handoff.
+- [ ] Freeze owner contracts and prove pre-generation budgets/correlation for each route.
+- [ ] Implement Runtime profiles and Platform SDK/storage upgrades with tested migrations.
+- [ ] Redesign the single-image workspace using full-state fixtures; retain original PNG/JPEG.
+- [ ] Integrate actual packages, old works, recovery/cancellation and compatible official Apps.
+- [ ] Complete authorized bounded-route acceptance per enabled provider and independent review.
+
+Editing/reference input, transparent generation, video and further media remain later
+operation-specific work. Planning does not authorize additional paid calls, version
+bumps, publication or installation.
 
 ## Planned Ask MVP
 
@@ -78,4 +86,4 @@ See [ADR-003](docs/decisions/003-delegate-personal-questions-to-first-party-assi
 [SPEC-004](docs/specs/SPEC-004-personal-assistant-questions-mvp.md) and
 [PLAN-005](docs/plans/PLAN-005-personal-assistant-questions-mvp.md).
 
-*Last updated: 2026-09-29 (Ask planning added; earlier phase history retained)*
+*Last updated: 2026-10-23 (Studio handoff updated; other phase history retained)*

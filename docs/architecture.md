@@ -45,6 +45,22 @@ The MVP provides asynchronous status, reopening of retained answers and Copy.
 Host deep links/history, automatic Chat/Code/Work ingestion, a general answer
 knowledge service and full offline execution remain deferred.
 
+## Proposed Studio image workspace (2026-10-23)
+
+[ADR-004](decisions/004-expand-studio-with-verified-image-profiles.md),
+[SPEC-006](specs/SPEC-006-studio-image-workspace.md) and
+[PLAN-006](plans/PLAN-006-studio-image-workspace.md) are the next-stage handoff.
+They propose four native single-image execution profiles, capability-driven UI,
+original JPEG/PNG retention, non-square previews and separate artifact/turn
+outcomes. The current implementation remains the single-Grok slice.
+
+Studio continues to use the public Platform SDK; this phase adds no Studio server
+or direct renderer CLI/API access. Runtime owns profile admission, bounded native
+execution and collection; Platform owns grants, Core records, retained works and
+download. New request/output/schema contracts and their upgrade boundary must be
+coordinated by those owners before enabling profiles. UI design can proceed with
+contract fixtures while adapter budget/correlation proofs are established.
+
 ## Planned independent distribution (2026-09-28)
 
 [Platform ADR-121](../../cats-platform/docs/decisions/121-distribute-apps-independently-with-host-owned-lifecycle.md)
@@ -151,4 +167,4 @@ account polling, other collectors and durable time-series data still require
 - [Platform ADR-114](../../cats-platform/docs/decisions/114-separate-official-app-sources-and-coordinate-desktop-distribution.md)
 - [Runtime ADR-038](../../cats-runtime/docs/decisions/038-separate-execution-usage-from-provider-account-quota.md)
 
-*Last updated: 2026-09-29*
+*Last updated: 2026-10-23 (Studio planning added; prior ownership remains unchanged)*

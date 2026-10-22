@@ -5,6 +5,12 @@
 Accepted — 2026-09-28. The user authorized implementation and a local installed Desktop
 update, and narrowed this delivery to one image in a standalone App beside Usage.
 
+The proposed next phase is [ADR-004](004-expand-studio-with-verified-image-profiles.md)
+with [SPEC-006](../specs/SPEC-006-studio-image-workspace.md) and
+[PLAN-006](../plans/PLAN-006-studio-image-workspace.md). It plans a multi-provider
+image workspace; it does not change this slice's historical acceptance or claim
+that the expanded capabilities have been implemented.
+
 ## Context
 
 The original proposal combined image generation, editing and short video. Native Grok's

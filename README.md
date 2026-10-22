@@ -34,6 +34,14 @@ blocked on CLI authentication; it is not advertised as a working collector.
   Build separately with `npm run package:studio`. Editing/video and App install/remove
   UX remain deferred; Studio has not been publicly released.
 
+  The next Studio image-workspace design is planned in
+  [ADR-004](docs/decisions/004-expand-studio-with-verified-image-profiles.md),
+  [SPEC-006](docs/specs/SPEC-006-studio-image-workspace.md) and
+  [PLAN-006](docs/plans/PLAN-006-studio-image-workspace.md): four native generation
+  profiles, capability-driven controls, original PNG/JPEG previews and explicit
+  artifact recovery. These documents are an implementation/UI handoff; the
+  expanded provider/SDK contracts have not been implemented.
+
 - Bootstrap initialization and project-specific documentation are complete.
 - Repository ownership and Desktop-coordinated distribution are accepted.
 - Usage shows current tokens/cost/confidence, passive Claude/Codex quota windows,
