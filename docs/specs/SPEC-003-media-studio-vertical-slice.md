@@ -58,6 +58,13 @@ and [reusable SOP](../research/2026-10-23-cli-media-probe-playbook.md) record cu
 tool, output-location and model-pair evidence. These findings do not expand the
 implemented single-image contract or enable untested provider operations.
 
+A separately authorized [three-provider image probe](../research/2026-10-23-three-provider-image-artifact-probe.md)
+then verified Muse Spark 1.3 (1920 x 1280 PNG despite square intent), Antigravity
+Gemini 3.8 Flash (1024 x 1024 JPEG through its child) and Codex GPT-6.1-Sol
+(1254 x 1254 PNG). Muse generated its file before the enclosing turn failed.
+These are Chat-route research artifacts; expanded Studio provider support,
+PNG/non-square collection and App/SDK acceptance remain unimplemented.
+
 2026-10-23: the owner selected Grok 4.7 / Extra High (non-Fast) and authorized one
 image in the existing Desktop Chat research conversation. The verified original
 JPEG replaces the source preview sample; Runtime's execution profile changes to

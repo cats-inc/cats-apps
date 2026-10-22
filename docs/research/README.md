@@ -23,6 +23,7 @@ Research filenames follow `YYYY-MM-DD-topic.md`, matching the sibling Cats repos
 
 | Date | Topic | Scope |
 |------|-------|-------|
+| 2026-10-23 | [Three-provider real image probe](2026-10-23-three-provider-image-artifact-probe.md) | Spark, Flash and Sol each generated one verified image; actual PNG/JPEG dimensions, native receipt gaps, output paths and Muse artifact success followed by turn timeout |
 | 2026-10-23 | [Five-provider Studio summary](2026-10-23-studio-cli-media-probe-summary.md) | Grok, Muse, Antigravity, Claude and Codex: selected model pairs, evidence levels, native controls, collection contracts and next artifact gaps |
 | 2026-10-23 | [Eight-session CLI media inquiry](2026-10-23-eight-session-cli-media-probe.md) | Two selected models each for Muse, Antigravity, Claude and Codex through Desktop; tool/schema comparison, idle-refusal recovery and untested artifact boundaries |
 | 2026-10-23 | [Grok 4.7 / Extra High Studio sample](2026-10-23-grok47-xhigh-studio-sample.md) | One separately authorized image, verified original JPEG, source sample replacement and Runtime profile selection; no publication or installed update |

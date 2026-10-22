@@ -15,6 +15,14 @@ The no-additional-generation limits below describe the September implementation;
 this new authorization permits only that one sample, without publication or an
 installed update.
 
+A later separate authorization permitted one image attempt each in the existing
+Muse Spark 1.3 / xhigh, Antigravity Gemini 3.8 Flash / high and Codex GPT-6.1-Sol /
+xhigh research rooms. All three artifacts were independently verified, including
+Muse's file generated before a turn timeout. See the
+[artifact evidence](../research/2026-10-23-three-provider-image-artifact-probe.md).
+This does not expand the implemented Studio execution contract or authorize
+additional attempts.
+
 ## Delivery checklist
 
 - [x] One bounded Grok native image spike: valid 1024×1024 JPEG, 98,234 bytes; no retry.
@@ -61,8 +69,9 @@ until a separately authorized immutable Studio publication/selection.
 Discovery input for the next Studio design is recorded in the
 [five-provider probe summary](../research/2026-10-23-studio-cli-media-probe-summary.md)
 and [repeatable probe SOP](../research/2026-10-23-cli-media-probe-playbook.md).
-Model-pair inquiries are complete; new provider artifact tests and an expanded
-App/SDK/Runtime contract remain separate from this implemented slice.
+Model-pair inquiries and the selected Spark/Flash/Sol single-image artifact cases
+are complete. An expanded App/SDK/Runtime contract and installed acceptance remain
+separate from this implemented slice; edit/reference/alpha cases remain untested.
 
 - App lifecycle／Market delivery now has an owner plan:
   [PLAN-004](PLAN-004-independent-app-distribution.md), governed by Platform SPEC-120.

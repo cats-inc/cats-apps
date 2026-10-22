@@ -14,10 +14,14 @@ Chat with the requested picker selections. Follow-ups stayed in those rooms.
 The operator did not substitute hidden provider sessions or delegate research.
 
 The capability inquiries were read-only. Separately, the owner authorized one
-Grok 4.7 / xhigh image to replace Studio's earlier Fast/Low sample. No Muse,
-Antigravity, Claude or Codex media generation was attempted. Antigravity's
-advertised image child was not invoked. Raw transcripts, account context,
-native IDs and local paths remain outside Git.
+Grok 4.7 / xhigh image to replace Studio's earlier Fast/Low sample, then one image
+attempt each for Muse Spark 1.3 / xhigh, Antigravity Gemini 3.8 Flash / high and
+Codex GPT-6.1-Sol / xhigh. Those three follow-ups stayed in their existing visible
+rooms; Antigravity's built-in image child was explicitly authorized and invoked
+once. All three yielded verified artifacts, although Muse's enclosing turn failed
+after tool success. See the [artifact probe](2026-10-23-three-provider-image-artifact-probe.md).
+Claude generation was not attempted. Raw transcripts, account context, native IDs
+and local paths remain outside Git.
 
 | Evidence label | Meaning |
 | --- | --- |
@@ -49,10 +53,10 @@ in Runtime. These do not establish any media backend model ID.
 | Provider | Image generation / editing / references | Video generation | Understanding and other media | Current execution evidence |
 | --- | --- | --- | --- | --- |
 | Grok | **Defined** `image_gen`, `image_edit`; local/attachment/data-image references | **Defined** `image_to_video`, `reference_to_video`; descriptions advertise 480p/720p and operation-specific duration/reference limits | Image reading reported; independent speech/music/video editing tools not observed. Bundled 3D script/API is a separate **documented** route | One new 4.7 square JPEG **verified**; edit/video/3D not executed in this inquiry |
-| Muse | **Reported** `muse.image_generation`: prompt plus optional local `image_paths`, reported maxItems 50 | No dedicated generation tool reported | `muse.read_file` image input; video frame-extraction guidance is not a native video-understanding acceptance test | No generated artifact |
-| Antigravity | **Reported** `invoke_subagent` with advertised `image-generator` type; child can generate/edit according to its description | No direct parent video-generation tool reported | `read_file` description includes image/video/audio; actual type acceptance untested | Child not invoked; internal media contract unknown |
+| Muse | **Reported** `muse.image_generation`: prompt plus optional local `image_paths`, reported maxItems 50 | No dedicated generation tool reported | `muse.read_file` image input; video frame-extraction guidance is not a native video-understanding acceptance test | Spark: one **verified** 1920 x 1280 PNG; turn failed after tool success; edit/references untested |
+| Antigravity | **Executed** built-in `image-generator` delegation and child `generate_image`; editing remains reported | No direct parent video-generation tool reported | `read_file` description includes image/video/audio; actual type acceptance untested | Flash: one **verified** 1024 x 1024 JPEG; complete child schema still unknown |
 | Claude | No media-model generation tool found in either session | No generation tool found | **Reported** `Read` image/PDF input; connectors read/render existing media. Code drawing and ffmpeg are distinct operations | No generated artifact or new image-understanding acceptance test |
-| Codex | **Reported** `image_gen__imagegen`: generation/editing with local or conversation references, plus transparent-background request | No dedicated tool reported | `view_image` and CLI image input reported; no dedicated speech/music/3D generator in the snapshot | No generated artifact |
+| Codex | **Executed** `image_gen__imagegen`; editing/references and transparent-background request remain untested | No dedicated tool reported | `view_image` and CLI image input reported; no dedicated speech/music/3D generator in the snapshot | Sol: one **verified** 1254 x 1254 PNG with transparent_background false |
 
 "Not reported/found" describes these sessions, including their discovery limits;
 it is not permanent absence across a provider's products, plugins or APIs.
@@ -62,10 +66,10 @@ it is not permanent absence across a provider's products, plugins or APIs.
 | Provider | Structured controls observed | Media model and output location |
 | --- | --- | --- |
 | Grok | Image ratios; video duration/resolution/reference fields, many limits only in descriptions. No exact pixel, output-format, destination or media-model input | Actual media model unknown. Descriptions return absolute artifact paths and request short session-relative display links; cwd groups sessions rather than specifying media output |
-| Muse | Required prompt; optional local reference array. No structured size/ratio/format/alpha/output count in the reported definition | Tool implementation/backend model unknown. Description says `generated_images/`; absolute location, output format/dimensions and result shape untested |
-| Antigravity | Parent required `TypeName`, `Role`, `Prompt`; optional `Model` and `Workspace` | `Model` is child reasoning tier. `Workspace` is isolation mode, not destination path. Child's actual media tools/model/size/format/reference/alpha controls unknown |
+| Muse | Required prompt; optional local reference array. No structured size/ratio/format/alpha/output count in the reported definition | Backend unknown. This image was `<cwd>/generated_images/<call-id>.png`, 1920 x 1280 RGB PNG; normalized arguments were empty, not an attested native argument set |
+| Antigravity | Parent required `TypeName`, `Role`, `Prompt`; optional `Model` and `Workspace`. Child accepted `AspectRatio: 1:1`, `ImageName` and `Prompt` in this case | `Model` is child reasoning tier; `Workspace` is isolation mode. Output was a JPEG under native `brain/<parent-session>/`, outside cwd. Backend and full child schema remain unknown |
 | Claude | Read input fields, not generation controls | No separate media generator exposed; API vision limits do not become Read schema bounds |
-| Codex | Required prompt; optional reference paths or recent-image count; optional transparent-background boolean | No tool-level media-model/size/format/count/destination field. Recent-image maximum 5 is a description rule. Actual alpha and media backend unknown; bundled/API fallback has a different credential/control surface |
+| Codex | Required prompt; optional reference paths or recent-image count; optional transparent-background boolean | This false-background request produced RGB PNG under `~/.codex/generated_images/<session>/`, outside cwd. Media backend and transparent output remain unknown; bundled/API fallback has a different credential/control surface |
 
 For Grok, the driver independently compared the latest native `tool_definitions.json`
 snapshots of both exact sessions. All four media functions have identical complete
@@ -112,6 +116,15 @@ Desktop pin or installed profile was changed for this research delivery.
 
 ## Failures and comparison limits
 
+The separately authorized three-provider image probe verified all three files,
+but Muse recorded a successful image tool result and then the same 30000ms idle
+refusal. Its PNG was 3:2 despite the user's square-composition intent. This is an
+artifact success with a failed enclosing turn, not a clean session success or a
+native ratio-control guarantee. Antigravity and Codex completed their turns.
+Both PNGs were RGB and all three outputs opaque. Independent decoding, hashes,
+native receipt provenance and exact case limits are in the
+[artifact report](2026-10-23-three-provider-image-artifact-probe.md).
+
 Muse's two full first questions and Antigravity's two full first questions hit
 the same reported post-initial-response 30000ms idle refusal. All four answered
 the shorter no-tools inventory. Both Muse models completed schema follow-ups;
@@ -142,11 +155,13 @@ and artifact-verified states. Keep agent model/effort separate from the media
 backend and do not build a media-model list from the chat model catalog. Existing
 Runtime capabilities are a configured view, not an authentication/quota smoke test.
 
-The next useful evidence is a deliberately bounded image case for selected Muse
-and Codex configurations, an explicitly visible/bounded Antigravity child route,
-then selected edit/video cases where supported. Claude remains a preparation/QA
-candidate on this evidence. Each requires its applicable generation/input budget;
-this summary does not authorize new provider calls or implement a new UI.
+The selected Muse, Antigravity and Codex single-image cases are now complete as
+artifact probes. The next design can use measured output properties, while live
+Studio integration still needs bounded execution/collection profiles, PNG and
+non-square handling, and recovery of an existing artifact after turn failure.
+Selected edit/reference/transparent cases require their own tests and applicable
+budgets. Claude remains a preparation/QA candidate on this evidence. This summary
+does not authorize more provider calls or implement a new UI.
 
 Output accessibility is tracked in [Runtime #177](https://github.com/cats-inc/cats-runtime/issues/177).
 Composer observations are separate product issues:
@@ -160,5 +175,6 @@ These issues were recorded; this research delivery does not fix or close them.
 - [Grok 4.5 / Low comparison and raw-definition follow-up](2026-10-23-grok45-low-media-probe-comparison.md)
 - [Grok 4.7 / xhigh replacement sample and fixture validation](2026-10-23-grok47-xhigh-studio-sample.md)
 - [Eight sessions: Muse, Antigravity, Claude and Codex](2026-10-23-eight-session-cli-media-probe.md)
+- [Muse Spark, Antigravity Flash and Codex Sol: real image artifacts](2026-10-23-three-provider-image-artifact-probe.md)
 - [Historical five-CLI report](2025-09-12-five-cli-media-final-report.md) (versions/raw receipts absent; not a current contract)
 - [Runtime profile evidence](../../../cats-runtime/docs/research/2026-10-23-grok47-xhigh-studio-sample.md)

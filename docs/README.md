@@ -4,6 +4,7 @@
 
 | Document | State | Responsibility |
 |----------|-------|----------------|
+| [Three-provider image artifacts](research/2026-10-23-three-provider-image-artifact-probe.md) | Three verified images; Muse enclosing turn failed after tool success | Actual formats, dimensions, ratio mismatch, native receipts and output collection implications |
 | [Five-provider Studio probe summary](research/2026-10-23-studio-cli-media-probe-summary.md) | Current evidence and gaps across five providers | Single entry point for model pairs, tool controls, output contracts, real artifact and Studio implications |
 | [Eight-session Studio inquiry](research/2026-10-23-eight-session-cli-media-probe.md) | Eight Desktop conversations; no media generation | Compare Muse, Antigravity, Claude and Codex tool surfaces, model pairs and integration gaps |
 | [Studio sample replacement](research/2026-10-23-grok47-xhigh-studio-sample.md) | One authorized image generated; source sample replaced | Original-byte provenance, Grok 4.7 / Extra High selection and separate candidate-package validation |

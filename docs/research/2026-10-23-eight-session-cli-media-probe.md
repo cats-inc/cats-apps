@@ -4,6 +4,12 @@ Date: 2026-10-23 (Asia/Taipei). Scope: user-requested read-only research for
 cats.studio, following the [probe playbook](2026-10-23-cli-media-probe-playbook.md).
 This is not an implementation, publication, or media-generation acceptance result.
 
+Later, separately authorized [single-image tests](2026-10-23-three-provider-image-artifact-probe.md)
+in the Spark, Flash and Sol rooms produced three verified artifacts. The inquiry
+below retains its read-only scope; consult that follow-up and the
+[current summary](2026-10-23-studio-cli-media-probe-summary.md) for the updated
+execution evidence.
+
 ## Route and evidence
 
 All eight conversations were created with **New Chat in the installed Cats

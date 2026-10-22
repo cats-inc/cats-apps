@@ -196,6 +196,8 @@ artifact contract, and record collection/export as a separate operation.
 | Focused recovery also fails | Keep capability unknown and report the route limitation; do not loop, lower effort or alter timeout/account policy without scope to do so |
 | Tool/schema transcription disagrees | Seek raw definitions and exact documentation; preserve both claims until resolved |
 | Generation timeout, cancellation or partial result | Inspect the original attempt's receipt and artifact before any authorized retry; never assume no charge/no output or regenerate to repair collection |
+| Successful image tool result followed by failed enclosing turn | Preserve both outcomes; verify the existing file before considering another generation. Muse's Spark case produced a valid PNG before a 30000ms idle refusal |
+| Requested shape differs from measured output | Record requested intent, actual arguments where available, and decoded dimensions separately. Muse's square-intent request yielded 1920 x 1280; do not regenerate just to obtain the requested ratio |
 | Stale typing indicator or old transcript after navigation | Check identifying user message, persisted room messages and exact-session diagnostics read-only; do not resend an already dispatched prompt |
 
 An idle threshold is not necessarily a total turn deadline. Argon's successful
@@ -225,6 +227,13 @@ Use small deliberate cases: one square image, one edit of that exact image, then
 one short video from that image. A later matrix can vary ratios, resolutions,
 length and reference count one dimension at a time. Do not batch every setting
 on the first run or silently retry an expensive failure.
+
+The [three-provider image follow-up](2026-10-23-three-provider-image-artifact-probe.md)
+also demonstrates receipt gaps: Muse's normalized tool arguments were empty,
+Codex's image generation lived inside native `exec`, and Antigravity's generation
+was inside a child transcript. Use exact-session relevant native records when
+needed, filtering out model thinking, credentials and unrelated context. Do not
+reconstruct absent arguments or treat a parent-only tool count as the media count.
 
 ## Comparing model/effort configurations
 
