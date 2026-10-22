@@ -123,12 +123,12 @@ root.innerHTML = `
       <details id="agent" class="agent"><summary>${word('代理設定', 'Agent settings')}</summary><div id="agent-body"></div>
         <p class="note">${word('這是負責執行的代理，不是圖片模型。圖片模型只有在服務回報時才會出現在作品資訊裡。', 'This agent runs the request; it is not the image model. The image model appears in the image details only when the service reports it.')}</p></details>
       <div class="submit">
-        <button id="generate" class="primary" type="button" disabled aria-describedby="submit-hint usage-note">${word('生成圖片', 'Generate image')}</button>
+        <button id="generate" class="primary" type="button" disabled data-focus-key="generate" aria-describedby="submit-hint usage-note">${word('生成圖片', 'Generate image')}</button>
         <p id="submit-hint" class="note"></p>
         <div id="pending"></div>
         <p id="usage-note" class="note"></p>
         <p id="feedback" role="status" aria-live="polite"></p>
-        <button id="refresh" class="quiet small" type="button">${word('重新整理', 'Refresh')}</button>
+        <button id="refresh" class="quiet small" type="button" data-focus-key="refresh">${word('重新整理', 'Refresh')}</button>
       </div>
     </section>
     <section class="preview panel" aria-labelledby="preview-title">
@@ -190,6 +190,7 @@ let shownImageId = null;
 let jobsSignature = '';
 let previewSignature = '';
 let pendingShown = false;
+let deferredSubmit = false;
 
 const current = () => {
   const service = capabilities.services.find((item) => item.key === serviceKey) ?? null;
@@ -202,11 +203,14 @@ const editTargets = () => capabilities.services.filter((service) => service.avai
 const blocked = () => busy || !!pending || jobs.some((job) => job.active);
 // Repeating an identical message would make screen readers announce it again on every poll.
 const say = (message) => { if (feedback.textContent !== message) feedback.textContent = message; };
+function restoreFocus(key) {
+  const active = document.activeElement;
+  if (key && (!active || active === document.body)) document.querySelector(`[data-focus-key="${CSS.escape(key)}"]`)?.focus();
+}
 function keepFocus(render) {
   const key = document.activeElement?.dataset?.focusKey;
   render();
-  const active = document.activeElement;
-  if (key && (!active || active === document.body)) document.querySelector(`[data-focus-key="${CSS.escape(key)}"]`)?.focus();
+  restoreFocus(key);
 }
 
 function draft() {
@@ -235,24 +239,30 @@ function rememberUrl(id, url) {
     URL.revokeObjectURL(value); imageUrls.delete(key);
   }
 }
-function imageUrl(id, urgent = false) {
+function imageUrl(id, { urgent = false, wanted = null } = {}) {
   if (imageUrls.has(id)) { const url = imageUrls.get(id); rememberUrl(id, url); return Promise.resolve(url); }
-  if (!imageReads.has(id)) {
-    imageReads.set(id, (async () => {
-      await readSlot(urgent);
-      try {
-        const image = await sdk.images.read(id);
-        if (disposed) throw new Error('disposed');
-        const url = URL.createObjectURL(new Blob([image.bytes], { type: image.mimeType }));
-        rememberUrl(id, url); return url;
-      } finally { releaseSlot(); imageReads.delete(id); }
-    })());
-  }
-  return imageReads.get(id);
+  let entry = imageReads.get(id);
+  if (entry) { if (urgent) entry.forced = true; return entry.promise; }
+  entry = { forced: urgent };
+  entry.promise = (async () => {
+    await readSlot(urgent);
+    try {
+      if (!entry.forced && wanted && !wanted()) throw new Error('skipped');
+      const image = await sdk.images.read(id);
+      if (disposed) throw new Error('disposed');
+      const url = URL.createObjectURL(new Blob([image.bytes], { type: image.mimeType }));
+      rememberUrl(id, url); return url;
+    } finally { releaseSlot(); imageReads.delete(id); }
+  })();
+  imageReads.set(id, entry);
+  return entry.promise;
 }
 function loadThumb(img) {
   if (img.getAttribute('src')) return;
-  imageUrl(img.dataset.jobId).then((url) => { if (img.isConnected) img.src = url; }).catch(() => img.closest('.thumb, .source')?.classList.add('thumb-failed'));
+  const id = img.dataset.jobId;
+  const wanted = () => img.isConnected && (!thumbObserver || visibleThumbs.has(id));
+  imageUrl(id, { wanted }).then((url) => { if (img.isConnected) img.src = url; })
+    .catch((error) => { if (error.message !== 'skipped') img.closest('.thumb, .source')?.classList.add('thumb-failed'); });
 }
 const thumbObserver = 'IntersectionObserver' in globalThis ? new IntersectionObserver((entries) => {
   for (const entry of entries) {
@@ -456,11 +466,19 @@ function editWork(job) {
 }
 function reuse(job) { applyPrompt(job.prompt); say(word('描述已放回草稿，還沒有送出。', 'The description is back in the draft and has not been sent.')); }
 
-async function perform(action) {
+// Background polls are quiet: they never disable controls, so focus and pointer targets stay put.
+async function perform(action, { quiet = false } = {}) {
   if (busy || disposed) return;
-  busy = true; controls();
+  const focusKey = document.activeElement?.dataset?.focusKey;
+  busy = true; if (!quiet) controls();
   try { await action(); } catch (error) { if (!disposed) say(errorText(error.message, current().service?.name)); }
-  finally { busy = false; if (!disposed) keepFocus(() => { controls(); renderJobs(); renderPreview(); }); }
+  finally {
+    busy = false;
+    if (!disposed) {
+      keepFocus(() => { controls(); renderJobs(); renderPreview(); }); restoreFocus(focusKey);
+      if (deferredSubmit) { deferredSubmit = false; if (!generate.disabled) submitDraft(draft()); }
+    }
+  }
 }
 
 function requestId() {
@@ -511,13 +529,22 @@ function facts(list, rows) {
   list.replaceChildren(...(list.classList.contains('facts') ? pairs.map((pair) => el('div', {}, ...pair)) : pairs.flat()));
 }
 
+function previewLoading(message, retry) {
+  const progress = $('preview-progress');
+  let note = progress.querySelector('.loading-note');
+  if (!note) { note = el('p', { class: 'note loading-note' }); progress.replaceChildren(note); }
+  note.textContent = message;
+  // The retry button stays in place across attempts so keyboard focus is not lost.
+  if (retry && !progress.querySelector('.loading-retry')) progress.append(button(word('重新讀取', 'Read again'), retry, { class: 'quiet loading-retry', dataset: { focusKey: 'preview-read' } }));
+}
 async function showImage(job) {
   let url;
-  try { url = await imageUrl(job.id, true); }
+  try { url = await imageUrl(job.id, { urgent: true }); }
   catch {
     if (disposed || selectedId !== job.id) return;
-    $('preview-progress').replaceChildren(el('p', { class: 'note', text: word('無法讀取這張圖片。可以重新讀取，或稍後重新整理。', 'This image could not be read. Try again or refresh later.') }),
-      button(word('重新讀取', 'Read again'), () => { $('preview-progress').replaceChildren(el('p', { class: 'note', text: word('正在讀取圖片…', 'Loading the image…') })); void showImage(job); }, { dataset: { focusKey: 'preview-read' } }));
+    previewLoading(word('無法讀取這張圖片。可以重新讀取，或稍後重新整理。', 'This image could not be read. Try again or refresh later.'), () => {
+      previewLoading(word('正在讀取圖片…', 'Loading the image…')); void showImage(job);
+    });
     return;
   }
   if (disposed || selectedId !== job.id) return;
@@ -528,6 +555,8 @@ async function showImage(job) {
   dialogImage.src = url; dialogImage.alt = job.prompt; dialogImage.width = job.output.width; dialogImage.height = job.output.height;
   const measured = $('preview-image');
   measured.hidden = false; $('preview-progress').hidden = true;
+  const zoom = document.querySelector('[data-focus-key="preview-zoom"]');
+  if (zoom) zoom.disabled = false;
   measured.classList.remove('is-fresh'); void measured.offsetWidth; measured.classList.add('is-fresh');
 }
 
@@ -583,13 +612,13 @@ function renderPreview(force = false) {
     $('preview-image').querySelector('.image-button').classList.toggle('checker', job.output.format === 'PNG');
     facts($('preview-facts'), [[word('格式', 'Format'), job.output.format], [word('尺寸', 'Size'), `${job.output.width} × ${job.output.height}`],
       [word('比例', 'Ratio'), job.output.ratio], [word('透明度', 'Transparency'), TRANSPARENCY_LABELS[job.output.transparency]]]);
-    actions.append(...present(button(word('放大檢視', 'Enlarge'), openDialog, { dataset: { focusKey: 'preview-zoom' } }),
+    actions.append(...present(button(word('放大檢視', 'Enlarge'), openDialog, { dataset: { focusKey: 'preview-zoom' }, disabled: shownImageId !== job.id }),
       button(word('下載原檔', 'Download original'), () => perform(() => sdk.images.export(job.id)), { dataset: { focusKey: 'preview-download' } }),
       editTargets().length ? button(word('以此修圖', 'Edit this image'), () => editWork(job), { class: 'quiet emphasis', dataset: { focusKey: 'preview-edit' } }) : null,
       button(word('複用描述', 'Reuse prompt'), () => reuse(job), { dataset: { focusKey: 'preview-reuse' } })));
     if (shownImageId !== job.id) {
-      imageView.hidden = true; progress.hidden = false;
-      progress.replaceChildren(el('p', { class: 'note', text: word('正在讀取圖片…', 'Loading the image…') }));
+      imageView.hidden = true; progress.hidden = false; progress.replaceChildren();
+      previewLoading(word('正在讀取圖片…', 'Loading the image…'));
       void showImage(job);
     }
     return;
@@ -623,7 +652,7 @@ function renderJobs(force = false) {
   const query = $('work-search').value.trim().toLocaleLowerCase();
   const service = $('work-service').value || 'all';
   const status = $('work-status').value;
-  const signature = JSON.stringify([jobs.map((job) => [job.id, job.status, job.updatedAt]), selectedId, query, service, status, blocked(), editTargets().length]);
+  const signature = JSON.stringify([jobs.map((job) => [job.id, job.status, job.active ? null : job.updatedAt]), selectedId, query, service, status, blocked(), editTargets().length]);
   if (!force && signature === jobsSignature) return;
   jobsSignature = signature;
   const providers = [...new Map(jobs.map((job) => [job.provider, job.name])).entries()];
@@ -650,7 +679,7 @@ function renderJobs(force = false) {
       el('div', { class: 'actions' },
         job.output ? button(word('下載', 'Download'), () => perform(() => sdk.images.export(job.id)), { disabled: busy, dataset: { focusKey: `download-${job.id}` } }) : null,
         job.output && editTargets().length ? button(word('修圖', 'Edit'), () => editWork(job), { dataset: { focusKey: `edit-${job.id}` } }) : null,
-        job.status === 'interrupted' ? button(word('確認結果', 'Check outcome'), () => perform(async () => { upsert(await sdk.images.refresh(job.id)); await reload(); }), { disabled: busy }) : null,
+        job.status === 'interrupted' ? button(word('確認結果', 'Check outcome'), () => perform(async () => { upsert(await sdk.images.refresh(job.id)); await reload(); }), { disabled: busy, dataset: { focusKey: `check-${job.id}` } }) : null,
         ['failed', 'cancelled'].includes(job.status) ? button(word('再生成一張', 'Generate another'), () => retry(job), { disabled: blocked(), dataset: { focusKey: `retry-${job.id}` } }) : null,
         button(word('複用描述', 'Reuse prompt'), () => reuse(job), { dataset: { focusKey: `reuse-${job.id}` } }))));
   }
@@ -697,10 +726,10 @@ async function refresh(recheck = false) {
     const { kept, removed } = pruneSources(sourceIds, jobs);
     if (removed.length) { sourceIds = kept; keepFocus(() => { renderSources(); renderParameters(); }); say(errorText('source_unavailable')); }
     announce();
-  });
+  }, { quiet: !recheck });
 }
 
-function openDialog() { dialog.showModal(); }
+function openDialog() { if (!$('preview-image').hidden) dialog.showModal(); }
 dialog.querySelector('.dialog-close').addEventListener('click', () => dialog.close());
 dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
 $('expand').addEventListener('click', openDialog);
@@ -712,7 +741,8 @@ $('home').addEventListener('click', async () => {
   catch { say(word('無法返回首頁，請使用 Cats 的首頁入口。', 'Could not return home. Use the Cats Home navigation.')); }
 });
 prompt.addEventListener('input', controls);
-generate.addEventListener('click', () => { if (!generate.disabled) submitDraft(draft()); });
+// A click that lands during a quiet poll is honoured once the poll ends, never dropped or repeated.
+generate.addEventListener('click', () => { if (generate.disabled) return; if (busy) deferredSubmit = true; else submitDraft(draft()); });
 $('refresh').addEventListener('click', () => void refresh(true));
 for (const id of ['work-search', 'work-service', 'work-status']) $(id).addEventListener('input', () => renderJobs());
 
