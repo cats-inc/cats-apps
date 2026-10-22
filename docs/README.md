@@ -4,9 +4,10 @@
 
 | Document | State | Responsibility |
 |----------|-------|----------------|
+| [ADR-005](decisions/005-provider-first-studio-image-operations.md) | Proposed; amends ADR-004 Decisions 1 and 5 | Provider-first selection, profile-declared generate/edit/compose operations, saved-work sources and per-operation gates |
 | [ADR-004](decisions/004-expand-studio-with-verified-image-profiles.md) | Proposed; next Studio phase | Profile allowlist, agent/media model separation, native execution/collection boundaries and upgrade decision |
-| [SPEC-006](specs/SPEC-006-studio-image-workspace.md) | Draft; implementation/design handoff | Four-provider single-image workspace, visual layout/states, proposed contract 2 and acceptance criteria |
-| [PLAN-006](plans/PLAN-006-studio-image-workspace.md) | Planned; no implementation | Runtime/Platform/Apps workstreams, contract gates, UI fixtures, migrations, validation and separate release scope |
+| [SPEC-006](specs/SPEC-006-studio-image-workspace.md) | Draft; A3a in progress | Provider-first workspace with generate/edit/compose, visual layout/states, proposed contract 2 and acceptance criteria |
+| [PLAN-006](plans/PLAN-006-studio-image-workspace.md) | In progress; A3a UI on SDK 1.x first | Runtime/Platform/Apps workstreams, contract gates, UI fixtures, migrations, validation and separate release scope |
 | [Three-provider image artifacts](research/2026-10-23-three-provider-image-artifact-probe.md) | Three verified images; Muse enclosing turn failed after tool success | Actual formats, dimensions, ratio mismatch, native receipts and output collection implications |
 | [Five-provider Studio probe summary](research/2026-10-23-studio-cli-media-probe-summary.md) | Current evidence and gaps across five providers | Single entry point for model pairs, tool controls, output contracts, real artifact and Studio implications |
 | [Eight-session Studio inquiry](research/2026-10-23-eight-session-cli-media-probe.md) | Eight Desktop conversations; no media generation | Compare Muse, Antigravity, Claude and Codex tool surfaces, model pairs and integration gaps |

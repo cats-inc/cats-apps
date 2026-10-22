@@ -4,6 +4,8 @@
 
 Proposed — 2026-10-23。使用者要求完成下一階段規劃，交由後續實作者與 UI
 設計者接手。本文件提供具體建議基線；尚未實作，也不授權新一輪付費生成或發布。
+Decision 1 與 Decision 5 已由 [ADR-005](005-provider-first-studio-image-operations.md)
+修訂為「先選服務、操作由 profile 宣告」並納入修圖／合成；其餘決策維持。
 [SPEC-006](../specs/SPEC-006-studio-image-workspace.md) 定義行為，
 [PLAN-006](../plans/PLAN-006-studio-image-workspace.md) 定義工作順序與啟用門檻。
 

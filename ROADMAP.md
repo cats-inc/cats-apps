@@ -48,17 +48,20 @@ providers in Studio or establish a new App-to-live-CLI acceptance run.
 The 2026-10-23 next-stage handoff is
 [ADR-004](docs/decisions/004-expand-studio-with-verified-image-profiles.md),
 [SPEC-006](docs/specs/SPEC-006-studio-image-workspace.md) and
-[PLAN-006](docs/plans/PLAN-006-studio-image-workspace.md).
+[PLAN-006](docs/plans/PLAN-006-studio-image-workspace.md), amended by
+[ADR-005](docs/decisions/005-provider-first-studio-image-operations.md) to a provider-first
+workspace with profile-declared generate/edit/compose operations.
 
 - [x] Record the multi-provider evidence, UI/contract proposal and implementation handoff.
 - [ ] Freeze owner contracts and prove pre-generation budgets/correlation for each route.
 - [ ] Implement Runtime profiles and Platform SDK/storage upgrades with tested migrations.
-- [ ] Redesign the single-image workspace using full-state fixtures; retain original PNG/JPEG.
+- [ ] Ship the provider-first workspace on SDK 1.x (A3a), then wire contract 2 (A3b); retain original PNG/JPEG.
 - [ ] Integrate actual packages, old works, recovery/cancellation and compatible official Apps.
 - [ ] Complete authorized bounded-route acceptance per enabled provider and independent review.
 
-Editing/reference input, transparent generation, video and further media remain later
-operation-specific work. Planning does not authorize additional paid calls, version
+Edit/compose from saved works and transparent generation are planned per operation
+and stay unavailable until each passes its own gate; local file import, video and
+further media remain later work. Planning does not authorize additional paid calls, version
 bumps, publication or installation.
 
 ## Planned Ask MVP
