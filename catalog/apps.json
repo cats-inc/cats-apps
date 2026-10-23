@@ -19,8 +19,17 @@
     },
     {
       "id": "cats.studio",
-      "channels": { "stable": "0.3.0" },
+      "channels": { "stable": "0.3.1" },
       "versions": [
+        {
+          "version": "0.3.1",
+          "artifact": {
+            "url": "https://github.com/cats-inc/cats-apps/releases/download/studio-v0.3.1/studio-0.3.1.catsapp",
+            "size": 135846,
+            "sha256": "298feee448f3d934bd41da1686b33de050fce607ed27686235582ecbd3ed7987"
+          },
+          "notes": "改由 Cats 外殼顯示名稱、返回與版本；生成忙碌時說明原因，且不會使用額度。"
+        },
         {
           "version": "0.3.0",
           "artifact": {
