@@ -267,6 +267,12 @@ files before the requested image read. Raw native assistant history can also
 flatten reasoning and final text; use final-channel evidence and targeted tool
 records instead of printing that whole projection.
 
+A stored image payload still does not prove visual understanding: Cursor/Kimi
+retained the correct fixture bytes while the agent reported no perceptible
+visual content. Preserve both observations and mark the visual task unavailable
+or unsuccessful. Do not silently retry or add a caption/OCR fallback, or infer
+that a successful generation tool makes the same model's image input work.
+
 Compare inventory, exact schemas, description-only constraints and source
 provenance separately from answer detail. A schema difference needs evidence from
 both sessions; incompatible model statements alone do not establish one. Changing

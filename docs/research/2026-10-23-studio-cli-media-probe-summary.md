@@ -39,6 +39,13 @@ other candidate catalogs lacked Seed 2.1 Turbo. Cursor generated one verified
 Copilot/Kimi read the fixture successfully; Devin/DeepSeek could not accept
 image input. One misrouted intended Copilot conversation is excluded.
 
+The [final Kimi K3 comparison](2026-10-24-kimi-k3-cursor-kilo-final-probe.md)
+adds two valid max-effort configurations: Cursor/Kimi and Kilo/Kimi. Kilo
+understood the existing image with an image attachment. Cursor retained the
+correct image bytes but Kimi reported no perceptible visual content; unlike
+GLM, there was no retained image-description bridge. Cursor/Kimi nevertheless
+generated one verified 1024 x 1024 RGB JPEG through its native generator.
+
 | Evidence label | Meaning |
 | --- | --- |
 | Reported | Model transcribed its currently injected definitions; not an independently exported schema |
@@ -59,10 +66,10 @@ the other providers. An unknown media model or missing field remains unknown.
 | Claude | Fable 5.1 / xhigh; Opus 5.5 / xhigh | Both reported `claude --version`: 2.1.308; PATH query is not necessarily the already-running binary's version |
 | Codex | `gpt-6-astra / xhigh`; `gpt-6.1-sol / xhigh` | Both reported `codex --version`: 0.163.0; exact running entry not independently attested |
 | OpenCode Go | `opencode-go/glm-5.3 / max` | Running native server health reports 1.19.4; authenticated inventory completed after owner key update and directory-scoped connection refresh |
-| Kilo | `kilo/bytedance-seed/seed-2-1-turbo / thinking` | Running native server health reports 7.8.17 |
+| Kilo | `kilo/bytedance-seed/seed-2-1-turbo / thinking`; `kilo/moonshotai/kimi-k3 / max` | Running native server health reports 7.8.17 |
 | ClinePass | `cline-pass/deepseek-v4-pro / xhigh` | CLI version not independently established |
 | Auggie | `kimi-k3 / native default` | No Cats effort control selected; CLI version not independently established |
-| Cursor | `glm-5p3[reasoning=max]` | Picker entry was `glm-5p3[reasoning=high]`, resolved with max control; native CLI version not independently measured |
+| Cursor | `glm-5p3[reasoning=max]`; `kimi-k3[reasoning=max]` | GLM picker entry was `glm-5p3[reasoning=high]`, resolved with max control; native CLI version not independently measured |
 | Copilot | `kimi-k3 / max` | Native image receipt identifies `kimi-k3`; native CLI version not independently measured |
 | Devin | `deepseek-v4-pro-high` | Initial max configuration failed; high completed the same model's inventory and image attempt; CLI version not independently measured |
 
@@ -87,6 +94,8 @@ in Runtime. These do not establish any media backend model ID.
 | Cursor / GLM-5.3 | **Defined and executed** native `GenerateImage`; optional reference paths defined, editing untested | No tools found in inspected native namespace | Native `Read` stored `image/jpeg` plus a host-generated textual `imageDescriptions` result; answer matched that description | One **verified** 1024 x 1024 RGB JPEG, outside cwd; host-assisted understanding, not proof of direct GLM vision |
 | Copilot / Kimi K3 | No native generator reported | No tools reported | One native fixture `view` returned an image binary receipt with exact digest; answer correct | **Verified existing-image understanding**; three separate prompt-delivery text reads are not additional image calls |
 | Devin / DeepSeek V4 Pro | No native generator reported | No tools reported | Successful file read and image-input rejection reported by model | Visual task did not succeed; max setup failure is separate from successful high execution |
+| Cursor / Kimi K3 | **Defined and executed** same native `GenerateImage` schema/description as Cursor/GLM | No tools observed | One `Read` retained exact image bytes, but agent could not perceive visual content; no native `imageDescriptions` field | One **verified** 1024 x 1024 RGB JPEG, outside cwd; successful generation and unsuccessful understanding are separate outcomes |
+| Kilo / Kimi K3 | No native generator reported | No tools reported | One completed `read` returned an image/jpeg attachment; agent described fixture correctly | **Verified existing-image understanding** for this case; no generation attempt |
 
 "Not reported/found" describes these sessions, including their discovery limits;
 it is not permanent absence across a provider's products, plugins or APIs.
@@ -208,6 +217,7 @@ These issues were recorded; this research delivery does not fix or close them.
 
 ## Detailed evidence
 
+- [Final Kimi K3 comparison: Cursor generation and Kilo understanding](2026-10-24-kimi-k3-cursor-kilo-final-probe.md)
 - [Cross-CLI re-probe: Cursor generator, image-description bridge, Copilot and Devin](2026-10-24-chinese-model-cross-cli-reprobe.md)
 - [Four Chinese models: native inventories and actual image-input gates](2026-10-24-chinese-model-cli-media-probe.md)
 - [Grok capability inquiry and cwd/output follow-up](2026-10-23-grok-media-capability-probe.md)

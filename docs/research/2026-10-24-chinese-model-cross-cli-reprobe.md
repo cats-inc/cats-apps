@@ -4,6 +4,12 @@ Date: 2026-10-24 (Asia/Taipei). Cross-check of the
 [first four-model probe](2026-10-24-chinese-model-cli-media-probe.md), following
 the [media probe SOP](2026-10-23-cli-media-probe-playbook.md).
 
+The subsequent [final Kimi K3 comparison](2026-10-24-kimi-k3-cursor-kilo-final-probe.md)
+tests Cursor and Kilo with Kimi K3. Cursor generated another verified JPEG, while
+its Kimi read case could not perceive the retained image payload and had no GLM
+description bridge. Kilo/Kimi understood the image but exposed no generator.
+The successful Kimi reading results below must not be generalized to Cursor.
+
 ## Selection and scope
 
 The owner requested four different CLI wrappers from Cursor, Copilot, Kiro,
