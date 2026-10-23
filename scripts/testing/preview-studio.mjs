@@ -98,6 +98,7 @@ function fixtureSdk(data) {
       async refresh(id) {
         const job = find(id);
         if (job.status === 'interrupted') Object.assign(job, { status: 'succeeded', error: null, executionOutcome: 'completed', updatedAt: now(), output: { mimeType: 'image/png', width: 1254, height: 1254, bytes: 1300000, sha256: null, transparency: 'opaque' } });
+        if (job.status === 'failed' && job.error === 'invalid_image_source') Object.assign(job, { status: 'succeeded', error: null, executionOutcome: 'stopped_after_image', updatedAt: now(), output: { mimeType: 'image/jpeg', width: 1920, height: 1280, bytes: 470191, sha256: null, transparency: 'opaque' } });
         return { ...job };
       },
       async read(id) { const job = find(id); if (!job.output) throw new Error('invalid_image_request'); return image(job); },
