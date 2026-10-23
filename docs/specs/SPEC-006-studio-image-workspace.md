@@ -20,6 +20,26 @@
 bounded execution 與收集驗收後才可使用。新 UI 先在 SDK 1.x 上交付（只會出現 Grok
 生成），contract 2 由各 owner 凍結後再接上。
 
+## Platform shared-image integration (proposed, 2026-10-23)
+
+owner 另外要求「Platform 共用圖片服務＋Cat 受控生圖＋Studio 共用」的文件。
+canonical 契約在
+[Platform ADR-136](../../../cats-platform/docs/decisions/136-share-controlled-image-capabilities-between-cats-and-studio.md)、
+[SPEC-128](../../../cats-platform/docs/specs/SPEC-128-shared-image-service-and-controlled-cat-generation.md) 與
+[PLAN-121](../../../cats-platform/docs/plans/PLAN-121-shared-image-service-and-controlled-cat-generation.md)；
+尚未實作，不擴大目前 SDK 1.x 的能力。
+
+- Studio SDK adapter 與 Cat-scoped agent tool 共用 Platform image service，
+  Runtime 仍負責 bounded 執行。Cat 不依賴 Studio 安裝，也不冒用 Studio scope。
+- 第一階段沿用既有 Grok／單圖 JPEG 與 Studio SDK payload；Studio 不必改 UI、
+  manifest 或註冊 agent tools，Apps 負責實際 package 的 consumer regression。
+- 共用服務不讓 Studio 自動讀到 Cat 作品。本 SPEC OP-02/03 的 App/account 來源
+  限制保持；未來使用 Cat 圖片作原圖，需要明確分享與新的 source authorization。
+- Studio 停用／卸載只撤銷 App scope 與自己發起的工作，不取消 Cat grant 或移除
+  Cat 作品。既有 Studio 工作與原圖要保留 IDs、hash 及 App/account 隔離。
+- 修圖／合成／PNG／多 provider 的 A0～A2 契約工作仍由本 SPEC／PLAN-006 管理；
+  不能以 Platform 的共用服務抽取宣稱新 operation 已完成。
+
 ## Goals and non-goals
 
 - 服務、操作、代理模型／effort 與圖片實際規格有清楚而不混淆的呈現。

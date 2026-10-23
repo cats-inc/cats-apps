@@ -4,6 +4,7 @@
 
 | Document | State | Responsibility |
 |----------|-------|----------------|
+| [Platform shared image service](../../cats-platform/docs/specs/SPEC-128-shared-image-service-and-controlled-cat-generation.md) | Draft; documentation only | Shared Studio/Cat service, finite Cat grants and durable Telegram delivery; Apps consumer tasks in PLAN-006 |
 | [ADR-005](decisions/005-provider-first-studio-image-operations.md) | Proposed; amends ADR-004 Decisions 1 and 5 | Provider-first selection, profile-declared generate/edit/compose operations, saved-work sources and per-operation gates |
 | [ADR-004](decisions/004-expand-studio-with-verified-image-profiles.md) | Proposed; next Studio phase | Profile allowlist, agent/media model separation, native execution/collection boundaries and upgrade decision |
 | [SPEC-006](specs/SPEC-006-studio-image-workspace.md) | Draft; A3a prepared as Studio 0.3.0 | Provider-first workspace with generate/edit/compose, visual layout/states, proposed contract 2 and acceptance criteria |

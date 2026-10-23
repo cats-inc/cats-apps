@@ -1,5 +1,10 @@
 # Implementation Plans
 
+[Platform PLAN-121](../../../cats-platform/docs/plans/PLAN-121-shared-image-service-and-controlled-cat-generation.md)
+owns shared-image extraction and controlled Cat delivery. PLAN-006 lists the Apps
+consumer track separately from its edit/compose/multi-provider expansion; all new
+shared-service work is pending.
+
 Use PLAN-NNN-short-title.md and [000-template.md](000-template.md).
 
 | Plan | Title | Status | Spec |

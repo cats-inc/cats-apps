@@ -1,5 +1,9 @@
 # Feature Specifications
 
+[Platform SPEC-128](../../../cats-platform/docs/specs/SPEC-128-shared-image-service-and-controlled-cat-generation.md)
+proposes the common Studio/Cat image service. Apps integration is documented in
+SPEC-006; current App/account source isolation remains, and no new operation is enabled.
+
 Use SPEC-NNN-short-title.md and [000-template.md](000-template.md).
 
 | Spec | Title | Status | Plan |
