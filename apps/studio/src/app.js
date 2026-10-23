@@ -239,8 +239,8 @@ function draft() {
     transparentBackground: !!operation?.transparency && transparentBackground, agentConfigId: agentConfigByOperation.get(operationKey()) ?? operation?.agentConfigs[0]?.id ?? null };
 }
 
-// Every sdk.images call goes through one queue, so the host's one-call and 500 ms rules are never hit.
-const calls = createCallQueue((method, args) => sdk.images[method](...args));
+// Every shared media call goes through one queue, respecting the host's one-call and 500 ms rules.
+const calls = createCallQueue((method, args) => sdk.media.images[method](...args));
 const hostCall = (method, args, options) => calls.call(method, args, options);
 
 // Image bytes are read lazily and kept in a small cache; the preview's entry is never evicted.
@@ -723,7 +723,7 @@ function renderJobs(force = false) {
 }
 
 // Deletion exists only on hosts whose SDK provides it, and only for finished work.
-const canDelete = (job) => typeof sdk?.images?.delete === 'function' && ['succeeded', 'failed', 'cancelled'].includes(job.status);
+const canDelete = (job) => typeof sdk?.media?.images?.delete === 'function' && ['succeeded', 'failed', 'cancelled'].includes(job.status);
 function deleteButton(job, focusKey) {
   return canDelete(job) ? button(word('刪除', 'Delete'), () => void deleteWork(job), { class: 'quiet danger', disabled: blocked(), dataset: { focusKey } }) : null;
 }
@@ -790,7 +790,7 @@ async function loadCapabilities() {
 
 async function refresh(recheck = false) {
   await perform(async () => {
-    if (!sdk?.images) throw new Error('image_service_unavailable');
+    if (!sdk?.media?.images) throw new Error('image_service_unavailable');
     await reload();
     if (!loaded) selectedId ??= initialSelection(jobs);
     // A work refused for a changed or withdrawn profile means the services shown are stale: read them again.

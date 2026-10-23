@@ -72,7 +72,7 @@ function fixtureSdk(data) {
   globalThis.catsApp = {
     locale: fixture.locale, theme: fixture.theme, version: 'preview',
     async openLobby() {},
-    images: {
+    media: { images: {
       async getCapabilities() { return fixture.capabilities; },
       async list() { return { jobs: jobs.map((job) => ({ ...job })) }; },
       async submit(input) {
@@ -107,7 +107,7 @@ function fixtureSdk(data) {
         if (!['succeeded', 'failed', 'cancelled'].includes(job.status)) throw new Error('image_not_deletable');
         jobs.splice(jobs.indexOf(job), 1); return { deleted: true };
       },
-    },
+    } },
   };
 })();`;
 }

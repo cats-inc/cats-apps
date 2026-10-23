@@ -45,20 +45,23 @@ The MVP provides asynchronous status, reopening of retained answers and Copy.
 Host deep links/history, automatic Chat/Code/Work ingestion, a general answer
 knowledge service and full offline execution remain deferred.
 
-## Proposed shared image service with Cats (2026-10-23)
+## Shared image service with Cats (implementation in progress, 2026-10-23)
 
 [Platform ADR-136](../../cats-platform/docs/decisions/136-share-controlled-image-capabilities-between-cats-and-studio.md),
 [SPEC-128](../../cats-platform/docs/specs/SPEC-128-shared-image-service-and-controlled-cat-generation.md)
 and [PLAN-121](../../cats-platform/docs/plans/PLAN-121-shared-image-service-and-controlled-cat-generation.md)
-propose one caller-aware image service used by the Studio App SDK and Cat-scoped
+define one caller-aware image service used by the Studio App SDK and Cat-scoped
 tools. Runtime owns provider execution; Platform owns controlled admission,
 jobs/assets and conversation delivery. Cat capability is independent of Studio
 installation and Boss role. Studio retains App/account isolation and its own
 product workflows. Shared storage does not grant access to Cat images.
 
-This is planning only. The first slice preserves the current Studio SDK and
-requires consumer acceptance without mandatory App code changes. Editing,
-multi-provider contracts and explicit sharing remain separate follow-on work.
+The owner authorized this implementation and the necessary releases, then clarified
+that Studio is the consumer; Usage is unchanged. Studio 0.4.0 uses the public
+host-injected `media.images` namespace at SDK floor 1.8.0. The public archive encoder
+remains pinned independently to its existing format contract. Provider-first
+generation and original JPEG/PNG works remain intact. Editing and explicit sharing
+remain separate work; publication and live/Desktop acceptance are still pending.
 
 ## Proposed Studio image workspace (2026-10-23)
 
