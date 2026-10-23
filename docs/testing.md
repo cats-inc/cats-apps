@@ -24,6 +24,16 @@ payloads, Unicode prompt limits, source/option validation and measured job outpu
 writes a standalone preview under `dist/studio-preview/` with a fake SDK, simulated
 phases and generated PNG/JPEG bytes. Serve it from loopback to review layouts; it is a
 design fixture, not host acceptance.
+The target preview includes a Muse `invalid_image_source` failure. Its preview and work card
+offer **Check outcome**, which reads the original request through `refresh` and can retain the
+existing JPEG without `submit`. Failed work is described as incomplete, since a collection
+failure does not prove no image was generated. The actual source-format fix and evidence-based
+recollection belong to Runtime; Desktop must bundle that Runtime. Studio alone cannot repair it.
+On 2026-10-24, an isolated copy of an existing Muse JPEG and its native transcript was
+recollected without execution, preserving all 470,191 bytes (1920 × 1280). The built Studio
+renderer in an opaque iframe passed Chinese/English **Check outcome** and original-JPEG
+display with zero submissions and no page errors. This was fixture acceptance using copied
+real output, not a new live generation or a change to the installed user profile.
 The Platform owner provides `scripts/testing/check-studio-app.mts` for the actual
 archive, SDK and host with an isolated fixture Runtime. Pass the Studio lock and
 the existing sample JPEG; this check never calls Grok. Use a separate output

@@ -52,6 +52,7 @@ function errorText(code, name = word('服務', 'the service')) {
     runtime_capacity_full: word('Cats 目前開著太多對話，生成服務沒有空位。這次沒有產生圖片，也沒有使用額度；請關閉一些對話或重新啟動 Cats 後再試。', 'Cats has too many conversations open, so the image service has no free slot. Nothing was generated and no allowance was used. Close some conversations or restart Cats, then try again.'),
     execution_interrupted: word('無法確認執行結果，可能已使用額度；沒有重新生成。', 'The outcome is unconfirmed and allowance may have been used. Nothing was regenerated.'),
     invalid_image: word('回傳圖片未通過驗證，未標記為完成。', 'The returned image failed validation.'),
+    invalid_image_source: word('生成結果未通過來源驗證，尚未保存為作品，可能已使用額度。請更新 Cats 後按「確認結果」讀取原請求，不會重新生成。', 'The result failed source verification and has not been saved; allowance may have been used. Update Cats, then Check outcome to read the original request without generating again.'),
     image_storage_limit: word('作品保存空間已達此版本的上限。', 'The saved-image limit for this version has been reached.'),
     storage_full: word('磁碟空間不足，圖片未保存完成。', 'Disk space is insufficient to save this image.'),
     cancelled: word('任務已取消，已使用的額度不一定會退還。', 'Cancelled. Used allowance may not be refunded.'),
@@ -675,9 +676,9 @@ function renderPreview(force = false) {
   }
   const reason = job.status === 'interrupted' ? word('無法確認執行結果，可能已使用額度；沒有重新生成。「確認結果」只會讀取原請求。', 'The outcome is unconfirmed and allowance may have been used. Nothing was regenerated; Check outcome only reads the original request.')
     : errorText(job.error ?? job.status, job.name);
-  ended.replaceChildren(...present(el('p', { class: 'state-title', text: { failed: word('這次沒有產生圖片', 'No image this time'), interrupted: STATUS_LABELS.interrupted, cancelled: STATUS_LABELS.cancelled }[job.status] ?? STATUS_LABELS[job.status] }),
+  ended.replaceChildren(...present(el('p', { class: 'state-title', text: { failed: word('這次未完成', 'This attempt did not complete'), interrupted: STATUS_LABELS.interrupted, cancelled: STATUS_LABELS.cancelled }[job.status] ?? STATUS_LABELS[job.status] }),
     el('p', { class: 'note', text: reason }),
-    el('div', { class: 'actions' }, job.status === 'interrupted' ? button(word('確認結果', 'Check outcome'), () => perform(async () => { upsert(await hostCall('refresh', [job.id])); await reload(); }), { dataset: { focusKey: 'preview-check' } }) : null,
+    el('div', { class: 'actions' }, canCheckOutcome(job) ? button(word('確認結果', 'Check outcome'), () => perform(async () => { upsert(await hostCall('refresh', [job.id])); await reload(); }), { disabled: busy, dataset: { focusKey: 'preview-check' } }) : null,
       ['failed', 'cancelled'].includes(job.status) ? button(word('再生成一張', 'Generate another'), () => retry(job), { disabled: blocked(), dataset: { focusKey: 'preview-retry' } }) : null,
       button(word('複用描述', 'Reuse prompt'), () => reuse(job), { dataset: { focusKey: 'preview-reuse' } }),
       deleteButton(job, 'preview-delete')),
@@ -715,12 +716,14 @@ function renderJobs(force = false) {
       el('div', { class: 'actions' },
         job.output ? button(word('下載', 'Download'), () => perform(() => hostCall('export', [job.id])), { disabled: busy, dataset: { focusKey: `download-${job.id}` } }) : null,
         job.output && editTargets().length ? button(word('修圖', 'Edit'), () => editWork(job), { dataset: { focusKey: `edit-${job.id}` } }) : null,
-        job.status === 'interrupted' ? button(word('確認結果', 'Check outcome'), () => perform(async () => { upsert(await hostCall('refresh', [job.id])); await reload(); }), { disabled: busy, dataset: { focusKey: `check-${job.id}` } }) : null,
+        canCheckOutcome(job) ? button(word('確認結果', 'Check outcome'), () => perform(async () => { upsert(await hostCall('refresh', [job.id])); await reload(); }), { disabled: busy, dataset: { focusKey: `check-${job.id}` } }) : null,
         ['failed', 'cancelled'].includes(job.status) ? button(word('再生成一張', 'Generate another'), () => retry(job), { disabled: blocked(), dataset: { focusKey: `retry-${job.id}` } }) : null,
         button(word('複用描述', 'Reuse prompt'), () => reuse(job), { dataset: { focusKey: `reuse-${job.id}` } }),
         deleteButton(job, `delete-${job.id}`))));
   }
 }
+
+const canCheckOutcome = (job) => job.status === 'interrupted' || (job.status === 'failed' && job.error === 'invalid_image_source');
 
 // Deletion exists only on hosts whose SDK provides it, and only for finished work.
 const canDelete = (job) => typeof sdk?.media?.images?.delete === 'function' && ['succeeded', 'failed', 'cancelled'].includes(job.status);

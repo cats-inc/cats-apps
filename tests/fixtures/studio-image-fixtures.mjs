@@ -75,6 +75,9 @@ export const SCHEMA_TWO_JOBS = [
   job({ id: 'job-grok-1', provider: 'grok', targetId: 'grok-native', status: 'succeeded', agentModel: 'grok-4.7', agentEffort: 'xhigh',
     prompt: 'A simple flat illustration of one orange cat sitting, solid light blue background, minimal shapes, no text, no letters, no watermark',
     options: { aspectRatio: '1:1' }, output: jpeg(1024, 1024, 85_413), createdAt: '2026-10-22T21:05:00.000Z' }),
+  job({ id: 'job-muse-source', provider: 'muse', targetId: 'muse-native', status: 'failed', error: 'invalid_image_source',
+    agentModel: 'muse-spark-1.3', agentEffort: 'xhigh', prompt: '三花貓靠近壁爐取暖的油畫。',
+    output: null, executionOutcome: null, createdAt: '2026-10-22T20:00:00.000Z' }),
 ];
 
 // Contract 2 exactly as the Platform host (SDK 1.7.0) projects Runtime SPEC-038 for generation. Keep in step with

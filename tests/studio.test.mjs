@@ -57,3 +57,19 @@ test('Studio is a separate immutable App with embedded sample and bounded SDK pe
   const check = spawnSync(process.execPath, ['--check', scriptPath], { encoding: 'utf8' });
   assert.equal(check.status, 0, check.stderr);
 });
+
+test('Studio source-failure preview can check the existing request and recover a JPEG without submitting', async () => {
+  const html = await previewHtml({ fixture: 'target' });
+  const context = { setTimeout };
+  runInNewContext(/<script>([\s\S]*?)<\/script>/.exec(html)[1], context);
+  const images = context.catsApp.media.images;
+  const before = (await images.list()).jobs;
+  const failed = before.find((job) => job.error === 'invalid_image_source');
+  assert.ok(failed);
+  const recovered = await images.refresh(failed.id);
+  assert.equal(recovered.id, failed.id);
+  assert.equal(recovered.requestId, failed.requestId);
+  assert.equal(recovered.status, 'succeeded');
+  assert.equal(recovered.output.mimeType, 'image/jpeg');
+  assert.equal((await images.list()).jobs.length, before.length);
+});
