@@ -1,8 +1,8 @@
 # CLI media capability probe SOP
 
-Last updated: 2026-10-23. Scope: repeatable research for extending cats.studio.
+Last updated: 2026-10-24. Scope: repeatable research for extending cats.studio.
 This is a research procedure, not an approved implementation or release plan.
-Current findings are in the [five-provider summary](2026-10-23-studio-cli-media-probe-summary.md).
+Current findings are in the [Studio CLI summary](2026-10-23-studio-cli-media-probe-summary.md).
 The first application is the [Grok Desktop inquiry](2026-10-23-grok-media-capability-probe.md).
 
 ## Run preparation
@@ -58,6 +58,15 @@ search did not expose a tool on that route.
 Keep raw screenshots/transcripts and user-specific paths outside Git. Store only
 sanitized findings and reproducible prompts here. Do not read credentials or
 change privacy, plan, storage or credentials as a probing shortcut.
+
+Before reading a native transcript, define the evidence whitelist in the reader:
+relevant assistant answers, matching tool-use/result records and selected
+execution/status fields. Exclude system prompts, expanded user instructions,
+reasoning and image base64 **before** printing or saving anything. Runtime user
+history can contain dynamically injected authorization instructions; filtering
+only after a raw history dump is too late. Never print a whole user-message or
+inspection object to learn its shape; inspect property names first. Apply the
+same whitelist to private evidence files, not only to committed notes.
 
 ## Procedure
 
@@ -192,6 +201,7 @@ artifact contract, and record collection/export as a separate operation.
 | --- | --- |
 | Provider/model/effort unavailable in picker | Record the missing choice and stop that case; do not silently substitute another configuration |
 | Tool absent from inventory | Record this route/snapshot as unexposed; distinguish deferred tool discovery, nested agents and external APIs from proven provider-wide absence |
+| Generic image-reading tool exists but rejects the selected model | Record an input rejection for this CLI/route/model, preserving the exact tool result. Do not count a successful enclosing report as successful visual understanding, or silently substitute OCR, another model or another API |
 | Post-initial-response idle refusal | Preserve exact error, phase and timing. Confirm the turn ended, then try one shorter no-tools question in the same room; keep the model/effort unchanged |
 | Focused recovery also fails | Keep capability unknown and report the route limitation; do not loop, lower effort or alter timeout/account policy without scope to do so |
 | Tool/schema transcription disagrees | Seek raw definitions and exact documentation; preserve both claims until resolved |

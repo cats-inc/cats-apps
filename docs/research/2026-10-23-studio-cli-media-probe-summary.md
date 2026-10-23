@@ -1,7 +1,8 @@
 # Studio CLI media probe summary
 
-Last updated: 2026-10-23 (Asia/Taipei). This is the entry point for the current
-Grok, Muse, Antigravity, Claude and Codex findings. Follow the
+Last updated: 2026-10-24 (Asia/Taipei). This is the entry point for the current
+Grok, Muse, Antigravity, Claude and Codex findings, plus the OpenCode Go, Kilo,
+ClinePass and Auggie Chinese-model follow-up. Follow the
 [CLI media probe SOP](2026-10-23-cli-media-probe-playbook.md) for another provider,
 model or CLI version. Findings describe observed routes, not provider-wide
 guarantees or approval to implement every candidate.
@@ -23,6 +24,13 @@ after tool success. See the [artifact probe](2026-10-23-three-provider-image-art
 Claude generation was not attempted. Raw transcripts, account context, native IDs
 and local paths remain outside Git.
 
+The [2026-10-24 Chinese-model inquiry](2026-10-24-chinese-model-cli-media-probe.md)
+adds four retained Desktop conversations: OpenCode Go / GLM-5.3 / max,
+Kilo / ByteDance Seed 2.1 Turbo / thinking, ClinePass / DeepSeek V4 Pro / xhigh,
+and Auggie / Kimi K3 / native default. All completed inventory and schema
+follow-ups; each then attempted one read of the same existing image. No new
+media was generated in this follow-up.
+
 | Evidence label | Meaning |
 | --- | --- |
 | Reported | Model transcribed its currently injected definitions; not an independently exported schema |
@@ -42,6 +50,10 @@ the other providers. An unknown media model or missing field remains unknown.
 | Antigravity | Gemini 4 Argon / high; Gemini 3.8 Flash / high | Runtime resolved `gemini-4-argon-high` and `gemini-3.8-flash-high`; CLI version not independently established |
 | Claude | Fable 5.1 / xhigh; Opus 5.5 / xhigh | Both reported `claude --version`: 2.1.308; PATH query is not necessarily the already-running binary's version |
 | Codex | `gpt-6-astra / xhigh`; `gpt-6.1-sol / xhigh` | Both reported `codex --version`: 0.163.0; exact running entry not independently attested |
+| OpenCode Go | `opencode-go/glm-5.3 / max` | Running native server health reports 1.19.4; authenticated inventory completed after owner key update and directory-scoped connection refresh |
+| Kilo | `kilo/bytedance-seed/seed-2-1-turbo / thinking` | Running native server health reports 7.8.17 |
+| ClinePass | `cline-pass/deepseek-v4-pro / xhigh` | CLI version not independently established |
+| Auggie | `kimi-k3 / native default` | No Cats effort control selected; CLI version not independently established |
 
 Picker entry ID, Runtime-resolved model and upstream execution identity are
 different evidence. Antigravity's observed `-low` picker entry IDs resolved to
@@ -57,6 +69,10 @@ in Runtime. These do not establish any media backend model ID.
 | Antigravity | **Executed** built-in `image-generator` delegation and child `generate_image`; editing remains reported | No direct parent video-generation tool reported | `read_file` description includes image/video/audio; actual type acceptance untested | Flash: one **verified** 1024 x 1024 JPEG; complete child schema still unknown |
 | Claude | No media-model generation tool found in either session | No generation tool found | **Reported** `Read` image/PDF input; connectors read/render existing media. Code drawing and ffmpeg are distinct operations | No generated artifact or new image-understanding acceptance test |
 | Codex | **Executed** `image_gen__imagegen`; editing/references and transparent-background request remain untested | No dedicated tool reported | `view_image` and CLI image input reported; no dedicated speech/music/3D generator in the snapshot | Sol: one **verified** 1254 x 1254 PNG with transparent_background false |
+| OpenCode Go / GLM-5.3 | No native generator reported | No tools reported | `read` returned an image attachment; final answer reported that image input was not accepted | One file read executed; visual task did not succeed |
+| Kilo / ByteDance Seed 2.1 Turbo | No native generator reported | No tools reported | One native `read` returned `image/jpeg`; model correctly described the existing fixture | **Verified existing-image understanding** for this case; no generated artifact |
+| ClinePass / DeepSeek V4 Pro | No native generator reported | No tools reported | `read_files` rejected the image with `Current model does not support image input` | One rejected read; successful error report is not successful visual understanding |
+| Auggie / Kimi K3 | No native generator reported | No tools reported | One native `view` returned image content; model correctly described the existing fixture | **Verified existing-image understanding** for this case; no generated artifact |
 
 "Not reported/found" describes these sessions, including their discovery limits;
 it is not permanent absence across a provider's products, plugins or APIs.
@@ -177,6 +193,7 @@ These issues were recorded; this research delivery does not fix or close them.
 
 ## Detailed evidence
 
+- [Four Chinese models: native inventories and actual image-input gates](2026-10-24-chinese-model-cli-media-probe.md)
 - [Grok capability inquiry and cwd/output follow-up](2026-10-23-grok-media-capability-probe.md)
 - [Grok 4.5 / Low comparison and raw-definition follow-up](2026-10-23-grok45-low-media-probe-comparison.md)
 - [Grok 4.7 / xhigh replacement sample and fixture validation](2026-10-23-grok47-xhigh-studio-sample.md)

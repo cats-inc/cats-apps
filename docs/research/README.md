@@ -23,8 +23,9 @@ Research filenames follow `YYYY-MM-DD-topic.md`, matching the sibling Cats repos
 
 | Date | Topic | Scope |
 |------|-------|-------|
+| 2026-10-24 | [Chinese-model CLI media probes](2026-10-24-chinese-model-cli-media-probe.md) | Four different labs through OpenCode Go, Kilo, ClinePass and Auggie; generation-tool inventories, existing-image understanding and model-specific input rejection |
 | 2026-10-23 | [Three-provider real image probe](2026-10-23-three-provider-image-artifact-probe.md) | Spark, Flash and Sol each generated one verified image; actual PNG/JPEG dimensions, native receipt gaps, output paths and Muse artifact success followed by turn timeout |
-| 2026-10-23 | [Five-provider Studio summary](2026-10-23-studio-cli-media-probe-summary.md) | Grok, Muse, Antigravity, Claude and Codex: selected model pairs, evidence levels, native controls, collection contracts and next artifact gaps |
+| 2026-10-23; updated 2026-10-24 | [Studio CLI summary](2026-10-23-studio-cli-media-probe-summary.md) | Five-provider generation baseline plus four Chinese-model CLI routes: model pairs, evidence levels, controls, artifact collection and image-input gates |
 | 2026-10-23 | [Eight-session CLI media inquiry](2026-10-23-eight-session-cli-media-probe.md) | Two selected models each for Muse, Antigravity, Claude and Codex through Desktop; tool/schema comparison, idle-refusal recovery and untested artifact boundaries |
 | 2026-10-23 | [Grok 4.7 / Extra High Studio sample](2026-10-23-grok47-xhigh-studio-sample.md) | One separately authorized image, verified original JPEG, source sample replacement and Runtime profile selection; no publication or installed update |
 | 2026-10-23 | [Grok 4.5 / Low comparison](2026-10-23-grok45-low-media-probe-comparison.md) | Separate Desktop inquiry with matched discovery prompt; capability, schema precision and source-coverage comparison against 4.7 / Extra High |
