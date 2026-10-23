@@ -154,6 +154,77 @@ form instead of its comparator equivalent. Avoid `0.x`, which admits all 0.x
 minors, and wildcard forms that omit a required patch minimum. See the
 [host compatibility guide](https://github.com/cats-inc/cats-platform/blob/main/docs/app-packages.md#host-and-sdk-compatibility).
 
+## Studio 0.3.2 — delete works and steadier image calls (2026-10-23)
+
+Studio 0.3.2 is a compatible patch. The owner asked that failed, cancelled and
+saved works can be deleted (SPEC-006 AC-14). On a host whose SDK offers
+`images.delete` (cats-platform#304, SDK 1.6.0, first carried by Desktop 0.9.2),
+work cards and the preview show 刪除:
+
+- A saved work is deleted only after confirmation in an in-App dialog, because
+  its original is removed and cannot be restored.
+- Failed and cancelled works go at once.
+- Work still in progress or awaiting its outcome cannot be deleted.
+- A work linked in Cats Work is refused with an explanation (`image_in_use`).
+- Deleting never generates, and resending a deleted request does not generate either.
+
+Older hosts, including Desktop 0.9.1, show no delete action.
+
+Every `sdk.images` call now goes through one queue, because the host bridge
+runs one image call at a time and refuses a repeat of a method within 500 ms:
+
+- The preview read goes first, other user actions next, thumbnails last.
+- A method waits 550 ms after its previous call finished.
+- Leaving the page settles queued calls.
+- A user action during a background poll waits for it instead of being dropped,
+  and it is never replayed after another user action.
+- Redrawing the grid while thumbnails load no longer leaves them blank.
+
+Compatibility, permissions and data are unchanged (`catsPlatform` `^0.6.0`,
+`appSdk` `^1.3.0`; `ui.route`, `ui.lobby`, `media.images`). Deletion is
+feature-detected, so no new host floor is declared. There is no migration.
+
+Validation before the bump: `npm test` (40), and Platform
+`scripts/testing/check-studio-app.mts` on the 0.3.2 candidate. The harness, from
+cats-platform#304, requires the deletion flow from Studio 0.3.2. That run had
+2 submissions, 1 cancel, 2 deletions and 0 CLI calls. Expected App tag: `studio-v0.3.2`.
+
+- Expected asset: `studio-0.3.2.catsapp` (139,495 bytes)
+- Expected SHA-256 from the deterministic candidate: `c3e34db11c86a28ac06599eac4465068e77da8b0a4a3db189fa9092720e39d7d`
+- Selected immutable download address: https://github.com/cats-inc/cats-apps/releases/download/studio-v0.3.2/studio-0.3.2.catsapp
+- App trust: local-user package; no OS-signing profile; Studio stays outside the
+  Desktop default bundle.
+- Distribution: after the tag run is verified, a catalog pull request adds 0.3.2 and
+  moves `channels.stable` to it; 0.3.1, 0.3.0 and 0.2.1 stay listed for rollback.
+
+## Usage 0.5.4 — host-owned chrome (2026-10-23)
+
+Usage 0.5.4 is a compatible patch selected for the Desktop 0.9.2 standard-profile
+preview. Like Studio 0.3.1, it leaves App identity to the host shell. The visible
+kicker and "Usage." title are removed, as is the version in the footer. A
+visually hidden `h1` remains for assistive technology. The snapshot note stays
+in the footer. Queries, data and the never-launch-a-CLI rule are unchanged.
+
+Compatibility, permissions and data are unchanged (`catsPlatform` `^0.6.0`,
+`appSdk` `^1.2.0`; builder exact Platform 0.6.0). There is no migration. Hosts
+older than the shell update (cats-platform#301) still show the App name and back
+button but not the version below the frame.
+
+Validation before the bump: `npm test`, and Platform `scripts/testing/check-usage-app.mts`
+on the 0.5.4 candidate (10 reads; all six quota queries; 0 CLI calls). Expected
+App tag: `usage-v0.5.4`.
+
+- Expected asset: `usage-0.5.4.catsapp` (15,053 bytes)
+- Expected SHA-256 from the deterministic candidate: `46f6ca1ada461a5e6c828e3218c7a11054ffa9f28ead4940a9ed2643703610d9`
+- Selected immutable download address: https://github.com/cats-inc/cats-apps/releases/download/usage-v0.5.4/usage-0.5.4.catsapp
+- The workflow records this bump's immutable merge commit in source provenance.
+- App trust: local-user package; no OS-signing profile. Desktop 0.9.2 selects the
+  standard profile. Expected trust is macOS signed + notarized, Windows unsigned
+  without a certificate, and Linux n/a.
+- Distribution: Desktop 0.9.2 pins it in `config/desktop-apps.lock.json`. After the
+  tag run is verified, the catalog pull request also moves Usage `channels.stable`
+  to 0.5.4, and 0.5.3 stays listed.
+
 ## Studio 0.3.1 — host-owned chrome and clearer busy errors (2026-10-23)
 
 Studio 0.3.1 is a compatible patch after the owner tested 0.3.0 through the Desktop
