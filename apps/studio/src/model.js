@@ -241,3 +241,55 @@ export function pruneSources(sourceIds, jobs) {
 export function draftSources(operation, sourceIds) {
   return operation ? sourceIds.slice(0, operation.inputs.max) : [];
 }
+
+// The host bridge runs one image call at a time and refuses a repeat of the same method within 500 ms
+// (image_service_busy). Calls run one by one; foreground calls go before background reads, and a method
+// waits `spacing` ms after its previous call finished. A background call whose `wanted()` turns false is skipped.
+export function createCallQueue(invoke, { spacing = 550, now = () => Date.now(), sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) } = {}) {
+  const foreground = []; const background = []; const finishedAt = new Map();
+  let running = false; let closed = false;
+  const unwanted = (entry) => entry.wanted && !entry.wanted();
+  async function pump() {
+    if (running) return;
+    running = true;
+    try {
+      while (!closed) {
+        const entry = foreground.shift() ?? background.shift();
+        if (!entry) break;
+        if (unwanted(entry)) { entry.reject(new Error('skipped')); continue; }
+        const wait = spacing - (now() - (finishedAt.get(entry.method) ?? -Infinity));
+        if (wait > 0) {
+          await sleep(wait);
+          // A foreground call that arrived while a background read waited goes first.
+          if (entry.background && foreground.length && !closed) { background.unshift(entry); continue; }
+          if (closed) { entry.reject(new Error('disposed')); break; }
+          if (unwanted(entry)) { entry.reject(new Error('skipped')); continue; }
+        }
+        try { entry.resolve(await invoke(entry.method, entry.args)); } catch (error) { entry.reject(error); }
+        finally { finishedAt.set(entry.method, now()); }
+      }
+    } finally { running = false; }
+  }
+  return {
+    call(method, args = [], { urgent = false, background: low = false, wanted = null } = {}) {
+      if (closed) return Promise.reject(new Error('disposed'));
+      return new Promise((resolve, reject) => {
+        const entry = { method, args, wanted, background: low && !urgent, resolve, reject };
+        if (urgent) foreground.unshift(entry); else (entry.background ? background : foreground).push(entry);
+        void pump();
+      });
+    },
+    // Moves a queued background call to the front, for example a thumbnail read the preview now needs.
+    promote(match) {
+      const index = background.findIndex((entry) => match(entry.method, entry.args));
+      if (index < 0) return false;
+      const [entry] = background.splice(index, 1);
+      entry.background = false; foreground.unshift(entry); return true;
+    },
+    // Leaving the page settles every queued call instead of leaving its caller waiting forever.
+    close() {
+      closed = true;
+      for (const entry of [...foreground.splice(0), ...background.splice(0)]) entry.reject(new Error('disposed'));
+    },
+  };
+}

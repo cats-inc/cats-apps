@@ -1,4 +1,4 @@
-import { MAX_PROMPT_LENGTH, SAMPLE_PROMPT, SAMPLE_IMAGE, PROMPT_IDEAS, promptLength, normalizeCapabilities, normalizeJob, findOperation, defaultService, validateDraft, buildSubmission, isDefinitiveSubmitError, matchPendingJob, initialSelection, pruneSources, draftSources, fitBox, ratioBox, formatBytes } from './model.js';
+import { MAX_PROMPT_LENGTH, SAMPLE_PROMPT, SAMPLE_IMAGE, PROMPT_IDEAS, promptLength, normalizeCapabilities, normalizeJob, findOperation, defaultService, validateDraft, buildSubmission, isDefinitiveSubmitError, matchPendingJob, initialSelection, pruneSources, draftSources, fitBox, ratioBox, formatBytes, createCallQueue } from './model.js';
 
 const sdk = globalThis.catsApp;
 const zh = !sdk?.locale || sdk.locale.startsWith('zh');
@@ -45,6 +45,7 @@ function errorText(code, name = word('服務', 'the service')) {
     cancelled: word('任務已取消，已使用的額度不一定會退還。', 'Cancelled. Used allowance may not be refunded.'),
     app_context_revoked: word('App 的存取權已變更，請返回首頁重新開啟。', 'App access changed. Reopen it from Cats Home.'),
     image_not_deletable: word('這項工作還在進行或結果待確認，暫時不能刪除。', 'This work is still in progress or unconfirmed, so it cannot be deleted yet.'),
+    image_in_use: word('這張作品已在 Cats Work 中被連結或使用，請先移除連結再刪除。', 'This work is linked or used in Cats Work. Remove the link, then delete it.'),
     image_request_conflict: word('這個請求已用不同內容送出過，沒有重新生成。請重新建立。', 'This request was already sent with different content. Nothing was regenerated; create it again.'),
     source_unavailable: word('選取的作品已無法使用，請重新選擇。', 'A selected image is no longer available. Pick it again.'),
     source_unsupported: word(`${name} 無法使用這張作品當來源。`, `${name} cannot use this image as a source.`),
@@ -224,32 +225,9 @@ function draft() {
     transparentBackground: !!operation?.transparency && transparentBackground, agentConfigId: agentConfigByOperation.get(operationKey()) ?? operation?.agentConfigs[0]?.id ?? null };
 }
 
-// The host bridge runs one image call at a time and refuses a repeat of the same method within 500 ms
-// (image_service_busy). Every sdk.images call goes through this queue so neither rule is ever hit.
-const callQueue = [];
-const lastCallAt = new Map();
-let calling = false;
-function hostCall(method, args = [], { urgent = false, wanted = null } = {}) {
-  return new Promise((resolve, reject) => {
-    const entry = { method, args, wanted, resolve, reject };
-    if (urgent) callQueue.unshift(entry); else callQueue.push(entry);
-    void pumpCalls();
-  });
-}
-async function pumpCalls() {
-  if (calling) return;
-  calling = true;
-  try {
-    while (callQueue.length && !disposed) {
-      const entry = callQueue.shift();
-      if (entry.wanted && !entry.wanted()) { entry.reject(new Error('skipped')); continue; }
-      const wait = 550 - (Date.now() - (lastCallAt.get(entry.method) ?? 0));
-      if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
-      lastCallAt.set(entry.method, Date.now());
-      try { entry.resolve(await sdk.images[entry.method](...entry.args)); } catch (error) { entry.reject(error); }
-    }
-  } finally { calling = false; }
-}
+// Every sdk.images call goes through one queue, so the host's one-call and 500 ms rules are never hit.
+const calls = createCallQueue((method, args) => sdk.images[method](...args));
+const hostCall = (method, args, options) => calls.call(method, args, options);
 
 // Image bytes are read lazily and kept in a small cache; the preview's entry is never evicted.
 const imageUrls = new Map();
@@ -272,15 +250,14 @@ function imageUrl(id, { urgent = false, wanted = null } = {}) {
     // The preview needs an image a thumbnail already queued: keep that read and move it to the front.
     if (urgent && !entry.forced) {
       entry.forced = true;
-      const queued = callQueue.findIndex((call) => call.method === 'read' && call.args[0] === id);
-      if (queued > 0) callQueue.unshift(...callQueue.splice(queued, 1));
+      calls.promote((method, args) => method === 'read' && args[0] === id);
     }
     return entry.promise;
   }
   entry = { forced: urgent };
   entry.promise = (async () => {
     try {
-      const image = await hostCall('read', [id], { urgent, wanted: () => entry.forced || !wanted || wanted() });
+      const image = await hostCall('read', [id], { urgent, background: !!wanted, wanted: () => entry.forced || !wanted || wanted() });
       if (disposed) throw new Error('disposed');
       const url = URL.createObjectURL(new Blob([image.bytes], { type: image.mimeType }));
       rememberUrl(id, url); return url;
@@ -499,13 +476,15 @@ function editWork(job) {
 function reuse(job) { applyPrompt(job.prompt); say(word('描述已放回草稿，還沒有送出。', 'The description is back in the draft and has not been sent.')); }
 
 // Background polls are quiet: they never disable controls, so focus and pointer targets stay put.
-// A user action that arrives during a poll waits for it instead of being dropped; a poll never waits.
+// A user action that arrives during a poll waits for it instead of being dropped. A poll never waits, and a
+// user action during another user action is dropped (its controls are disabled), never replayed afterwards.
 let working = Promise.resolve();
+let workingQuiet = false;
 async function perform(action, { quiet = false } = {}) {
-  while (busy && !quiet && !disposed) await working;
+  while (busy && workingQuiet && !quiet && !disposed) await working;
   if (busy || disposed) return;
   const focusKey = document.activeElement?.dataset?.focusKey;
-  busy = true; if (!quiet) controls();
+  busy = true; workingQuiet = quiet; if (!quiet) controls();
   let done;
   working = new Promise((resolve) => { done = resolve; });
   try { await action(); } catch (error) { if (!disposed) say(errorText(error.message, current().service?.name)); }
@@ -829,7 +808,7 @@ const ticker = setInterval(() => {
   if (job?.status === 'running' && $('elapsed')) $('elapsed').textContent = elapsed(job.createdAt);
 }, 1000);
 window.addEventListener('pagehide', () => {
-  disposed = true; clearTimeout(timer); clearInterval(ticker); thumbObserver?.disconnect();
+  disposed = true; clearTimeout(timer); clearInterval(ticker); thumbObserver?.disconnect(); calls.close();
   for (const url of imageUrls.values()) URL.revokeObjectURL(url);
   imageUrls.clear();
 });

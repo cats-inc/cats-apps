@@ -153,7 +153,7 @@ polling 不可重複朗讀整份列表。放大預覽支援 Escape、關閉後�
 | --- | --- |
 | `images.getCapabilities()` | `schemaVersion: 2`、能力 revision；`targets` 內含 opaque target ID、provider、instance label、availability/reason；`profiles` 內含 ID/revision、operation、可用 target/config 關係、代理 label/resolved ID/effort、`inputs: { min, max }`、`aspectRatio: { mode, options? }`、`transparentBackground?: true`、limits |
 | `images.submit(input)` | exact typed payload：`requestId`, `targetId`, `profileId`, `profileRevision`, `agentConfigId`, `operation`, `prompt`, `sourceIds`（generate 時為空陣列）, `options`。options 只允許 profile 宣告的 `aspectRatio`（enum 內）與 `transparentBackground`。不可傳 raw CLI args、API URL/key、cwd、路徑或 destination |
-| `images.delete(id)` | 刪除已保存／未完成／已取消的工作：Core 紀錄、保存的原檔與 Runtime receipt（Runtime 離線時盡力而為）；進行中或待確認回 409 `image_not_deletable`；從不生成。SDK 1.x 先以相容方式加入，Studio 以功能偵測決定是否顯示 |
+| `images.delete(id)` | 刪除已保存／未完成／已取消的工作：Core 紀錄、保存的原檔與 Runtime receipt（Runtime 離線時盡力而為）；進行中或待確認回 409 `image_not_deletable`；已在 Cats Work 被連結或引用回 409 `image_in_use`；刪除後同一 requestId 保留，重送回 `image_request_conflict`，從不生成。SDK 1.x 先以相容方式加入，Studio 以功能偵測決定是否顯示 |
 | `images.list/cancel/refresh` | 方法用途沿用；回傳 schema 2 jobs。`refresh` 只查原 receipt／重新收集原檔，不 POST 生成。cancel 作用於整個父子樹 |
 | Job identity/config snapshot | request/job IDs、provider/instance label、operation、profile/revision/config、提交時 requested/resolved agent model/effort、prompt、有順序的來源 `{id, sha256}`、要求的 options、timestamps。快照不可隨 catalog 更新而改寫 |
 | Job lifecycle | `submitting/running/collecting/succeeded/failed/cancelling/cancelled/interrupted`；使用者取消意圖、safe error、warnings，以及獨立的 provider `executionOutcome`（含未知） |
@@ -222,8 +222,10 @@ projections 由 A0 一起更新，保留既有 auth、CSRF、package digest 與 
   已不在作品列表；已選為草稿來源的作品被刪除時移出選取並說明。撤銷或遺失必須以
   `source_unavailable` 明確失敗。
 - Host bridge 一次只處理一個 image 呼叫，且同一方法 500 ms 內重複呼叫會回
-  `image_service_busy`。Studio 以單一佇列呼叫所有 `sdk.images` 方法、同一方法至少間隔
-  550 ms，預覽讀取優先、捲出畫面的縮圖讀取略過；使用者操作在背景輪詢期間會等待而不是被丟棄。
+  `image_service_busy`。Studio 以單一佇列呼叫所有 `sdk.images` 方法：同一方法在上一次呼叫
+  結束後至少間隔 550 ms；預覽讀取最先、使用者操作與輪詢次之、縮圖讀取最後，捲出畫面的縮圖
+  讀取略過；離開頁面時排隊中的呼叫一律結束。使用者操作在背景輪詢期間會等待而不是被丟棄，
+  但不會在另一個使用者操作結束後被重播。
 - 新 schema 2 的 migration 分別由 Runtime／Platform owner 執行：先驗證 schema 1、
   備份、建立並驗證新檔、atomic replace、失敗保留原檔。保留 IDs、Core 關聯、prompt、
   timestamps、hash、bytes、既有 JPEG；舊作品的 operation 記為 `image.generate`、來源為
@@ -258,7 +260,7 @@ projections 由 A0 一起更新，保留既有 auth、CSRF、package digest 與 
 | AC-10 | 每個 production-enabled「服務 × 操作」有實際 bounded route 的 acceptance receipt（有適用授權時）；既有 Chat probes 和 fixtures 不冒充此證據。沒有該證據仍可做設計 fixture，但不可宣稱已上線 |
 | AC-11 | 修圖／合成 fixtures：來源張數限制、順序保存、跨服務來源、`source_unavailable`／`source_unsupported`、結果為新作品且原圖 hash 不變、來源快照不隨後續變動改寫 |
 | AC-12 | 透明背景只在宣告的 profile 出現；要求透明但結果不透明時顯示量測的「不透明」，不以要求值冒充結果 |
-| AC-14 | 刪除：已保存需確認、未完成／已取消直接刪；Core 紀錄、原檔與 Runtime receipt 移除；進行中／待確認拒絕；其他帳號／App 不可刪；刪除從不生成；舊 host 不顯示刪除 |
+| AC-14 | 刪除：已保存需確認、未完成／已取消直接刪；Core 紀錄、原檔與 Runtime receipt 移除；進行中／待確認拒絕；被 Work 連結時拒絕並說明；其他帳號／App 不可刪；刪除從不生成，重送已刪除的 requestId 也不會；舊 host 不顯示刪除 |
 | AC-13 | 新 UI 在現有 SDK 1.x host 上只出現 Grok 生成、提交 payload 與 1.x 完全相同，並通過 Platform 的實際 package 瀏覽器驗收（選擇器配合更新） |
 
 ## Dependencies and unresolved engineering gates
