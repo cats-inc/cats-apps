@@ -154,6 +154,37 @@ form instead of its comparator equivalent. Avoid `0.x`, which admits all 0.x
 minors, and wildcard forms that omit a required patch minimum. See the
 [host compatibility guide](https://github.com/cats-inc/cats-platform/blob/main/docs/app-packages.md#host-and-sdk-compatibility).
 
+## Studio 0.3.1 — host-owned chrome and clearer busy errors (2026-10-23)
+
+Studio 0.3.1 is a compatible patch after the owner tested 0.3.0 through the Desktop
+0.9.1 Market. The App no longer repeats what the host shell already shows: its
+icon/name/subtitle row, its own Home button and its footer (the note and the
+version) are removed; a visually hidden `h1` remains for assistive technology.
+The one-image/no-retry note stays under the Generate button. `image_service_busy`
+no longer claims that another image is running, and the new Runtime code
+`runtime_capacity_full` (worker pool full, for example of idle conversations) gets
+its own message; both state that nothing was generated and no allowance was used.
+
+Compatibility, permissions and data are unchanged (`catsPlatform` `^0.6.0`,
+`appSdk` `^1.3.0`; `ui.route`, `ui.lobby`, `media.images`); no migration. Hosts
+older than the shell update still show the App name and back button but not the
+version below the frame; Market and Settings show the installed version.
+
+Validation before the bump: `npm test` (38), `npm run check:docs`, and Platform
+`scripts/testing/check-studio-app.mts` on the 0.3.1 candidate (2 submissions,
+1 cancel, 0 CLI calls) with the harness from the shell PR, which also fixes the
+harness router startup state. Expected App tag: `studio-v0.3.1`.
+
+- Expected asset: `studio-0.3.1.catsapp` (135,846 bytes)
+- Expected SHA-256 from the deterministic candidate: `298feee448f3d934bd41da1686b33de050fce607ed27686235582ecbd3ed7987`
+- Selected immutable download address: https://github.com/cats-inc/cats-apps/releases/download/studio-v0.3.1/studio-0.3.1.catsapp
+- App trust: local-user package; no OS-signing profile; no Desktop release or pin change.
+- Distribution: after the tag run is verified, a catalog pull request adds 0.3.1 and
+  moves `channels.stable` to it; 0.3.0 and 0.2.1 stay listed for rollback.
+
+Usage source drops its visible title and footer version the same way; it is bundled
+with Desktop, so that change ships only with a later Usage release and Desktop pin.
+
 ## Studio 0.3.0 — provider-first image workspace (2026-10-23)
 
 Studio 0.3.0 ships [PLAN-006](plans/PLAN-006-studio-image-workspace.md) A3a: the
