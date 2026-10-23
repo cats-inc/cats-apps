@@ -277,6 +277,23 @@ source 工作用 member 內 `.claude/worktrees/`，不動他人的 worktree／�
 
 ## Progress log
 
+### Cursor generation extension — 2026-10-24
+
+- Source: Cursor name, capability-driven submission and retained-work display; fixed service order
+  Codex / Antigravity / Grok / Muse / Cursor. Grok remains the initial choice, independently of
+  host target order. Desktop cards fit five across; narrow layouts wrap in the same order.
+- Runtime pins `glm-5p3[reasoning=max]` / max and collects only the completed native image call's
+  returned path in an attempt-isolated Cursor data root. Platform recognizes the additive provider
+  in Runtime projection, SDK types and shared ledger. No source/schema migration or version bump.
+- Apps: 43 tests, Studio candidate packaging, Usage build and docs check passed. Isolated actual
+  package/SDK/host browser check passed five-card order/center/default, Cursor JPEG download,
+  reopen-to-Grok, cancellation/deletion/offline and narrow no-overflow; four fixture submissions,
+  zero CLI calls. Runtime records the separate live runner gate and enablement evidence.
+  Independent review was unavailable; these are author-run mechanical checks.
+- The owner selected Studio 0.4.1 and Desktop 0.9.5 standard preview on 2026-10-24, through
+  auto-merge PRs. Exact archive, compatibility and integrity selections are in the deployment
+  guide; publication results are the selected GitHub Releases and Actions records.
+
 | Date | Update |
 | --- | --- |
 | 2026-10-23 | 依使用者要求完成 ADR/SPEC/PLAN 規劃與交接；A0～A5 尚未實作。四家 Chat 產物證據已存在，不能替代新 bounded route acceptance |

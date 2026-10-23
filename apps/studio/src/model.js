@@ -13,7 +13,8 @@ const RATIO_MODES = ['choose', 'native', 'service', 'source'];
 const RATIO_PATTERN = /^(auto|\d{1,2}(\.\d)?:\d{1,2}(\.\d)?)$/;
 // Instance and target IDs are host-defined (Runtime instances are free-form keys; targets are `<provider>/<instance>`, up to 140 characters); only bound their length and control characters.
 const validKey = (value) => typeof value === 'string' && value.length > 0 && value.length <= 140 && !/[\u0000-\u001f\u007f]/.test(value);
-const PROVIDER_NAMES = { grok: 'Grok', muse: 'Muse', antigravity: 'Antigravity', codex: 'Codex' };
+const PROVIDER_NAMES = { codex: 'Codex', antigravity: 'Antigravity', grok: 'Grok', muse: 'Muse', cursor: 'Cursor' };
+const PROVIDER_ORDER = Object.keys(PROVIDER_NAMES);
 export const ACTIVE_STATUSES = ['submitting', 'running', 'collecting', 'cancelling'];
 // Submit errors that prove nothing was accepted for this request; anything else leaves the outcome unconfirmed.
 export const DEFINITIVE_SUBMIT_ERRORS = ['invalid_image_request', 'image_service_busy', 'image_storage_limit', 'app_context_revoked', 'image_request_conflict',
@@ -112,9 +113,11 @@ function fromSchemaTwo(raw) {
 
 export function normalizeCapabilities(raw) {
   if (!raw || typeof raw !== 'object') return emptyCapabilities(null, 'invalid_capabilities');
-  if (raw.schemaVersion === 1) return fromSchemaOne(raw);
-  if (raw.schemaVersion === 2) return fromSchemaTwo(raw);
-  return emptyCapabilities(raw.schemaVersion ?? null, 'unsupported_schema');
+  const capabilities = raw.schemaVersion === 1 ? fromSchemaOne(raw) : raw.schemaVersion === 2 ? fromSchemaTwo(raw)
+    : emptyCapabilities(raw.schemaVersion ?? null, 'unsupported_schema');
+  const rank = (provider) => { const index = PROVIDER_ORDER.indexOf(provider); return index < 0 ? PROVIDER_ORDER.length : index; };
+  capabilities.services.sort((a, b) => rank(a.provider) - rank(b.provider));
+  return capabilities;
 }
 
 export function findOperation(capabilities, serviceKey, operationId) {

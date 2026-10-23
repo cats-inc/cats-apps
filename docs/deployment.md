@@ -2,6 +2,33 @@
 
 ## Release boundaries
 
+### Studio 0.4.1 — Cursor and service order (2026-10-24)
+
+Studio 0.4.1 recognizes the Cursor generation profile and orders services Codex,
+Antigravity, Grok, Muse, Cursor. Entry defaults to available Grok; polling keeps an
+explicit selection. Five cards fit a normal desktop row and wrap on narrow screens.
+Cursor's initial configuration is GLM 5.3 / max, requested 1:1; the Runtime profile
+and host capabilities decide availability, rather than a renderer CLI/model probe.
+
+- Immutable tag `studio-v0.4.1` selects the exact source commit, recorded in the
+  release provenance. Archive `studio-0.4.1.catsapp`: 140830 bytes, SHA-256
+  `398cb051f4130bd049e6485e89a1cd2e01189abf5723564496349fddcaa453ff`.
+- App SDK floor stays `^1.8.0`: the existing shared image contract remains usable
+  on those hosts. Cursor is offered when the host/Runtime advertise it (Desktop
+  0.9.5 / SDK 1.9); older hosts retain their existing available providers.
+  Platform minimum remains `^0.6.0`. No stored-data change, reset or new permission;
+  existing work IDs, prompts and original image bytes remain host-owned.
+- The release workflow checks the tag, package/manifest agreement, tests, docs and
+  deterministic archive, lock and provenance. Local coverage includes 43 App tests
+  and isolated actual archive/SDK/host acceptance of service order, centered/default
+  Grok, Cursor JPEG export, reopen, narrow layout, cancellation and deletion.
+  These browser calls are fixtures, not live provider generation; Runtime records
+  its separate runner acceptance. Independent review is not claimed.
+- Publisher and integrity policy are unchanged. Studio remains optional in Market;
+  the verified hosted artifact is selected by the catalog promotion. Usage 0.5.4,
+  the private workspace version and the pinned public archive encoder stay unchanged.
+- Publication results: `studio-v0.4.1` GitHub Release and its release workflow.
+
 ### Prepared Studio 0.4.0 — shared multimedia SDK (2026-10-23)
 
 Owner authorized implementation and the necessary releases; the clarified scope is
