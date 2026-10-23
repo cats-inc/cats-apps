@@ -63,21 +63,19 @@ header {
   justify-content:space-between;
   gap:20px;
   align-items:center;
-  margin-bottom:26px
+  margin-bottom:20px
 }
-.kicker {
-  color:var(--accent);
-  font-size:11px;
-  letter-spacing:.14em;
-  text-transform:uppercase;
-  font-weight:750;
-  margin:0 0 4px
-}
-h1 {
-  font-size:34px;
-  line-height:1.2;
-  letter-spacing:-.04em;
-  margin:0
+/* The host shell shows the App name and version; the heading is for assistive technology only. */
+.visually-hidden {
+  position:absolute;
+  width:1px;
+  height:1px;
+  margin:-1px;
+  padding:0;
+  overflow:hidden;
+  clip:rect(0 0 0 0);
+  white-space:nowrap;
+  border:0
 }
 h2 {
   font-size:19px;
@@ -326,9 +324,6 @@ footer {
 }
 header {
   align-items:flex-start
-}
-h1 {
-  font-size:30px
 }
 .section-head,footer {
   align-items:flex-start;

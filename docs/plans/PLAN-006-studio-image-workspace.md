@@ -85,6 +85,10 @@ production capability 逐一在通過 gate 後開放，不用等待其他路徑�
   Runtime 管理；不另建模型目錄。首批代理設定遵循 SPEC，Grok 不得改回 Fast／Low。
 - [ ] 延續 shared selection、worker capacity、metering、singleton、shutdown 與單一
   image active slot；對 capabilities 與 submit 使用一致 preflight，不新增 paid probe。
+- [ ] 有界媒體操作的 worker 名額：閒置的聊天 worker 會佔滿 `maxSessions` 且不回收
+  （2026-10-23 實例：10 個閒置研究對話讓 Studio 生圖立即以 busy 失敗）。設計讓有界操作
+  回收最久未用的閒置 worker 或保留名額，並加入閒置回收；先確認停止閒置 worker 後聊天
+  session 能安全續接。已先改為回報 `runtime_capacity_full`，預設名額上調到 50。
 - [ ] 實作 Grok 生成 profile，先以現有 bounded flow 作回歸基準；保留既有 collection-only
   recovery 語意，不用新 attempt 取代舊成功或失敗的圖片。
 - [ ] Muse：一個原生媒體呼叫、matching result 與 cwd-relative 圖片來源的可驗證綁定；
@@ -252,5 +256,6 @@ source 工作用 member 內 `.claude/worktrees/`，不動他人的 worktree／�
 | 2026-10-23 | 使用者審閱互動設計稿，採用 ADR-005：先選服務、操作由 profile 宣告，納入修圖／合成；A3 拆成可先在 SDK 1.x 交付的 A3a 與接 contract 2 的 A3b |
 | 2026-10-23 | A3a 實作：`model.js` 能力正規化／提交建構／job 正規化與先選服務 UI。`npm test`、`npm run check:docs` 通過；fixture 預覽檢查四家服務、修圖／合成、透明背景、深色與 360／1078 寬。Platform `check-studio-app.mts`（選擇器相容更新）以實際 archive＋host＋fixture Runtime 驗收新 UI 與 main 的舊 UI，各 2 次送出、0 次 CLI。未 bump、未發布；schema 2 只以提案 fixtures 驗證 |
 | 2026-10-23 | 使用者授權以 Studio 0.3.0 發布 A3a，並在發布後以目錄 PR 把 `channels.stable` 指到 0.3.0，用現有 Desktop 0.9.1 的 Market 驗證「不升 Desktop、單獨更新 App」。版本欄位、release notes 與預期 SHA-256 見 [deployment](../deployment.md#studio-030--provider-first-image-workspace-2026-10-23)；不改 Desktop pins |
+| 2026-10-23 | 使用者在 Desktop 0.9.1 以 Market 更新到 0.3.0 後回報：外殼與 App 重複顯示名稱／返回鈕／版本，且一次生成因 Runtime worker 名額被閒置對話佔滿而立即失敗。改為外殼負責 App 身分（Platform）、Studio 0.3.1 移除自己的標題列與頁尾並改寫忙碌文案（Apps）、Runtime 回報 `runtime_capacity_full` 並把預設名額上調到 50；名額回收列入 A1 |
 
 *Created: 2026-10-23。首個實作動作：A3a；A0 owners contract/feasibility review 可並行。*

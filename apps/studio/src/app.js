@@ -35,7 +35,9 @@ function errorText(code, name = word('服務', 'the service')) {
     generation_refused: word('生成服務拒絕了這次請求，請調整描述。', 'The service declined this request. Adjust the description.'),
     generation_timeout: word('生成逾時，可能已使用額度；沒有自動重試。', 'Generation timed out and may have used allowance. No retry was made.'),
     cli_unavailable: word(`找不到可執行的 ${name} CLI，請檢查 Cats 的 Runtime 設定。`, `${name} CLI could not start. Check Cats Runtime settings.`),
-    image_service_busy: word('已有生成任務在執行，請稍後再試。', 'A generation is already running. Try again later.'),
+    // Both busy codes are raised before any CLI starts, so no allowance was used.
+    image_service_busy: word('生成服務目前忙碌，可能已有圖片在生成。這次沒有產生圖片，也沒有使用額度；請稍後再試。', 'The image service is busy, possibly with another image. Nothing was generated and no allowance was used. Try again later.'),
+    runtime_capacity_full: word('Cats 目前開著太多對話，生成服務沒有空位。這次沒有產生圖片，也沒有使用額度；請關閉一些對話或重新啟動 Cats 後再試。', 'Cats has too many conversations open, so the image service has no free slot. Nothing was generated and no allowance was used. Close some conversations or restart Cats, then try again.'),
     execution_interrupted: word('無法確認執行結果，可能已使用額度；沒有重新生成。', 'The outcome is unconfirmed and allowance may have been used. Nothing was regenerated.'),
     invalid_image: word('回傳圖片未通過驗證，未標記為完成。', 'The returned image failed validation.'),
     image_storage_limit: word('作品保存空間已達此版本的上限。', 'The saved-image limit for this version has been reached.'),
@@ -93,10 +95,7 @@ const ratioSummary = (operation) => ({
 })[operation.ratio.mode];
 
 root.innerHTML = `
-  <header class="page-header">
-    <div class="brand"><svg class="brand-mark" width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M2 9V2h7M21 2h7v7M28 21v7h-7M9 28H2v-7" fill="none" stroke="currentColor" stroke-width="2.2"/><rect x="8" y="8" width="14" height="14" rx="1.5" fill="currentColor"/></svg><div><h1>Studio</h1><p>${word('圖片工作室', 'Image studio')}</p></div></div>
-    <button id="home" class="quiet" type="button">${word('返回 Cats Home', 'Back to Cats Home')}</button>
-  </header>
+  <h1 class="visually-hidden">${word('Studio 圖片工作室', 'Studio image workspace')}</h1>
   <section class="services" aria-labelledby="services-title">
     <div class="section-row"><h2 id="services-title">${word('選擇服務', 'Choose a service')}</h2><p id="services-note" class="note"></p></div>
     <div id="services" class="service-grid"></div>
@@ -159,7 +158,6 @@ root.innerHTML = `
     </div>
     <div id="jobs" class="work-grid"></div>
   </section>
-  <footer><span>${word('每次按下只送出一張，不會自動重試。', 'Each request sends one image and is never retried automatically.')}</span><span>Studio ${sdk?.version || '0.1.0'}</span></footer>
   <dialog id="image-dialog" aria-label="${word('圖片預覽', 'Image preview')}"><button type="button" class="dialog-close" aria-label="${word('關閉預覽', 'Close preview')}"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 3l12 12M15 3L3 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><img src="${SAMPLE_IMAGE}" width="1024" height="1024" alt=""></dialog>
 `;
 
@@ -736,10 +734,6 @@ $('expand').addEventListener('click', openDialog);
 let dialogOpener = null;
 dialog.addEventListener('close', () => { dialogOpener?.focus(); dialogOpener = null; });
 document.addEventListener('click', (event) => { if (event.target.closest?.('#expand, #preview-actions button')) dialogOpener = event.target.closest('button'); }, true);
-$('home').addEventListener('click', async () => {
-  try { if (!sdk?.openLobby) throw new Error('Host unavailable'); await sdk.openLobby(); }
-  catch { say(word('無法返回首頁，請使用 Cats 的首頁入口。', 'Could not return home. Use the Cats Home navigation.')); }
-});
 prompt.addEventListener('input', controls);
 // A click that lands during a quiet poll is honoured once the poll ends, never dropped or repeated.
 generate.addEventListener('click', () => { if (generate.disabled) return; if (busy) deferredSubmit = true; else submitDraft(draft()); });

@@ -124,6 +124,12 @@ The private root workspace coordinates tooling; it is not itself an installable
 app or a replacement Platform product. Shared packages are introduced only when
 used by multiple apps.
 
+The Platform App shell owns App identity and navigation: name, lobby subtitle,
+back-to-lobby and the package facts (ID, version, status, publisher). App renderers
+show content only and do not repeat their name, a Home button or a version footer;
+they keep a visually hidden `h1` for assistive technology. Under SDK 1.x every
+renderer runs inside that shell, so Apps do not detect "embedded" mode.
+
 Initial delivery follows a coordinated Desktop release: app builds are identified
 by source revision, packaged once, then selected by exact version and checksum.
 Desktop installs built artifacts under host management and retains app data

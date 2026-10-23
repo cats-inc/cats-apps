@@ -9,7 +9,9 @@ button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .55; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 h1, h2, p, dl, dd { margin: 0; }
-#app { max-width: 1240px; margin: 0 auto; padding: 20px 24px 28px; display: flex; flex-direction: column; gap: 18px; }
+#app { max-width: 1240px; margin: 0 auto; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 18px; }
+/* The host shell shows the App name, back button and version; the page heading is for assistive technology only. */
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .note { color: var(--muted); font-size: 12px; line-height: 1.7; }
 .note.danger { color: var(--danger); }
 .note.attention { color: var(--warn-ink); }
@@ -21,12 +23,7 @@ h1, h2, p, dl, dd { margin: 0; }
 .quiet.small { align-self: flex-start; min-height: 32px; padding: 5px 11px; font-size: 12px; }
 .quiet.emphasis { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
-.section-row, .field-row, .preview-head, .preview-footer, footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
-.page-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.brand { display: flex; align-items: center; gap: 12px; }
-.brand-mark { color: var(--accent); flex: none; }
-h1 { font-size: 21px; line-height: 1.1; font-weight: 650; }
-.brand p { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.section-row, .field-row, .preview-head, .preview-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 h2 { font-size: 15px; font-weight: 650; }
 
 .services { display: flex; flex-direction: column; gap: 10px; }
@@ -148,12 +145,11 @@ select { width: 100%; min-height: 40px; border: 1px solid var(--line); border-ra
 .work .note { display: flex; flex-wrap: wrap; gap: 0 10px; }
 .work .actions { margin-top: auto; gap: 6px; }
 .work .quiet { min-height: 32px; padding: 5px 10px; font-size: 12px; }
-footer { color: var(--muted); font-size: 12px; }
 dialog { max-width: min(94vw, 1120px); max-height: 94vh; padding: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); overflow: auto; }
 dialog::backdrop { background: #0e1611d9; }
 dialog img { display: block; width: auto; height: auto; max-width: min(94vw, 1120px); max-height: 92vh; }
 .dialog-close { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: #fffffff0; color: #1f2e29; }
 
 @media (min-width: 960px) { .workspace { grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); } }
-@media (max-width: 640px) { #app { padding: 16px 16px 20px; gap: 14px; } .panel { padding: 14px; } .stage { min-height: 280px; padding: 22px 10px; } #sample-image { max-height: 320px; } .preview-head { flex-wrap: wrap; } .filters label, .filters input, .filters select { width: 100%; } .filters { width: 100%; } }
+@media (max-width: 640px) { #app { padding: 12px 12px 18px; gap: 14px; } .panel { padding: 14px; } .stage { min-height: 280px; padding: 22px 10px; } #sample-image { max-height: 320px; } .preview-head { flex-wrap: wrap; } .filters label, .filters input, .filters select { width: 100%; } .filters { width: 100%; } }
 @media (max-width: 420px) { .service-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .service-tile { flex-direction: column; align-items: flex-start; gap: 8px; min-height: 0; padding: 10px; } .service-tile .glyph { display: none; } .tile-name { font-size: 15px; } .work-grid { grid-template-columns: minmax(0, 1fr); } }
