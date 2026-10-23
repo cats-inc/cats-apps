@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { buildSubmission, createCallQueue, defaultService, draftSources, initialSelection, isDefinitiveSubmitError, matchPendingJob, normalizeCapabilities, normalizeJob, promptLength, pruneSources, ratioText, validateDraft } from '../apps/studio/src/model.js';
-import { SCHEMA_ONE_CAPABILITIES, SCHEMA_TWO_CAPABILITIES, SCHEMA_TWO_JOBS, SCHEMA_TWO_TODAY } from './fixtures/studio-image-fixtures.mjs';
+import { HOST_CONTRACT_TWO_CAPABILITIES, HOST_CONTRACT_TWO_JOB, SCHEMA_ONE_CAPABILITIES, SCHEMA_TWO_CAPABILITIES, SCHEMA_TWO_JOBS, SCHEMA_TWO_TODAY } from './fixtures/studio-image-fixtures.mjs';
 
 const operations = (service) => service.operations.map((operation) => operation.id);
 const works = SCHEMA_TWO_JOBS.map(normalizeJob);
@@ -184,4 +184,19 @@ test('a waiting background read yields to newer foreground calls, can be promote
   await assert.rejects(thumb, /disposed/); await assert.rejects(later, /disposed/);
   await assert.rejects(queue.call('list'), /disposed/);
   assert.deepEqual(log, ['read:first', 'read:shown', 'list']);
+});
+
+test('the host contract 2 for generation: Grok at 1:1 and Muse at its own ratio, submitted with exactly the host keys', () => {
+  const capabilities = normalizeCapabilities(HOST_CONTRACT_TWO_CAPABILITIES);
+  assert.deepEqual(capabilities.services.map((service) => [service.key, service.name, service.available]), [['grok/native', 'Grok', true], ['muse/native', 'Muse', true]]);
+  const muse = capabilities.services[1];
+  assert.deepEqual(muse.operations.map((operation) => [operation.id, operation.ratio.mode, operation.profileRevision]), [['image.generate', 'service', '1']]);
+  const submission = buildSubmission(capabilities, { serviceKey: 'muse/native', operation: 'image.generate', requestId: 'r-1', prompt: ' A cat ', sourceIds: [] });
+  // Platform's contract 2 parser accepts exactly these keys; anything else is invalid_image_request.
+  assert.deepEqual(submission, { requestId: 'r-1', targetId: 'muse/native', profileId: 'muse-generate', profileRevision: '1',
+    agentConfigId: 'muse-spark-1.3-xhigh', operation: 'image.generate', prompt: 'A cat', sourceIds: [], options: {} });
+  const job = normalizeJob(HOST_CONTRACT_TWO_JOB);
+  assert.deepEqual({ serviceKey: job.serviceKey, name: job.name, operation: job.operation, requestedRatio: job.requestedRatio, executionOutcome: job.executionOutcome },
+    { serviceKey: 'muse/native', name: 'Muse', operation: 'image.generate', requestedRatio: null, executionOutcome: 'stopped_after_image' });
+  assert.deepEqual({ format: job.output.format, ratio: job.output.ratio, transparency: job.output.transparency }, { format: 'PNG', ratio: '3:2', transparency: 'opaque' });
 });

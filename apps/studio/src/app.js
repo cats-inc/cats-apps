@@ -27,6 +27,18 @@ const TRANSPARENCY_LABELS = { opaque: word('不透明', 'Opaque'), transparent: 
 const OFFLINE_TEXT = word('生成服務暫時無法連線，已保存的作品仍可查看及下載。', 'Generation is unavailable. Saved images can still be viewed and downloaded.');
 const REASON_LABELS = { not_configured: word('尚未設定', 'not set up'), not_installed: word('尚未安裝', 'not installed'), disabled: word('已停用', 'disabled'), signed_out: word('尚未登入', 'not signed in') };
 
+// Notes Runtime adds to a saved image; the image itself is kept in each case.
+const WARNING_TEXT = {
+  response_timeout_after_image: word('圖片已保存，但生成回應逾時。', 'Saved, but the generation response timed out.'),
+  additional_image_generated: word('服務多產生了一張圖，只保存第一張；多的那張可能也用了額度。', 'The service made an extra image; only the first was kept, and the extra one may also have used allowance.'),
+  ratio_differs_from_request: word('實際比例與要求的不同，以保存的尺寸為準。', 'The saved image has a different ratio than requested; its measured size is what counts.'),
+};
+const warningNote = (job) => job.warnings.map((warning) => WARNING_TEXT[warning]).filter(Boolean).join(' ');
+// How the run ended, beside the result: Runtime may end a run itself once the verified image exists.
+const OUTCOME_LABELS = {
+  completed: word('已完成', 'Completed'),
+  stopped_after_image: word('圖片完成後即結束', 'Ended once the image was saved'),
+};
 function errorText(code, name = word('服務', 'the service')) {
   return ({
     auth_required: word(`請先在 ${name} CLI 登入，再建立新任務。`, `Sign in to ${name} CLI before creating a new request.`),
@@ -47,6 +59,8 @@ function errorText(code, name = word('服務', 'the service')) {
     image_not_deletable: word('這項工作還在進行或結果待確認，暫時不能刪除。', 'This work is still in progress or unconfirmed, so it cannot be deleted yet.'),
     image_in_use: word('這張作品已在 Cats Work 中被連結或使用，請先移除連結再刪除。', 'This work is linked or used in Cats Work. Remove the link, then delete it.'),
     image_request_conflict: word('這個請求已用不同內容送出過，沒有重新生成。請重新建立。', 'This request was already sent with different content. Nothing was regenerated; create it again.'),
+    image_profile_changed: word(`${name} 的設定剛更新，這次沒有生成，也沒有使用額度。請再送出一次。`, `${name}'s settings just changed. Nothing was generated and no allowance was used. Send it again.`),
+    image_profile_unavailable: word(`${name} 目前不提供這個操作，這次沒有生成。`, `${name} no longer offers this operation. Nothing was generated.`),
     source_unavailable: word('選取的作品已無法使用，請重新選擇。', 'A selected image is no longer available. Pick it again.'),
     source_unsupported: word(`${name} 無法使用這張作品當來源。`, `${name} cannot use this image as a source.`),
     source_count_invalid: word('來源張數不符合這個操作的要求。', 'The number of source images does not fit this operation.'),
@@ -623,8 +637,9 @@ function renderPreview(force = false) {
     job.output ? [word('檔案大小', 'File size'), formatBytes(job.output.bytes) ?? word('未知', 'Unknown')] : null,
     [word('圖片模型', 'Image model'), job.output?.mediaModel ?? word('服務未回報', 'Not reported')],
     [word('媒體費用', 'Media cost'), word('服務未回報', 'Not reported')],
+    warningNote(job) ? [word('提醒', 'Notes'), warningNote(job)] : null,
     [word('生成回應', 'Generation response'), job.warnings.includes('response_timeout_after_image') ? word('逾時（圖片已在逾時前完成）', 'Timed out after the image was finished')
-      : job.executionOutcome ?? (job.status === 'succeeded' ? word('已完成', 'Completed') : STATUS_LABELS[job.status] ?? job.status)],
+      : (OUTCOME_LABELS[job.executionOutcome] ?? (job.status === 'succeeded' ? word('已完成', 'Completed') : STATUS_LABELS[job.status] ?? job.status))],
   ]);
   if (job.output) {
     $('ruler-width').textContent = `${job.output.width} px`; $('ruler-height').textContent = `${job.output.height} px`;
@@ -688,7 +703,7 @@ function renderJobs(force = false) {
   if (!jobs.length) container.append(el('p', { class: 'note', text: word('還沒有作品。右側的橘貓是先前產生的範例。', 'No saved images yet. The orange cat is an existing sample.') }));
   else if (!visible.length) container.append(el('p', { class: 'note', text: word('沒有符合條件的作品。換個關鍵字，或清除篩選。', 'No images match. Try another keyword or clear the filters.') }));
   for (const job of visible) {
-    const note = job.warnings.includes('response_timeout_after_image') ? word('圖片已保存，但生成回應逾時。', 'Saved, but the generation response timed out.')
+    const note = warningNote(job) ? warningNote(job)
       : job.status === 'failed' ? errorText(job.error, job.name) : job.status === 'interrupted' ? errorText('execution_interrupted') : job.status === 'cancelled' ? word('已使用的額度不一定會退還。', 'Used allowance may not be refunded.') : '';
     const select = () => { selectedId = job.id; keepFocus(() => { renderJobs(true); renderPreview(true); }); };
     container.append(el('article', { class: job.id === selectedId ? 'work selected' : 'work', 'aria-current': job.id === selectedId ? 'true' : null },
@@ -778,7 +793,10 @@ async function refresh(recheck = false) {
     if (!sdk?.images) throw new Error('image_service_unavailable');
     await reload();
     if (!loaded) selectedId ??= initialSelection(jobs);
-    if (!loaded || recheck) await loadCapabilities();
+    // A work refused for a changed or withdrawn profile means the services shown are stale: read them again.
+    const staleProfile = jobs.some((job) => job.id === followedId && job.status !== followedStatus
+      && ['image_profile_changed', 'image_profile_unavailable'].includes(job.error));
+    if (!loaded || recheck || staleProfile) await loadCapabilities();
     loaded = true;
     const { kept, removed } = pruneSources(sourceIds, jobs);
     if (removed.length) { sourceIds = kept; keepFocus(() => { renderSources(); renderParameters(); }); say(errorText('source_unavailable')); }

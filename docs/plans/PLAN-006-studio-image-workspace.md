@@ -73,7 +73,7 @@ production capability 逐一在通過 gate 後開放，不用等待其他路徑�
 
 ## A0 — Freeze contracts and prove bounded routes
 
-- [ ] Runtime 與 Platform 各建立／更新其 owning ADR/SPEC/PLAN successor，回鏈本套文件；
+- [x] Runtime 與 Platform 各建立／更新其 owning ADR/SPEC/PLAN successor，回鏈本套文件（Runtime ADR-047／SPEC-038／PLAN-048、Platform ADR-137／SPEC-119）；
   原 ADR-042／SPEC-033／PLAN-043 與 ADR-120／SPEC-119／PLAN-111 保留交付歷史。
 - [ ] 凍結 SPEC 的 capability/profile/operation/agentConfig/target 關係、`inputs`、
   `aspectRatio` 模式與 enum、`transparentBackground`、canonical submit（含 `sourceIds`）、
@@ -90,7 +90,7 @@ production capability 逐一在通過 gate 後開放，不用等待其他路徑�
   把來源放在 attempt 專屬位置而不擴大 provider 讀取範圍。做不到的操作不啟用。
 - [ ] 檢查 media budget 是否真的在執行前生效。若 CLI 只能靠 prompt 或事後數工具，
   該 route 記為尚不可啟用，先完成其他 route；不得宣稱有硬性費用限制。
-- [ ] 列出 contract 2 的 SDK major、Runtime/Platform/Studio 0.x minor 邊界與 storage
+- [x] 列出 contract 2 的 SDK major、Runtime/Platform/Studio 0.x minor 邊界與 storage（決定：SDK 1.7.0 相容 minor 依 App 宣告；Runtime 下一 0.x minor）
   migration。決定 exact versions 的 owner 和發布時機；這個階段不 bump、不發布。
 - [ ] 記錄 Usage／Ask 等現有 Apps 的 SDK／host 相容與升級策略、過舊 package 的明確
   compatibility UX，不能因更新 Studio 而默默停用其他官方 Apps。
@@ -100,7 +100,7 @@ production capability 逐一在通過 gate 後開放，不用等待其他路徑�
 
 ## A1 — Runtime profiles, execution and collection
 
-- [ ] 將 Grok 專用 catalog/profile/service 提取為 operation-specific 執行策略，仍由
+- [x] 將 Grok 專用 catalog/profile/service 提取為 operation-specific 執行策略，仍由
   Runtime 管理；不另建模型目錄。首批代理設定遵循 SPEC，Grok 不得改回 Fast／Low。
 - [ ] 延續 shared selection、worker capacity、metering、singleton、shutdown 與單一
   image active slot；對 capabilities 與 submit 使用一致 preflight，不新增 paid probe。
@@ -110,7 +110,7 @@ production capability 逐一在通過 gate 後開放，不用等待其他路徑�
   session 能安全續接。已先改為回報 `runtime_capacity_full`，預設名額上調到 50。
 - [ ] 實作 Grok 生成 profile，先以現有 bounded flow 作回歸基準；保留既有 collection-only
   recovery 語意，不用新 attempt 取代舊成功或失敗的圖片。
-- [ ] Muse：一個原生媒體呼叫、matching result 與 cwd-relative 圖片來源的可驗證綁定；
+- [x] Muse：一個原生媒體呼叫、matching result 與 cwd-relative 圖片來源的可驗證綁定；
   成功 result 後 timeout 能安全結束執行、驗證原 PNG，並保留 execution warning。
 - [ ] Codex：從有界 native events 取得 nested `exec` 的生成 evidence 與 output hint，
   不把 general exec/shell 權限整包開放給媒體 profile，也不執行 provider API fallback。
@@ -122,7 +122,7 @@ production capability 逐一在通過 gate 後開放，不用等待其他路徑�
   MIME、byte/pixel/edge limits、hash、alpha 量測及來源 containment checks。
 - [ ] 實作 turn outcome／artifact outcome 分離；只在來源、次數、停止、取消檢查全部
   通過後允許 saved-with-warning。未知或違規不能透過這條路升格。
-- [ ] Runtime schema 1→2 upgrade：validate/backup/atomic replace/failure recovery/
+- [x] Runtime schema 1→2 upgrade：validate/backup/atomic replace/failure recovery/
   repeated restart；保留 job IDs、原 JPEG 與 historical agent metadata，不重新執行。
 
 **Exit:** 啟用中的每個 profile 通過受管 runner/collector fixtures，並有針對其實際
@@ -140,7 +140,7 @@ gate 未完成，保持該新 profile 不可用；不得把既有 Chat probe 改
   交給 Runtime；撤銷／不存在回 `source_unavailable`；job 保存來源快照。
 - [ ] 維持 Core task/run/artifact authority、App/account/version/package digest 隔離、
   disable/remove revocation；不額外建立 Studio job database 或可由 renderer 決定的路徑。
-- [ ] 正確接收／保存／read／export PNG 與 JPEG；原檔 extension/MIME/hash 相符，匯出
+- [x] 正確接收／保存／read／export PNG 與 JPEG；原檔 extension/MIME/hash 相符，匯出
   byte-identical；不得沿用硬寫 `.jpg`／`image/jpeg` 的路徑與 header。
 - [ ] 增加 warnings、execution outcome 與量測 transparency projection；cancel 意圖在
   保存 race 中優先。refresh/list/reopen 只能讀／收集原 attempt；磁碟滿後也不得再次生成。
@@ -194,9 +194,12 @@ SPEC 的能力邊界與狀態語意。沒有依據的 cost/ETA／成功率不能
 
 ## A3b — Contract 2 wiring
 
-- [ ] 依 A0 凍結的型別調整正規化層與提交建構，刪除與實際契約不符的提案欄位處理。
+- [x] 生成子集：正規化層與提交建構已對上 host 實際 contract 2（`HOST_CONTRACT_TWO_*` fixture、
+  確切 submit 欄位），`executionOutcome` 顯示為文字，新增 `image_profile_changed`／
+  `image_profile_unavailable` 文案。修圖／合成的提案欄位處理保留到其凍結。
 - [ ] 接 A2 的公開 SDK entry 與 exact pin；Apps 不 import sibling implementation、不複製 SDK 型別。
-- [ ] 依 A5 的相容矩陣更新 manifest `compatibility.appSdk`，並保留 SDK 1.x host 的明確提示。
+- [x] manifest `compatibility.appSdk` 改為 `^1.7.0`（contract 2 依 App 宣告協商）；SDK 1.6 以下的
+  host 繼續提供先前的 Studio 版本。
 
 ## A4 — Acceptance and independent review
 
@@ -281,6 +284,7 @@ source 工作用 member 內 `.claude/worktrees/`，不動他人的 worktree／�
 | 2026-10-23 | A3a 實作：`model.js` 能力正規化／提交建構／job 正規化與先選服務 UI。`npm test`、`npm run check:docs` 通過；fixture 預覽檢查四家服務、修圖／合成、透明背景、深色與 360／1078 寬。Platform `check-studio-app.mts`（選擇器相容更新）以實際 archive＋host＋fixture Runtime 驗收新 UI 與 main 的舊 UI，各 2 次送出、0 次 CLI。未 bump、未發布；schema 2 只以提案 fixtures 驗證 |
 | 2026-10-23 | 使用者授權以 Studio 0.3.0 發布 A3a，並在發布後以目錄 PR 把 `channels.stable` 指到 0.3.0，用現有 Desktop 0.9.1 的 Market 驗證「不升 Desktop、單獨更新 App」。版本欄位、release notes 與預期 SHA-256 見 [deployment](../deployment.md#studio-030--provider-first-image-workspace-2026-10-23)；不改 Desktop pins |
 | 2026-10-23 | 使用者在 Desktop 0.9.1 以 Market 更新到 0.3.0 後回報：外殼與 App 重複顯示名稱／返回鈕／版本，且一次生成因 Runtime worker 名額被閒置對話佔滿而立即失敗。改為外殼負責 App 身分（Platform）、Studio 0.3.1 移除自己的標題列與頁尾並改寫忙碌文案（Apps）、Runtime 回報 `runtime_capacity_full` 並把預設名額上調到 50；名額回收列入 A1 |
+| 2026-10-23 | 使用者要求 Muse、Antigravity、Codex 出現在 Studio，先做「生成」。凍結 contract 2 生成子集並以 SDK 1.7.0 相容 minor 依 App 宣告協商（避免 SDK major 讓所有官方 App 不相容）。Runtime：profiles＋共用執行模組＋Muse 受限執行器（`--max-model-steps 1`、無平行呼叫、無 shell／web；`--disable-write` 會移除生圖工具，故寫入只限 attempt workspace），一次實際 Muse 生成驗收通過（1920×1280 PNG）。Platform：contract 2 投影、PNG 保存、schema 1 App 維持原樣。Studio：manifest `^1.7.0`；隔離 package＋host 驗收含 Muse PNG。Codex（CLI 無執行前呼叫上限）與 Antigravity（子代理）尚未啟用 |
 | 2026-10-23 | 使用者決定提供作品刪除（已保存需確認、未完成／已取消直接刪）。Runtime 刪 receipt、Platform 加 `images.delete` 與保存清理、Studio 顯示刪除；同時發現 host bridge 一次只處理一個 image 呼叫，Studio 改以單一佇列呼叫。實際 package＋host 驗收含刪除兩種情況；需下一版 Desktop 才會出現 |
 
 *Created: 2026-10-23。首個實作動作：A3a；A0 owners contract/feasibility review 可並行。*

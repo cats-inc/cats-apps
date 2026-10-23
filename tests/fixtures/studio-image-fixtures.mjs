@@ -76,3 +76,27 @@ export const SCHEMA_TWO_JOBS = [
     prompt: 'A simple flat illustration of one orange cat sitting, solid light blue background, minimal shapes, no text, no letters, no watermark',
     options: { aspectRatio: '1:1' }, output: jpeg(1024, 1024, 85_413), createdAt: '2026-10-22T21:05:00.000Z' }),
 ];
+
+// Contract 2 exactly as the Platform host (SDK 1.7.0) projects Runtime SPEC-038 for generation. Keep in step with
+// cats-platform presentImageJob/capabilities; the proposal above still carries the unfrozen edit/compose shapes.
+export const HOST_CONTRACT_TWO_CAPABILITIES = {
+  schemaVersion: 2, revision: '3f2a9c1d0b7e6a54', maxPromptLength: 2000, maxImageBytes: 8 * 1024 * 1024,
+  targets: [
+    { id: 'grok/native', provider: 'grok', instanceLabel: 'native', availability: 'available' },
+    { id: 'muse/native', provider: 'muse', instanceLabel: 'native', availability: 'available' },
+  ],
+  profiles: [
+    { id: 'grok-generate', revision: 1, operation: 'image.generate', targetIds: ['grok/native'], inputs: { min: 0, max: 0 },
+      agentConfigs: [{ id: 'grok-4.7-xhigh', model: 'grok-4.7', effort: 'xhigh' }], aspectRatio: { mode: 'native', options: ['1:1'] } },
+    { id: 'muse-generate', revision: 1, operation: 'image.generate', targetIds: ['muse/native'], inputs: { min: 0, max: 0 },
+      agentConfigs: [{ id: 'muse-spark-1.3-xhigh', model: 'muse-spark-1.3', effort: 'xhigh' }], aspectRatio: { mode: 'service' } },
+  ],
+};
+export const HOST_CONTRACT_TWO_JOB = {
+  schemaVersion: 2, id: '0f0e0d0c-0b0a-4908-8706-050403020100', requestId: '11111111-2222-4333-8444-555555555555', provider: 'muse',
+  targetId: 'muse/native', instanceLabel: 'native', operation: 'image.generate', profileId: 'muse-generate', profileRevision: '1',
+  agentConfigId: 'muse-spark-1.3-xhigh', agentModel: 'muse-spark-1.3', agentEffort: 'xhigh', prompt: 'A cat', sources: [], options: {},
+  status: 'succeeded', error: null, warnings: [], executionOutcome: 'stopped_after_image',
+  output: { mimeType: 'image/png', bytes: 1242589, width: 1920, height: 1280, sha256: 'bbcf2c079111bc91db218217aec40c60bcb2365f3529ebd36a6d1d33a814d8f0', transparency: 'opaque' },
+  createdAt: '2026-10-23T05:00:00.000Z', updatedAt: '2026-10-23T05:00:19.000Z',
+};
