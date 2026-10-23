@@ -6,6 +6,25 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { buildApp } from '../scripts/build-app.mjs';
+import { runInNewContext } from 'node:vm';
+import { previewHtml } from '../scripts/testing/preview-studio.mjs';
+
+test('standalone Studio previews provide executable shared media capabilities and retained works', async () => {
+  for (const fixture of ['target', 'today', 'sdk1']) {
+    const html = await previewHtml({ fixture });
+    const context = { setTimeout };
+    runInNewContext(/<script>([\s\S]*?)<\/script>/.exec(html)[1], context);
+    const images = context.catsApp.media.images;
+    const caps = await images.getCapabilities();
+    assert.equal(caps.schemaVersion, fixture === 'sdk1' ? 1 : 2);
+    const { jobs } = await images.list();
+    assert.ok(Array.isArray(jobs));
+    assert.ok(jobs.length > 0, `${fixture} retains fixture works`);
+    assert.equal(typeof images.submit, 'function');
+    assert.equal(typeof images.read, 'function');
+    assert.equal(typeof images.delete, 'function');
+  }
+});
 
 test('Studio is a separate immutable App with embedded sample and bounded SDK permissions', async (t) => {
   const outputDir = await mkdtemp(path.join(tmpdir(), 'studio-package-test-'));
@@ -17,15 +36,17 @@ test('Studio is a separate immutable App with embedded sample and bounded SDK pe
   assert.equal(archive.manifest.id, 'cats.studio');
   assert.equal(archive.manifest.contributions.lobbyApps[0].routePath, '/apps/cats.studio');
   assert.deepEqual(archive.manifest.permissions, ['ui.route', 'ui.lobby', 'media.images']);
+  assert.equal(archive.manifest.compatibility.appSdk, '^1.8.0');
   const html = Buffer.from(archive.files.find((file) => file.path === 'renderer/index.html').base64, 'base64').toString();
   assert.match(html, /data:image\/jpeg;base64,/); assert.doesNotMatch(html, /\{\{APP_ASSET:|from ['"]\.\/|fetch\(|<script[^>]+src=/);
   assert.match(html, /hostCall\('submit'/); assert.match(html, /範例作品/);
-  // The host bridge runs one image call at a time, so nothing may call sdk.images directly outside the queue.
-  assert.doesNotMatch(html, /sdk\.images\.(getCapabilities|list|submit|cancel|refresh|delete|read|export)\(/);
+  // Shared media uses the same bounded host bridge; operations remain serialized by the queue.
+  assert.doesNotMatch(html, /sdk\.media\.images\.(getCapabilities|list|submit|cancel|refresh|delete|read|export)\(/);
+  assert.doesNotMatch(html, /\bsdk(?:\?\.|\.)images\b/);
   assert.match(html, /<button id="generate"[^>]+disabled/);
   assert.match(html, /id="services"/); assert.match(html, /normalizeCapabilities/);
   // Deletion is feature-detected and a saved image needs explicit confirmation in an in-App dialog.
-  assert.match(html, /typeof sdk\?\.images\?\.delete === 'function'/); assert.match(html, /<dialog id="confirm-dialog"/);
+  assert.match(html, /typeof sdk\?\.media\?\.images\?\.delete === 'function'/); assert.match(html, /<dialog id="confirm-dialog"/);
   assert.doesNotMatch(html, /window\.confirm|[^.\w]confirm\(/);
   // HTML parsing replaces NUL and mangles other raw control characters, so inline sources must use escapes.
   assert.doesNotMatch(html, /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/);

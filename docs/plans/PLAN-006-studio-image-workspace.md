@@ -37,14 +37,15 @@ server。其他完整 Apps 的服務架構不在這次變更範圍。
 這些不是新 Studio 的 bounded route 或 installed acceptance。沒有新增生成額度；
 任何後續 live probe／paid acceptance 先套用當時使用者的明確授權與次數限制。
 
-## Shared Platform service consumer track (proposed, 2026-10-23)
+## Shared Platform service consumer track (authorized, 2026-10-23)
 
 [Platform PLAN-121](../../../cats-platform/docs/plans/PLAN-121-shared-image-service-and-controlled-cat-generation.md)
 管理 Studio／Cat 共用圖片服務、有限 Cat grant、資產與 Telegram 送達。
-本段只列 Apps consumer 責任；不是新增 A3a 發布工作，也不改已發布版本的狀態。
+本段列 Apps consumer 責任；owner 已授權實作與必要發布，並澄清共用對象是 Studio，Usage 不改。
 
-- [ ] 對照 Platform P0 凍結既有 SDK 1.x／Studio archive 契約；第一階段不要求
-      Studio UI／manifest／agent tool 改動，Runtime 仍只用已啟用的 Grok 契約。
+- [x] Studio 0.4.0 改用 host-injected `media.images`（SDK floor `^1.8.0`），保留
+      contract 2 的已啟用 profiles、PNG/JPEG、既有作品與佇列；不新增 App 生圖 server。
+      Archive encoder 仍使用公開 exact Platform 0.6.0，與 browser SDK 的版本獨立。
 - [ ] 配合 Platform P1/P5，以真 built Studio＋host SDK＋隔離 fixtures 驗證提交、
       cancel、reopen、offline/read/export、exact bytes 與 App/account 隔離。
 - [ ] 驗證 Studio 未安裝／停用／卸載不撤銷 Cat 的獨立 grant，Studio 也不自動
@@ -52,9 +53,8 @@ server。其他完整 Apps 的服務架構不在這次變更範圍。
 - [ ] 若後續要把 Cat 作品用於修圖，先定義明確 sharing/source grant，再和 A0/A2
       協調 SDK 契約；不移除目前同 App/account source 限制。
 
-Runtime 的 same-instance／pool／工具重入檢查由 Platform P0/P5 與 Runtime owner
-處理；只有具體缺口才新增 Runtime successor。修圖／合成／多 provider 仍走下列
-A0～A5，兩條 track 不能互相借用未完成的驗收。
+Runtime 的 same-instance／pool／工具重入由 Platform P0/P5 與 Runtime owner 驗證，
+此次增加來源 session 的受控讓位；修圖／合成仍走下列 A0～A5，不借用尚未完成的驗收。
 
 ## Workstreams and dependencies
 

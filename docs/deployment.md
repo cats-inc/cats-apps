@@ -2,6 +2,36 @@
 
 ## Release boundaries
 
+### Prepared Studio 0.4.0 — shared multimedia SDK (2026-10-23)
+
+Owner authorized implementation and the necessary releases; the clarified scope is
+Cat and **Studio**, with Usage unchanged. Studio 0.4.0 uses host-injected
+`catsApp.media.images`, declares App SDK `^1.8.0`, and retains the Platform minimum
+`^0.6.0`. Raising the required SDK sets a new Studio 0.x minor boundary. The public
+archive encoder remains exactly Platform 0.6.0; it does not supply the browser SDK.
+Existing App/account-scoped work, IDs and saved JPEG/PNG bytes stay in the host;
+this release changes no App storage format and needs no data migration. It grants
+neither Studio access to Cat-private work nor Cat authorization through installation.
+
+- Selected tag: `studio-v0.4.0`; its tag commit and release provenance are the exact
+  source pin. Published 0.3.2 assets stay immutable.
+- Selected archive: `studio-0.4.0.catsapp`, 140319 bytes, SHA-256
+  `87188be8f8226c39e34f83ecba694553e019d8095351fa8ccda562527e4f1eb1`.
+  The matching lock and provenance must agree with the release workflow output.
+- Validation: Apps 41 tests, required build/docs gates, plus production host/SDK
+  browser acceptance of this archive (contract 2 JPEG/PNG, cancel, delete, offline
+  retained works, exact-byte export, narrow layout, isolation; zero CLI calls).
+  The independent review's preview-fixture namespace finding is fixed and its
+  executable SDK regression passes. Tag CI repeats the hosted release gates.
+- Publisher remains `sammykenny2`. The App archive has the existing integrity pin;
+  optional Market catalog promotion uses the existing Ed25519 catalog signer.
+  Studio stays outside the default Desktop bundle. Usage 0.5.4, its archive hash,
+  all Usage source and the private workspace version remain unchanged.
+- Publish the immutable App first. A catalog promotion may then reference only its
+  verified hosted URL, length and hash; do not pre-promote an unpublished archive.
+  Publication verification uses the hosted workflow and assets, with no later
+  status-only edit to this preparation.
+
 Follow the [shared release preparation/completion policy](https://github.com/cats-inc/cats-one/blob/main/docs/release-guide.md#release-preparation-and-completion):
 prepare all release documentation and pins in the original version change.
 Verify publication using existing hosted Release/Actions/registry evidence, then
