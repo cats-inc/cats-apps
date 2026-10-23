@@ -27,6 +27,11 @@ const TRANSPARENCY_LABELS = { opaque: word('不透明', 'Opaque'), transparent: 
 const OFFLINE_TEXT = word('生成服務暫時無法連線，已保存的作品仍可查看及下載。', 'Generation is unavailable. Saved images can still be viewed and downloaded.');
 const REASON_LABELS = { not_configured: word('尚未設定', 'not set up'), not_installed: word('尚未安裝', 'not installed'), disabled: word('已停用', 'disabled'), signed_out: word('尚未登入', 'not signed in') };
 
+// How the run ended, beside the result: Runtime may end a run itself once the verified image exists.
+const OUTCOME_LABELS = {
+  completed: word('已完成', 'Completed'),
+  stopped_after_image: word('圖片完成後即結束', 'Ended once the image was saved'),
+};
 function errorText(code, name = word('服務', 'the service')) {
   return ({
     auth_required: word(`請先在 ${name} CLI 登入，再建立新任務。`, `Sign in to ${name} CLI before creating a new request.`),
@@ -47,6 +52,8 @@ function errorText(code, name = word('服務', 'the service')) {
     image_not_deletable: word('這項工作還在進行或結果待確認，暫時不能刪除。', 'This work is still in progress or unconfirmed, so it cannot be deleted yet.'),
     image_in_use: word('這張作品已在 Cats Work 中被連結或使用，請先移除連結再刪除。', 'This work is linked or used in Cats Work. Remove the link, then delete it.'),
     image_request_conflict: word('這個請求已用不同內容送出過，沒有重新生成。請重新建立。', 'This request was already sent with different content. Nothing was regenerated; create it again.'),
+    image_profile_changed: word(`${name} 的設定剛更新，這次沒有生成，也沒有使用額度。請再送出一次。`, `${name}'s settings just changed. Nothing was generated and no allowance was used. Send it again.`),
+    image_profile_unavailable: word(`${name} 目前不提供這個操作，這次沒有生成。`, `${name} no longer offers this operation. Nothing was generated.`),
     source_unavailable: word('選取的作品已無法使用，請重新選擇。', 'A selected image is no longer available. Pick it again.'),
     source_unsupported: word(`${name} 無法使用這張作品當來源。`, `${name} cannot use this image as a source.`),
     source_count_invalid: word('來源張數不符合這個操作的要求。', 'The number of source images does not fit this operation.'),
@@ -624,7 +631,7 @@ function renderPreview(force = false) {
     [word('圖片模型', 'Image model'), job.output?.mediaModel ?? word('服務未回報', 'Not reported')],
     [word('媒體費用', 'Media cost'), word('服務未回報', 'Not reported')],
     [word('生成回應', 'Generation response'), job.warnings.includes('response_timeout_after_image') ? word('逾時（圖片已在逾時前完成）', 'Timed out after the image was finished')
-      : job.executionOutcome ?? (job.status === 'succeeded' ? word('已完成', 'Completed') : STATUS_LABELS[job.status] ?? job.status)],
+      : (OUTCOME_LABELS[job.executionOutcome] ?? (job.status === 'succeeded' ? word('已完成', 'Completed') : STATUS_LABELS[job.status] ?? job.status))],
   ]);
   if (job.output) {
     $('ruler-width').textContent = `${job.output.width} px`; $('ruler-height').textContent = `${job.output.height} px`;

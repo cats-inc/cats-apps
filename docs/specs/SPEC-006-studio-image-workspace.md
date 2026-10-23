@@ -165,9 +165,16 @@ polling 不可重複朗讀整份列表。放大預覽支援 Escape、關閉後�
 
 ## Proposed contract 2 — owner handoff, not an existing SDK
 
-以下名稱是跨 repository 的具體設計基線。A0 需由 owners 一起凍結型別與 error codes，
-並記錄在 Runtime／Platform 自己的 successor 文件；不可把這些欄位直接傳給現有 SDK
-1.x。現有 source SDK 1.5.0 的 images API 仍是 Grok／JPEG schema 1。
+2026-10-23 凍結「生成」子集，以 App SDK 1.7.0 的相容 minor 提供，不是 SDK major：
+manifest `appSdk` 下限 ≥1.7.0 的 App 看到 contract 2，其他 App 維持 schema 1 投影
+（[Platform ADR-137](../../../cats-platform/docs/decisions/137-negotiate-image-contract-2-by-app-sdk-floor.md)、
+[Runtime SPEC-038](../../../cats-runtime/docs/specs/SPEC-038-image-generation-contract-2.md)）。
+已凍結：target `<provider>/<instance>`、生成 profile（`inputs` 0..0、`aspectRatio` 為
+`native` 或 `service`）、submit 的確切欄位（`sourceIds` 與 `options` 必須為空）、job 的量測
+輸出（JPEG／PNG、尺寸、`transparency`）、`executionOutcome`
+（`completed`／`stopped_after_image`）與 `image_profile_changed`／`image_profile_unavailable`。
+Host 實際投影見 `tests/fixtures/studio-image-fixtures.mjs` 的 `HOST_CONTRACT_TWO_*`。下表其餘
+欄位（修圖／合成、來源、比例選擇、透明背景）仍是提案，尚未凍結。
 
 | Data / operation | 必要內容 |
 | --- | --- |
@@ -252,7 +259,8 @@ projections 由 A0 一起更新，保留既有 auth、CSRF、package digest 與 
   空。不明格式 fail closed，不清空資料。重啟冪等；舊 running/interrupted 不重新生成。
 - 歷史配置無法還原時標 unknown／historical，不把目前 Grok 4.7/xhigh pin 套到先前
   Fast/Low 作品。原先 collection-only recovery 仍只能恢復同一張既有圖。
-- 本設計改變公開 request／capability／output 型別，預定新 App SDK major；Runtime、
+- （2026-10-23 更新：改以 SDK 1.7.0 相容 minor 依 App 宣告協商，見上方 contract 2 段落；
+  SDK major 會讓所有宣告 `^1.x` 的官方 App 不相容。）本設計改變公開 request／capability／output 型別；Runtime、
   Platform、Studio 仍在 0.x，breaking public/persisted requirements 需下一 minor。
   owner 在 release preparation 決定確切版本／artifact pins／App compatibility
   ranges，連同 Usage／Ask 的可啟用相容矩陣一起驗收；不可只更新 Studio 然後讓舊
