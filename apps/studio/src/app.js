@@ -246,7 +246,10 @@ function rememberUrl(id, url) {
 function imageUrl(id, { urgent = false, wanted = null } = {}) {
   if (imageUrls.has(id)) { const url = imageUrls.get(id); rememberUrl(id, url); return Promise.resolve(url); }
   let entry = imageReads.get(id);
+  // A read is kept while any caller still wants it, for example a thumbnail redrawn while its read was queued.
+  const want = wanted ?? (() => true);
   if (entry) {
+    entry.wants.push(want);
     // The preview needs an image a thumbnail already queued: keep that read and move it to the front.
     if (urgent && !entry.forced) {
       entry.forced = true;
@@ -254,10 +257,10 @@ function imageUrl(id, { urgent = false, wanted = null } = {}) {
     }
     return entry.promise;
   }
-  entry = { forced: urgent };
+  entry = { forced: urgent, wants: [want] };
   entry.promise = (async () => {
     try {
-      const image = await hostCall('read', [id], { urgent, background: !!wanted, wanted: () => entry.forced || !wanted || wanted() });
+      const image = await hostCall('read', [id], { urgent, background: !!wanted, wanted: () => entry.forced || entry.wants.some((test) => test()) });
       if (disposed) throw new Error('disposed');
       const url = URL.createObjectURL(new Blob([image.bytes], { type: image.mimeType }));
       rememberUrl(id, url); return url;
