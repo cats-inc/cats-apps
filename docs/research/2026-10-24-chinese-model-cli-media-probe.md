@@ -4,6 +4,12 @@ Date: 2026-10-24 (Asia/Taipei). Follow-up to the
 [Studio media probe summary](2026-10-23-studio-cli-media-probe-summary.md), using
 the [CLI media probe SOP](2026-10-23-cli-media-probe-playbook.md).
 
+The later [cross-CLI re-probe](2026-10-24-chinese-model-cross-cli-reprobe.md)
+tests the same GLM/Kimi/DeepSeek families through Cursor/Copilot/Devin, retaining
+Kilo/Seed as the baseline. Cursor exposes a native generator and produced a
+verified image. The no-generator findings below remain specific to these
+initial four routes, not the underlying model families.
+
 ## Scope and route
 
 The owner selected four different model labs through four CLI wrappers. Each

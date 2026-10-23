@@ -253,6 +253,20 @@ the same except for identifying context. Collect the independent first answer
 before revealing the other configuration's findings. Challenge unclear claims
 against their sources and distinguish an omitted answer from an unavailable tool.
 
+After a picker change, close it and confirm the settled chip before Send; then
+confirm the resulting Runtime binding independently. Exclude a mismatched route
+from the requested-model comparison. The 2026-10-24 cross-CLI inquiry observed
+an intended Copilot selection produce a Cursor binding on its first dispatch.
+
+For image understanding, classify the input path separately: native image/binary
+receipt, host-provided caption/description, model-input rejection, or unknown.
+Cursor's native `imageDescriptions` record demonstrates why an accurate answer
+alone does not prove the selected model received pixels. Count task tool calls
+separately from CLI/Runtime input delivery: Copilot read temporary prompt text
+files before the requested image read. Raw native assistant history can also
+flatten reasoning and final text; use final-channel evidence and targeted tool
+records instead of printing that whole projection.
+
 Compare inventory, exact schemas, description-only constraints and source
 provenance separately from answer detail. A schema difference needs evidence from
 both sessions; incompatible model statements alone do not establish one. Changing

@@ -23,6 +23,7 @@ Research filenames follow `YYYY-MM-DD-topic.md`, matching the sibling Cats repos
 
 | Date | Topic | Scope |
 |------|-------|-------|
+| 2026-10-24 | [Chinese-model cross-CLI re-probe](2026-10-24-chinese-model-cross-cli-reprobe.md) | Cursor/GLM generated one verified JPEG and uses an image-description bridge; Copilot/Kimi image input succeeds, Devin/DeepSeek input unavailable, Kilo/Seed baseline retained |
 | 2026-10-24 | [Chinese-model CLI media probes](2026-10-24-chinese-model-cli-media-probe.md) | Four different labs through OpenCode Go, Kilo, ClinePass and Auggie; generation-tool inventories, existing-image understanding and model-specific input rejection |
 | 2026-10-23 | [Three-provider real image probe](2026-10-23-three-provider-image-artifact-probe.md) | Spark, Flash and Sol each generated one verified image; actual PNG/JPEG dimensions, native receipt gaps, output paths and Muse artifact success followed by turn timeout |
 | 2026-10-23; updated 2026-10-24 | [Studio CLI summary](2026-10-23-studio-cli-media-probe-summary.md) | Five-provider generation baseline plus four Chinese-model CLI routes: model pairs, evidence levels, controls, artifact collection and image-input gates |

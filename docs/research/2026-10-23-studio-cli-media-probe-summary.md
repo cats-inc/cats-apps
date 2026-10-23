@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-24 (Asia/Taipei). This is the entry point for the current
 Grok, Muse, Antigravity, Claude and Codex findings, plus the OpenCode Go, Kilo,
-ClinePass and Auggie Chinese-model follow-up. Follow the
+ClinePass, Auggie, Cursor, Copilot and Devin Chinese-model follow-ups. Follow the
 [CLI media probe SOP](2026-10-23-cli-media-probe-playbook.md) for another provider,
 model or CLI version. Findings describe observed routes, not provider-wide
 guarantees or approval to implement every candidate.
@@ -31,6 +31,14 @@ and Auggie / Kimi K3 / native default. All completed inventory and schema
 follow-ups; each then attempted one read of the same existing image. No new
 media was generated in this follow-up.
 
+The later [cross-CLI re-probe](2026-10-24-chinese-model-cross-cli-reprobe.md)
+adds three valid configurations: Cursor/GLM-5.3, Copilot/Kimi K3 and
+Devin/DeepSeek V4 Pro, retaining Kilo/Seed as the owner's baseline because the
+other candidate catalogs lacked Seed 2.1 Turbo. Cursor generated one verified
+1024 x 1024 JPEG and its read route supplied a textual image description;
+Copilot/Kimi read the fixture successfully; Devin/DeepSeek could not accept
+image input. One misrouted intended Copilot conversation is excluded.
+
 | Evidence label | Meaning |
 | --- | --- |
 | Reported | Model transcribed its currently injected definitions; not an independently exported schema |
@@ -54,6 +62,9 @@ the other providers. An unknown media model or missing field remains unknown.
 | Kilo | `kilo/bytedance-seed/seed-2-1-turbo / thinking` | Running native server health reports 7.8.17 |
 | ClinePass | `cline-pass/deepseek-v4-pro / xhigh` | CLI version not independently established |
 | Auggie | `kimi-k3 / native default` | No Cats effort control selected; CLI version not independently established |
+| Cursor | `glm-5p3[reasoning=max]` | Picker entry was `glm-5p3[reasoning=high]`, resolved with max control; native CLI version not independently measured |
+| Copilot | `kimi-k3 / max` | Native image receipt identifies `kimi-k3`; native CLI version not independently measured |
+| Devin | `deepseek-v4-pro-high` | Initial max configuration failed; high completed the same model's inventory and image attempt; CLI version not independently measured |
 
 Picker entry ID, Runtime-resolved model and upstream execution identity are
 different evidence. Antigravity's observed `-low` picker entry IDs resolved to
@@ -73,6 +84,9 @@ in Runtime. These do not establish any media backend model ID.
 | Kilo / ByteDance Seed 2.1 Turbo | No native generator reported | No tools reported | One native `read` returned `image/jpeg`; model correctly described the existing fixture | **Verified existing-image understanding** for this case; no generated artifact |
 | ClinePass / DeepSeek V4 Pro | No native generator reported | No tools reported | `read_files` rejected the image with `Current model does not support image input` | One rejected read; successful error report is not successful visual understanding |
 | Auggie / Kimi K3 | No native generator reported | No tools reported | One native `view` returned image content; model correctly described the existing fixture | **Verified existing-image understanding** for this case; no generated artifact |
+| Cursor / GLM-5.3 | **Defined and executed** native `GenerateImage`; optional reference paths defined, editing untested | No tools found in inspected native namespace | Native `Read` stored `image/jpeg` plus a host-generated textual `imageDescriptions` result; answer matched that description | One **verified** 1024 x 1024 RGB JPEG, outside cwd; host-assisted understanding, not proof of direct GLM vision |
+| Copilot / Kimi K3 | No native generator reported | No tools reported | One native fixture `view` returned an image binary receipt with exact digest; answer correct | **Verified existing-image understanding**; three separate prompt-delivery text reads are not additional image calls |
+| Devin / DeepSeek V4 Pro | No native generator reported | No tools reported | Successful file read and image-input rejection reported by model | Visual task did not succeed; max setup failure is separate from successful high execution |
 
 "Not reported/found" describes these sessions, including their discovery limits;
 it is not permanent absence across a provider's products, plugins or APIs.
@@ -86,6 +100,7 @@ it is not permanent absence across a provider's products, plugins or APIs.
 | Antigravity | Parent required `TypeName`, `Role`, `Prompt`; optional `Model` and `Workspace`. Child accepted `AspectRatio: 1:1`, `ImageName` and `Prompt` in this case | `Model` is child reasoning tier; `Workspace` is isolation mode. Output was a JPEG under native `brain/<parent-session>/`, outside cwd. Backend and full child schema remain unknown |
 | Claude | Read input fields, not generation controls | No separate media generator exposed; API vision limits do not become Read schema bounds |
 | Codex | Required prompt; optional reference paths or recent-image count; optional transparent-background boolean | This false-background request produced RGB PNG under `~/.codex/generated_images/<session>/`, outside cwd. Media backend and transparent output remain unknown; bundled/API fallback has a different credential/control surface |
+| Cursor | Required `description`; optional `filename`, reference paths, five aspect ratios. No pixel-size, format, destination-directory or media-model selector | One 1:1 request produced a 1024 x 1024 RGB JPEG under native Cursor project assets, outside cwd; `.png` request filename did not select PNG encoding; backend unknown |
 
 For Grok, the driver independently compared the latest native `tool_definitions.json`
 snapshots of both exact sessions. All four media functions have identical complete
@@ -193,6 +208,7 @@ These issues were recorded; this research delivery does not fix or close them.
 
 ## Detailed evidence
 
+- [Cross-CLI re-probe: Cursor generator, image-description bridge, Copilot and Devin](2026-10-24-chinese-model-cross-cli-reprobe.md)
 - [Four Chinese models: native inventories and actual image-input gates](2026-10-24-chinese-model-cli-media-probe.md)
 - [Grok capability inquiry and cwd/output follow-up](2026-10-23-grok-media-capability-probe.md)
 - [Grok 4.5 / Low comparison and raw-definition follow-up](2026-10-23-grok45-low-media-probe-comparison.md)
