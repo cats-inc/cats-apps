@@ -4,8 +4,17 @@
   "apps": [
     {
       "id": "cats.usage",
-      "channels": { "stable": "0.5.3" },
+      "channels": { "stable": "0.5.4" },
       "versions": [
+        {
+          "version": "0.5.4",
+          "artifact": {
+            "url": "https://github.com/cats-inc/cats-apps/releases/download/usage-v0.5.4/usage-0.5.4.catsapp",
+            "size": 15053,
+            "sha256": "46f6ca1ada461a5e6c828e3218c7a11054ffa9f28ead4940a9ed2643703610d9"
+          },
+          "notes": "改由 Cats 外殼顯示名稱與版本；用量與額度查詢不變。"
+        },
         {
           "version": "0.5.3",
           "artifact": {
@@ -19,8 +28,17 @@
     },
     {
       "id": "cats.studio",
-      "channels": { "stable": "0.3.1" },
+      "channels": { "stable": "0.3.2" },
       "versions": [
+        {
+          "version": "0.3.2",
+          "artifact": {
+            "url": "https://github.com/cats-inc/cats-apps/releases/download/studio-v0.3.2/studio-0.3.2.catsapp",
+            "size": 139495,
+            "sha256": "c3e34db11c86a28ac06599eac4465068e77da8b0a4a3db189fa9092720e39d7d"
+          },
+          "notes": "可刪除已保存、未完成與已取消的作品（需搭配支援刪除的 Cats）；縮圖與操作不再因忙碌而遺失。"
+        },
         {
           "version": "0.3.1",
           "artifact": {
