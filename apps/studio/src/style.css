@@ -29,7 +29,7 @@ h1, h2, p, dl, dd { margin: 0; }
 h2 { font-size: 15px; font-weight: 650; }
 
 .services { display: flex; flex-direction: column; gap: 10px; }
-.service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
 .service-grid:has(> :only-child) { grid-template-columns: minmax(0, 360px); }
 .service-tile { display: flex; align-items: center; gap: 14px; text-align: left; padding: 12px 14px; min-height: 88px; border-radius: 14px; border: 1px solid var(--line); background: transparent; }
 .service-tile[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--panel); }

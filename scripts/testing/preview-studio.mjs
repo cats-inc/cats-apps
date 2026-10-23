@@ -49,7 +49,7 @@ function fixtureSdk(data) {
   const fixture = ${data};
   const jobs = fixture.jobs.map((job) => ({ ...job }));
   const now = () => new Date().toISOString();
-  const outputs = { grok: ['image/jpeg', 1024, 1024], muse: ['image/png', 1920, 1280], antigravity: ['image/jpeg', 1024, 1024], codex: ['image/png', 1254, 1254] };
+  const outputs = { grok: ['image/jpeg', 1024, 1024], muse: ['image/png', 1920, 1280], antigravity: ['image/jpeg', 1024, 1024], codex: ['image/png', 1254, 1254], cursor: ['image/jpeg', 1024, 1024] };
   const colors = ['#c3e6f0', '#f5e3a3', '#d6d0f0', '#bfe3cf', '#f6cbae', '#f2d3dc'];
   const later = (ms, fn) => setTimeout(fn, ms);
   const find = (id) => { const job = jobs.find((item) => item.id === id); if (!job) throw new Error('invalid_image_request'); return job; };

@@ -16,9 +16,13 @@ export const SCHEMA_TWO_CAPABILITIES = {
     { id: 'muse-native', provider: 'muse', instanceLabel: 'native', availability: 'available' },
     { id: 'antigravity-native', provider: 'antigravity', instanceLabel: 'native', availability: 'available' },
     { id: 'codex-native', provider: 'codex', instanceLabel: 'native', availability: 'available' },
+    { id: 'cursor-native', provider: 'cursor', instanceLabel: 'native', availability: 'available' },
     { id: 'claude-native', provider: 'claude', instanceLabel: 'native', availability: 'available' },
   ],
   profiles: [
+    { id: 'cursor-generate', revision: 1, operation: 'image.generate', targetIds: ['cursor-native'],
+      agentConfigs: config('cursor-glm-5.3-max', 'glm-5p3[reasoning=max]', 'max'),
+      inputs: { min: 0, max: 0 }, aspectRatio: { mode: 'native', options: ['1:1'] } },
     { id: 'grok-generate', revision: 1, operation: 'image.generate', targetIds: ['grok-native'], agentConfigs: config('grok-4.7-xhigh', 'grok-4.7', 'xhigh'),
       inputs: { min: 0, max: 0 }, aspectRatio: { mode: 'choose', options: GROK_GENERATE } },
     { id: 'grok-edit', revision: 1, operation: 'image.edit', targetIds: ['grok-native'], agentConfigs: config('grok-4.7-xhigh', 'grok-4.7', 'xhigh'),

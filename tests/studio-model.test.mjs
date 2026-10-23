@@ -39,7 +39,7 @@ test('prompt limits count Unicode code points, not UTF-16 units', () => {
 test('proposed contract 2 lists only declared operations per service, in display order', () => {
   const capabilities = normalizeCapabilities(SCHEMA_TWO_CAPABILITIES);
   const byProvider = Object.fromEntries(capabilities.services.map((service) => [service.provider, service]));
-  assert.deepEqual(Object.keys(byProvider), ['grok', 'muse', 'antigravity', 'codex'], 'a target without profiles is not listed');
+  assert.deepEqual(Object.keys(byProvider), ['codex', 'antigravity', 'grok', 'muse', 'cursor'], 'display order is independent of host order; a target without profiles is not listed');
   assert.deepEqual(operations(byProvider.grok), ['image.generate', 'image.edit', 'image.compose']);
   assert.deepEqual(operations(byProvider.antigravity), ['image.generate', 'image.edit']);
   assert.equal(byProvider.grok.operations[0].ratio.mode, 'choose');
@@ -50,6 +50,10 @@ test('proposed contract 2 lists only declared operations per service, in display
   assert.deepEqual(byProvider.codex.operations.map((operation) => operation.transparency), [true, true, false]);
   assert.equal(defaultService(capabilities, null), 'grok-native');
   assert.equal(defaultService(capabilities, 'codex-native'), 'codex-native');
+  assert.equal(defaultService(normalizeCapabilities({ ...SCHEMA_TWO_CAPABILITIES, targets: [...SCHEMA_TWO_CAPABILITIES.targets].reverse() }), null), 'grok-native');
+  assert.deepEqual(buildSubmission(capabilities, { serviceKey: 'cursor-native', requestId: 'cursor-one', operation: 'image.generate', prompt: 'An orange cat', sourceIds: [] }),
+    { requestId: 'cursor-one', targetId: 'cursor-native', profileId: 'cursor-generate', profileRevision: '1', agentConfigId: 'cursor-glm-5.3-max',
+      operation: 'image.generate', prompt: 'An orange cat', sourceIds: [], options: {} });
   const today = normalizeCapabilities(SCHEMA_TWO_TODAY);
   assert.deepEqual(today.services.map((service) => [service.key, operations(service)]), [['grok-native', ['image.generate']]]);
 });

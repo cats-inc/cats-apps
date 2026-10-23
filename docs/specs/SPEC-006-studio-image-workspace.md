@@ -16,7 +16,7 @@
 把 `cats.studio` 改為「先選服務，再做它能做的事」的圖片工作區：選定服務後，只出現該
 服務已啟用的操作（生成、修圖、合成），以及該操作宣告的輸入與參數。結果以大型預覽
 呈現實際格式與量測尺寸，並保存成作品；作品可以複用描述，或當下一次修圖／合成的
-來源。候選服務為 Grok、Muse、Antigravity、Codex；每個「服務 × 操作」各自通過
+來源。候選服務為 Grok、Muse、Antigravity、Codex、Cursor；每個「服務 × 操作」各自通過
 bounded execution 與收集驗收後才可使用。新 UI 先在 SDK 1.x 上交付（只會出現 Grok
 生成），contract 2 由各 owner 凍結後再接上。
 
@@ -67,6 +67,18 @@ publication／installed acceptance 尚未完成。
 | Muse | `muse-spark-1.3` + `xhigh` | `service`：構圖寫在提示詞 | 1920 × 1280 PNG |
 | Antigravity | `gemini-3.8-flash-high` + `high` | `native` 1:1 | 1024 × 1024 JPEG |
 | Codex | `gpt-6.1-sol` + `xhigh` | `service` | 1254 × 1254 PNG |
+| Cursor | `glm-5p3[reasoning=max]` + `max`（GLM 5.3） | `native` 1:1 | 1024 × 1024 JPEG；先前 Chat probe，新的 runner 實產驗收另記 |
+
+2026-10-24 的服務顯示順序固定為 **Codex、Antigravity、Grok、Muse、Cursor**，不沿用
+Runtime 回傳順序。同一 provider 的多個 instance 保留 host 順序；未知的未來 provider
+排在後方。首次進入選可用的 Grok，不以第一張卡片作預設；當頁切換後，背景刷新保留
+選擇。未設定 Grok 時才沿用既有可用服務 fallback。
+
+Cursor 初期僅開文字產圖、零來源、固定要求 1:1；輸出格式與尺寸依實測 bytes 顯示。
+GLM 5.3 的選擇來自 [跨 CLI probe](../research/2026-10-24-chinese-model-cross-cli-reprobe.md)：
+原生產圖成功且可用 Cursor caption bridge 理解圖片。Kimi K3 的同一路徑產圖亦成功，
+但該次讀圖未成功。這不證明 GLM 原生視覺能力或 max 對圖片品質有增益；產圖 backend
+仍未知，編輯、多參考、其他比例仍需各自驗收。
 
 修圖與合成的候選宣告（全部尚未實產）：
 
