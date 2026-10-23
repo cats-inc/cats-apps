@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | In progress — A3a 已實作（未發布、未 bump）；A0～A2、A3b～A5 尚未開始 |
+| Status | In progress — A3a 已實作並準備為 Studio 0.3.0；A0～A2、A3b～A5 尚未開始 |
 | Owner | cats-apps 整合；Runtime、Platform 各自負責其 repository 的工作 |
 | Assigned To | A3a 由 Apps 實作；其餘待使用者安排 |
 | Reviewer | 待跨 repository contract review 與獨立實作 review |
@@ -251,5 +251,6 @@ source 工作用 member 內 `.claude/worktrees/`，不動他人的 worktree／�
 | 2026-10-23 | 依使用者要求完成 ADR/SPEC/PLAN 規劃與交接；A0～A5 尚未實作。四家 Chat 產物證據已存在，不能替代新 bounded route acceptance |
 | 2026-10-23 | 使用者審閱互動設計稿，採用 ADR-005：先選服務、操作由 profile 宣告，納入修圖／合成；A3 拆成可先在 SDK 1.x 交付的 A3a 與接 contract 2 的 A3b |
 | 2026-10-23 | A3a 實作：`model.js` 能力正規化／提交建構／job 正規化與先選服務 UI。`npm test`、`npm run check:docs` 通過；fixture 預覽檢查四家服務、修圖／合成、透明背景、深色與 360／1078 寬。Platform `check-studio-app.mts`（選擇器相容更新）以實際 archive＋host＋fixture Runtime 驗收新 UI 與 main 的舊 UI，各 2 次送出、0 次 CLI。未 bump、未發布；schema 2 只以提案 fixtures 驗證 |
+| 2026-10-23 | 使用者授權以 Studio 0.3.0 發布 A3a，並在發布後以目錄 PR 把 `channels.stable` 指到 0.3.0，用現有 Desktop 0.9.1 的 Market 驗證「不升 Desktop、單獨更新 App」。版本欄位、release notes 與預期 SHA-256 見 [deployment](../deployment.md#studio-030--provider-first-image-workspace-2026-10-23)；不改 Desktop pins |
 
 *Created: 2026-10-23。首個實作動作：A3a；A0 owners contract/feasibility review 可並行。*
