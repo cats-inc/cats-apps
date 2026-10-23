@@ -28,8 +28,17 @@
     },
     {
       "id": "cats.studio",
-      "channels": { "stable": "0.4.0" },
+      "channels": { "stable": "0.4.1" },
       "versions": [
+        {
+          "version": "0.4.1",
+          "artifact": {
+            "url": "https://github.com/cats-inc/cats-apps/releases/download/studio-v0.4.1/studio-0.4.1.catsapp",
+            "size": 140830,
+            "sha256": "398cb051f4130bd049e6485e89a1cd2e01189abf5723564496349fddcaa453ff"
+          },
+          "notes": "服務依序為 Codex、Antigravity、Grok、Muse、Cursor，進入時預選 Grok。Cursor 需搭配提供該產圖設定的 Cats；既有作品與其他服務保留。"
+        },
         {
           "version": "0.4.0",
           "artifact": {
