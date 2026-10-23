@@ -27,6 +27,13 @@ const TRANSPARENCY_LABELS = { opaque: word('不透明', 'Opaque'), transparent: 
 const OFFLINE_TEXT = word('生成服務暫時無法連線，已保存的作品仍可查看及下載。', 'Generation is unavailable. Saved images can still be viewed and downloaded.');
 const REASON_LABELS = { not_configured: word('尚未設定', 'not set up'), not_installed: word('尚未安裝', 'not installed'), disabled: word('已停用', 'disabled'), signed_out: word('尚未登入', 'not signed in') };
 
+// Notes Runtime adds to a saved image; the image itself is kept in each case.
+const WARNING_TEXT = {
+  response_timeout_after_image: word('圖片已保存，但生成回應逾時。', 'Saved, but the generation response timed out.'),
+  additional_image_generated: word('服務多產生了一張圖，只保存第一張；多的那張可能也用了額度。', 'The service made an extra image; only the first was kept, and the extra one may also have used allowance.'),
+  ratio_differs_from_request: word('實際比例與要求的不同，以保存的尺寸為準。', 'The saved image has a different ratio than requested; its measured size is what counts.'),
+};
+const warningNote = (job) => job.warnings.map((warning) => WARNING_TEXT[warning]).filter(Boolean).join(' ');
 // How the run ended, beside the result: Runtime may end a run itself once the verified image exists.
 const OUTCOME_LABELS = {
   completed: word('已完成', 'Completed'),
@@ -630,6 +637,7 @@ function renderPreview(force = false) {
     job.output ? [word('檔案大小', 'File size'), formatBytes(job.output.bytes) ?? word('未知', 'Unknown')] : null,
     [word('圖片模型', 'Image model'), job.output?.mediaModel ?? word('服務未回報', 'Not reported')],
     [word('媒體費用', 'Media cost'), word('服務未回報', 'Not reported')],
+    warningNote(job) ? [word('提醒', 'Notes'), warningNote(job)] : null,
     [word('生成回應', 'Generation response'), job.warnings.includes('response_timeout_after_image') ? word('逾時（圖片已在逾時前完成）', 'Timed out after the image was finished')
       : (OUTCOME_LABELS[job.executionOutcome] ?? (job.status === 'succeeded' ? word('已完成', 'Completed') : STATUS_LABELS[job.status] ?? job.status))],
   ]);
@@ -695,7 +703,7 @@ function renderJobs(force = false) {
   if (!jobs.length) container.append(el('p', { class: 'note', text: word('還沒有作品。右側的橘貓是先前產生的範例。', 'No saved images yet. The orange cat is an existing sample.') }));
   else if (!visible.length) container.append(el('p', { class: 'note', text: word('沒有符合條件的作品。換個關鍵字，或清除篩選。', 'No images match. Try another keyword or clear the filters.') }));
   for (const job of visible) {
-    const note = job.warnings.includes('response_timeout_after_image') ? word('圖片已保存，但生成回應逾時。', 'Saved, but the generation response timed out.')
+    const note = warningNote(job) ? warningNote(job)
       : job.status === 'failed' ? errorText(job.error, job.name) : job.status === 'interrupted' ? errorText('execution_interrupted') : job.status === 'cancelled' ? word('已使用的額度不一定會退還。', 'Used allowance may not be refunded.') : '';
     const select = () => { selectedId = job.id; keepFocus(() => { renderJobs(true); renderPreview(true); }); };
     container.append(el('article', { class: job.id === selectedId ? 'work selected' : 'work', 'aria-current': job.id === selectedId ? 'true' : null },
