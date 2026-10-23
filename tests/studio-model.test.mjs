@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildSubmission, defaultService, draftSources, initialSelection, isDefinitiveSubmitError, matchPendingJob, normalizeCapabilities, normalizeJob, promptLength, pruneSources, ratioText, validateDraft } from '../apps/studio/src/model.js';
+import { buildSubmission, createCallQueue, defaultService, draftSources, initialSelection, isDefinitiveSubmitError, matchPendingJob, normalizeCapabilities, normalizeJob, promptLength, pruneSources, ratioText, validateDraft } from '../apps/studio/src/model.js';
 import { SCHEMA_ONE_CAPABILITIES, SCHEMA_TWO_CAPABILITIES, SCHEMA_TWO_JOBS, SCHEMA_TWO_TODAY } from './fixtures/studio-image-fixtures.mjs';
 
 const operations = (service) => service.operations.map((operation) => operation.id);
@@ -138,4 +138,50 @@ test('first open selects the latest saved image; sources are pruned and limited 
   assert.deepEqual(draftSources(edit, ['a', 'b']), ['a']);
   assert.deepEqual(draftSources(compose, ['a', 'b']), ['a', 'b']);
   assert.equal(validateDraft(capabilities, { serviceKey: 'grok-native', operation: 'image.generate', prompt: 'cat', sourceIds: draftSources(generate, ['job-grok-1']) }, works).ok, true);
+});
+
+test('host calls run one at a time, foreground first, spaced from the previous call of a method finishing', async () => {
+  let clock = 0; const log = []; const sleeps = []; let inFlight = 0; let release;
+  const queue = createCallQueue(async (method, args) => {
+    inFlight++; assert.equal(inFlight, 1, 'one call at a time');
+    log.push(`${method}:${args[0] ?? ''}@${clock}`);
+    if (args[0] === 'slow') await new Promise((resolve) => { release = resolve; });
+    clock += 100; inFlight--; return `${method}-${args[0] ?? ''}`;
+  }, { now: () => clock, sleep: async (ms) => { sleeps.push(ms); clock += ms; } });
+  const slow = queue.call('read', ['slow'], { background: true });
+  const thumbs = ['a', 'b'].map((id) => queue.call('read', [id], { background: true }));
+  const skipped = queue.call('read', ['gone'], { background: true, wanted: () => false });
+  await Promise.resolve();
+  const user = queue.call('submit', ['draft']);
+  const preview = queue.call('read', ['shown'], { urgent: true });
+  release();
+  assert.equal(await slow, 'read-slow'); assert.equal(await user, 'submit-draft'); assert.equal(await preview, 'read-shown');
+  assert.deepEqual(await Promise.all(thumbs), ['read-a', 'read-b']);
+  await assert.rejects(skipped, /skipped/);
+  // The urgent preview read goes first and the submit ahead of every background read; each repeat of read
+  // starts 550 ms after the previous read finished, not after it started.
+  assert.deepEqual(log, ['read:slow@0', 'read:shown@650', 'submit:draft@750', 'read:a@1300', 'read:b@1950']);
+  assert.deepEqual(sleeps, [550, 450, 550]);
+});
+
+test('a waiting background read yields to newer foreground calls, can be promoted, and closing settles the queue', async () => {
+  let clock = 1000; const log = []; let wake = null;
+  const queue = createCallQueue(async (method, args) => { log.push(args.length ? `${method}:${args[0]}` : method); clock += 10; return method; },
+    { now: () => clock, sleep: (ms) => new Promise((resolve) => { wake = () => { wake = null; clock += ms; resolve(); }; }) });
+  const tick = () => new Promise((resolve) => setImmediate(resolve));
+  await queue.call('read', ['first']);
+  const thumb = queue.call('read', ['thumb'], { background: true });
+  const later = queue.call('read', ['later'], { background: true });
+  const shown = queue.call('read', ['shown'], { background: true });
+  await tick(); assert.ok(wake, 'the thumbnail read waits for the read spacing');
+  const list = queue.call('list');
+  assert.equal(queue.promote((method, args) => method === 'read' && args[0] === 'shown'), true);
+  assert.equal(queue.promote((method, args) => args[0] === 'missing'), false);
+  wake(); await Promise.all([list, shown]);
+  assert.deepEqual(log, ['read:first', 'read:shown', 'list'], 'the promoted read and the list call went before the waiting thumbnail read');
+  await tick(); assert.ok(wake, 'the thumbnail read waits again');
+  queue.close(); wake();
+  await assert.rejects(thumb, /disposed/); await assert.rejects(later, /disposed/);
+  await assert.rejects(queue.call('list'), /disposed/);
+  assert.deepEqual(log, ['read:first', 'read:shown', 'list']);
 });

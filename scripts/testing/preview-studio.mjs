@@ -102,6 +102,11 @@ function fixtureSdk(data) {
       },
       async read(id) { const job = find(id); if (!job.output) throw new Error('invalid_image_request'); return image(job); },
       async export() { return { downloaded: true }; },
+      async delete(id) {
+        const job = find(id);
+        if (!['succeeded', 'failed', 'cancelled'].includes(job.status)) throw new Error('image_not_deletable');
+        jobs.splice(jobs.indexOf(job), 1); return { deleted: true };
+      },
     },
   };
 })();`;

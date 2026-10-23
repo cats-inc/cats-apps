@@ -22,6 +22,8 @@ h1, h2, p, dl, dd { margin: 0; }
 .quiet:hover:not(:disabled) { background: var(--accent-soft); }
 .quiet.small { align-self: flex-start; min-height: 32px; padding: 5px 11px; font-size: 12px; }
 .quiet.emphasis { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.quiet.danger { color: var(--danger); }
+.quiet.danger:hover:not(:disabled) { background: var(--panel); border-color: var(--danger); }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
 .section-row, .field-row, .preview-head, .preview-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 h2 { font-size: 15px; font-weight: 650; }
@@ -149,6 +151,9 @@ dialog { max-width: min(94vw, 1120px); max-height: 94vh; padding: 0; border: 1px
 dialog::backdrop { background: #0e1611d9; }
 dialog img { display: block; width: auto; height: auto; max-width: min(94vw, 1120px); max-height: 92vh; }
 .dialog-close { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: #fffffff0; color: #1f2e29; }
+.confirm-dialog { width: min(92vw, 420px); }
+.confirm-dialog .confirm-body { display: flex; flex-direction: column; gap: 10px; padding: 20px; }
+.confirm-dialog .actions { justify-content: flex-end; margin-top: 6px; }
 
 @media (min-width: 960px) { .workspace { grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); } }
 @media (max-width: 640px) { #app { padding: 12px 12px 18px; gap: 14px; } .panel { padding: 14px; } .stage { min-height: 280px; padding: 22px 10px; } #sample-image { max-height: 320px; } .preview-head { flex-wrap: wrap; } .filters label, .filters input, .filters select { width: 100%; } .filters { width: 100%; } }

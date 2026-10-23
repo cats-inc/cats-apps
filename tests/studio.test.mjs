@@ -19,9 +19,14 @@ test('Studio is a separate immutable App with embedded sample and bounded SDK pe
   assert.deepEqual(archive.manifest.permissions, ['ui.route', 'ui.lobby', 'media.images']);
   const html = Buffer.from(archive.files.find((file) => file.path === 'renderer/index.html').base64, 'base64').toString();
   assert.match(html, /data:image\/jpeg;base64,/); assert.doesNotMatch(html, /\{\{APP_ASSET:|from ['"]\.\/|fetch\(|<script[^>]+src=/);
-  assert.match(html, /sdk\.images\.submit/); assert.match(html, /範例作品/);
+  assert.match(html, /hostCall\('submit'/); assert.match(html, /範例作品/);
+  // The host bridge runs one image call at a time, so nothing may call sdk.images directly outside the queue.
+  assert.doesNotMatch(html, /sdk\.images\.(getCapabilities|list|submit|cancel|refresh|delete|read|export)\(/);
   assert.match(html, /<button id="generate"[^>]+disabled/);
   assert.match(html, /id="services"/); assert.match(html, /normalizeCapabilities/);
+  // Deletion is feature-detected and a saved image needs explicit confirmation in an in-App dialog.
+  assert.match(html, /typeof sdk\?\.images\?\.delete === 'function'/); assert.match(html, /<dialog id="confirm-dialog"/);
+  assert.doesNotMatch(html, /window\.confirm|[^.\w]confirm\(/);
   // HTML parsing replaces NUL and mangles other raw control characters, so inline sources must use escapes.
   assert.doesNotMatch(html, /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/);
   // The renderer is model.js and app.js concatenated into one inline module; it must parse as a whole.

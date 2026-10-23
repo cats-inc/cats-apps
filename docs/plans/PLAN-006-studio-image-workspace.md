@@ -144,6 +144,9 @@ gate 未完成，保持該新 profile 不可用；不得把既有 Chat probe 改
   byte-identical；不得沿用硬寫 `.jpg`／`image/jpeg` 的路徑與 header。
 - [ ] 增加 warnings、execution outcome 與量測 transparency projection；cancel 意圖在
   保存 race 中優先。refresh/list/reopen 只能讀／收集原 attempt；磁碟滿後也不得再次生成。
+- [x] 作品刪除（SDK 1.x 相容新增 `images.delete`）：Platform 刪 Core 紀錄、原檔，再盡力請 Runtime
+  刪 receipt；進行中／待確認回 `image_not_deletable`；收集與刪除交錯時不留下孤兒檔。SDK 版號
+  隨下一次 Desktop 發版準備調整。
 - [ ] migration 位於 owner 的既有 state/store 升級機制，保留 foreign Core fields、IDs、
   original artifacts，舊作品 operation 為生成；對失敗、重啟與 unsupported downgrade
   提供測試／明確錯誤。
@@ -175,6 +178,8 @@ gate 未完成，保持該新 profile 不可用；不得把既有 Chat probe 改
 - [x] Provider-specific safe 錯誤文案取代硬編碼 Grok 文字；`refresh`／確認結果與
   「再生成一張」分開，後者只在使用者明確按下時建立新 request。
 - [x] 作品縮圖依可見範圍延遲讀取、限制同時讀取數與 blob 快取大小，切換／離頁釋放。
+- [x] 所有 `sdk.images` 呼叫走單一佇列（host bridge 一次一個、同方法 500 ms 間隔）；刪除以功能
+  偵測顯示，已保存作品以 App 內對話框確認（sandbox 無 allow-forms，不用表單送出）。
 - [x] 完成 labels/focus/Escape/dialog return、Unicode count、zh/en、keyboard、文字放大、
   reduced motion、light/dark 和 SPEC 的四種視窗尺寸；不得用 CSS 隱藏方式掩蓋不可用操作。
 - [x] 測試：model 單元測試（兩種 schema、提交形狀、驗證、job 正規化）、package test；
@@ -276,5 +281,6 @@ source 工作用 member 內 `.claude/worktrees/`，不動他人的 worktree／�
 | 2026-10-23 | A3a 實作：`model.js` 能力正規化／提交建構／job 正規化與先選服務 UI。`npm test`、`npm run check:docs` 通過；fixture 預覽檢查四家服務、修圖／合成、透明背景、深色與 360／1078 寬。Platform `check-studio-app.mts`（選擇器相容更新）以實際 archive＋host＋fixture Runtime 驗收新 UI 與 main 的舊 UI，各 2 次送出、0 次 CLI。未 bump、未發布；schema 2 只以提案 fixtures 驗證 |
 | 2026-10-23 | 使用者授權以 Studio 0.3.0 發布 A3a，並在發布後以目錄 PR 把 `channels.stable` 指到 0.3.0，用現有 Desktop 0.9.1 的 Market 驗證「不升 Desktop、單獨更新 App」。版本欄位、release notes 與預期 SHA-256 見 [deployment](../deployment.md#studio-030--provider-first-image-workspace-2026-10-23)；不改 Desktop pins |
 | 2026-10-23 | 使用者在 Desktop 0.9.1 以 Market 更新到 0.3.0 後回報：外殼與 App 重複顯示名稱／返回鈕／版本，且一次生成因 Runtime worker 名額被閒置對話佔滿而立即失敗。改為外殼負責 App 身分（Platform）、Studio 0.3.1 移除自己的標題列與頁尾並改寫忙碌文案（Apps）、Runtime 回報 `runtime_capacity_full` 並把預設名額上調到 50；名額回收列入 A1 |
+| 2026-10-23 | 使用者決定提供作品刪除（已保存需確認、未完成／已取消直接刪）。Runtime 刪 receipt、Platform 加 `images.delete` 與保存清理、Studio 顯示刪除；同時發現 host bridge 一次只處理一個 image 呼叫，Studio 改以單一佇列呼叫。實際 package＋host 驗收含刪除兩種情況；需下一版 Desktop 才會出現 |
 
 *Created: 2026-10-23。首個實作動作：A3a；A0 owners contract/feasibility review 可並行。*

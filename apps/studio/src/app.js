@@ -1,4 +1,4 @@
-import { MAX_PROMPT_LENGTH, SAMPLE_PROMPT, SAMPLE_IMAGE, PROMPT_IDEAS, promptLength, normalizeCapabilities, normalizeJob, findOperation, defaultService, validateDraft, buildSubmission, isDefinitiveSubmitError, matchPendingJob, initialSelection, pruneSources, draftSources, fitBox, ratioBox, formatBytes } from './model.js';
+import { MAX_PROMPT_LENGTH, SAMPLE_PROMPT, SAMPLE_IMAGE, PROMPT_IDEAS, promptLength, normalizeCapabilities, normalizeJob, findOperation, defaultService, validateDraft, buildSubmission, isDefinitiveSubmitError, matchPendingJob, initialSelection, pruneSources, draftSources, fitBox, ratioBox, formatBytes, createCallQueue } from './model.js';
 
 const sdk = globalThis.catsApp;
 const zh = !sdk?.locale || sdk.locale.startsWith('zh');
@@ -44,6 +44,8 @@ function errorText(code, name = word('服務', 'the service')) {
     storage_full: word('磁碟空間不足，圖片未保存完成。', 'Disk space is insufficient to save this image.'),
     cancelled: word('任務已取消，已使用的額度不一定會退還。', 'Cancelled. Used allowance may not be refunded.'),
     app_context_revoked: word('App 的存取權已變更，請返回首頁重新開啟。', 'App access changed. Reopen it from Cats Home.'),
+    image_not_deletable: word('這項工作還在進行或結果待確認，暫時不能刪除。', 'This work is still in progress or unconfirmed, so it cannot be deleted yet.'),
+    image_in_use: word('這張作品已在 Cats Work 中被連結或使用，請先移除連結再刪除。', 'This work is linked or used in Cats Work. Remove the link, then delete it.'),
     image_request_conflict: word('這個請求已用不同內容送出過，沒有重新生成。請重新建立。', 'This request was already sent with different content. Nothing was regenerated; create it again.'),
     source_unavailable: word('選取的作品已無法使用，請重新選擇。', 'A selected image is no longer available. Pick it again.'),
     source_unsupported: word(`${name} 無法使用這張作品當來源。`, `${name} cannot use this image as a source.`),
@@ -159,6 +161,11 @@ root.innerHTML = `
     <div id="jobs" class="work-grid"></div>
   </section>
   <dialog id="image-dialog" aria-label="${word('圖片預覽', 'Image preview')}"><button type="button" class="dialog-close" aria-label="${word('關閉預覽', 'Close preview')}"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 3l12 12M15 3L3 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><img src="${SAMPLE_IMAGE}" width="1024" height="1024" alt=""></dialog>
+  <dialog id="confirm-dialog" class="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-body"><div class="confirm-body">
+    <h2 id="confirm-title">${word('刪除這張作品？', 'Delete this image?')}</h2>
+    <p id="confirm-body" class="note">${word('保存的原圖會一起刪除，無法復原。描述可以先用「複用描述」留下來。', 'The saved original is deleted too and cannot be recovered. Use Reuse prompt first to keep the description.')}</p>
+    <div class="actions"><button type="button" data-close="keep" class="quiet" autofocus>${word('保留作品', 'Keep image')}</button><button type="button" data-close="delete" class="quiet danger">${word('刪除作品', 'Delete image')}</button></div>
+  </div></dialog>
 `;
 
 const $ = (id) => document.getElementById(id);
@@ -218,15 +225,14 @@ function draft() {
     transparentBackground: !!operation?.transparency && transparentBackground, agentConfigId: agentConfigByOperation.get(operationKey()) ?? operation?.agentConfigs[0]?.id ?? null };
 }
 
+// Every sdk.images call goes through one queue, so the host's one-call and 500 ms rules are never hit.
+const calls = createCallQueue((method, args) => sdk.images[method](...args));
+const hostCall = (method, args, options) => calls.call(method, args, options);
+
 // Image bytes are read lazily and kept in a small cache; the preview's entry is never evicted.
-// The host bridge allows only a few pending requests, so all reads share two slots and user actions always fit.
 const imageUrls = new Map();
 const imageReads = new Map();
 const visibleThumbs = new Set();
-const readWaiters = [];
-let reading = 0;
-const readSlot = (urgent) => new Promise((resolve) => { if (reading < 2) { reading++; resolve(); } else if (urgent) readWaiters.unshift(resolve); else readWaiters.push(resolve); });
-const releaseSlot = () => { const next = readWaiters.shift(); if (next) next(); else reading--; };
 function rememberUrl(id, url) {
   const previous = imageUrls.get(id);
   if (previous && previous !== url) URL.revokeObjectURL(previous);
@@ -240,17 +246,25 @@ function rememberUrl(id, url) {
 function imageUrl(id, { urgent = false, wanted = null } = {}) {
   if (imageUrls.has(id)) { const url = imageUrls.get(id); rememberUrl(id, url); return Promise.resolve(url); }
   let entry = imageReads.get(id);
-  if (entry) { if (urgent) entry.forced = true; return entry.promise; }
-  entry = { forced: urgent };
+  // A read is kept while any caller still wants it, for example a thumbnail redrawn while its read was queued.
+  const want = wanted ?? (() => true);
+  if (entry) {
+    entry.wants.push(want);
+    // The preview needs an image a thumbnail already queued: keep that read and move it to the front.
+    if (urgent && !entry.forced) {
+      entry.forced = true;
+      calls.promote((method, args) => method === 'read' && args[0] === id);
+    }
+    return entry.promise;
+  }
+  entry = { forced: urgent, wants: [want] };
   entry.promise = (async () => {
-    await readSlot(urgent);
     try {
-      if (!entry.forced && wanted && !wanted()) throw new Error('skipped');
-      const image = await sdk.images.read(id);
+      const image = await hostCall('read', [id], { urgent, background: !!wanted, wanted: () => entry.forced || entry.wants.some((test) => test()) });
       if (disposed) throw new Error('disposed');
       const url = URL.createObjectURL(new Blob([image.bytes], { type: image.mimeType }));
       rememberUrl(id, url); return url;
-    } finally { releaseSlot(); imageReads.delete(id); }
+    } finally { imageReads.delete(id); }
   })();
   imageReads.set(id, entry);
   return entry.promise;
@@ -465,13 +479,20 @@ function editWork(job) {
 function reuse(job) { applyPrompt(job.prompt); say(word('描述已放回草稿，還沒有送出。', 'The description is back in the draft and has not been sent.')); }
 
 // Background polls are quiet: they never disable controls, so focus and pointer targets stay put.
+// A user action that arrives during a poll waits for it instead of being dropped. A poll never waits, and a
+// user action during another user action is dropped (its controls are disabled), never replayed afterwards.
+let working = Promise.resolve();
+let workingQuiet = false;
 async function perform(action, { quiet = false } = {}) {
+  while (busy && workingQuiet && !quiet && !disposed) await working;
   if (busy || disposed) return;
   const focusKey = document.activeElement?.dataset?.focusKey;
-  busy = true; if (!quiet) controls();
+  busy = true; workingQuiet = quiet; if (!quiet) controls();
+  let done;
+  working = new Promise((resolve) => { done = resolve; });
   try { await action(); } catch (error) { if (!disposed) say(errorText(error.message, current().service?.name)); }
   finally {
-    busy = false;
+    busy = false; done();
     if (!disposed) {
       keepFocus(() => { controls(); renderJobs(); renderPreview(); }); restoreFocus(focusKey);
       if (deferredSubmit) { deferredSubmit = false; if (!generate.disabled) submitDraft(draft()); }
@@ -491,7 +512,7 @@ function follow(job) { selectedId = job.id; followedId = job.id; followedStatus 
 async function send() {
   await perform(async () => {
     try {
-      const job = upsert(await sdk.images.submit(pending.payload));
+      const job = upsert(await hostCall('submit', [pending.payload]));
       pending = null; follow(job); schedule();
     } catch (error) {
       if (isDefinitiveSubmitError(error.message)) { pending = null; throw error; }
@@ -611,9 +632,10 @@ function renderPreview(force = false) {
     facts($('preview-facts'), [[word('格式', 'Format'), job.output.format], [word('尺寸', 'Size'), `${job.output.width} × ${job.output.height}`],
       [word('比例', 'Ratio'), job.output.ratio], [word('透明度', 'Transparency'), TRANSPARENCY_LABELS[job.output.transparency]]]);
     actions.append(...present(button(word('放大檢視', 'Enlarge'), openDialog, { dataset: { focusKey: 'preview-zoom' }, disabled: shownImageId !== job.id }),
-      button(word('下載原檔', 'Download original'), () => perform(() => sdk.images.export(job.id)), { dataset: { focusKey: 'preview-download' } }),
+      button(word('下載原檔', 'Download original'), () => perform(() => hostCall('export', [job.id])), { dataset: { focusKey: 'preview-download' } }),
       editTargets().length ? button(word('以此修圖', 'Edit this image'), () => editWork(job), { class: 'quiet emphasis', dataset: { focusKey: 'preview-edit' } }) : null,
-      button(word('複用描述', 'Reuse prompt'), () => reuse(job), { dataset: { focusKey: 'preview-reuse' } })));
+      button(word('複用描述', 'Reuse prompt'), () => reuse(job), { dataset: { focusKey: 'preview-reuse' } }),
+      deleteButton(job, 'preview-delete')));
     if (shownImageId !== job.id) {
       imageView.hidden = true; progress.hidden = false; progress.replaceChildren();
       previewLoading(word('正在讀取圖片…', 'Loading the image…'));
@@ -633,16 +655,17 @@ function renderPreview(force = false) {
     const frame = el('div', { class: 'progress-frame' }, el('span', { id: 'elapsed', class: 'count large', text: job.status === 'running' ? elapsed(job.createdAt) : '…' }));
     Object.assign(frame.style, { width: `${box.width}px`, height: `${box.height}px` });
     progress.replaceChildren(...present(frame, el('p', { class: 'state-title', text: STATUS_LABELS[job.status] }), el('p', { class: 'note', text: notes[job.status] }),
-      ['running', 'collecting'].includes(job.status) ? button(word('取消', 'Cancel'), () => perform(async () => { upsert(await sdk.images.cancel(job.id)); await reload(); }), { dataset: { focusKey: 'preview-cancel' } }) : null));
+      ['running', 'collecting'].includes(job.status) ? button(word('取消', 'Cancel'), () => perform(async () => { upsert(await hostCall('cancel', [job.id])); await reload(); }), { dataset: { focusKey: 'preview-cancel' } }) : null));
     return;
   }
   const reason = job.status === 'interrupted' ? word('無法確認執行結果，可能已使用額度；沒有重新生成。「確認結果」只會讀取原請求。', 'The outcome is unconfirmed and allowance may have been used. Nothing was regenerated; Check outcome only reads the original request.')
     : errorText(job.error ?? job.status, job.name);
   ended.replaceChildren(...present(el('p', { class: 'state-title', text: { failed: word('這次沒有產生圖片', 'No image this time'), interrupted: STATUS_LABELS.interrupted, cancelled: STATUS_LABELS.cancelled }[job.status] ?? STATUS_LABELS[job.status] }),
     el('p', { class: 'note', text: reason }),
-    el('div', { class: 'actions' }, job.status === 'interrupted' ? button(word('確認結果', 'Check outcome'), () => perform(async () => { upsert(await sdk.images.refresh(job.id)); await reload(); }), { dataset: { focusKey: 'preview-check' } }) : null,
+    el('div', { class: 'actions' }, job.status === 'interrupted' ? button(word('確認結果', 'Check outcome'), () => perform(async () => { upsert(await hostCall('refresh', [job.id])); await reload(); }), { dataset: { focusKey: 'preview-check' } }) : null,
       ['failed', 'cancelled'].includes(job.status) ? button(word('再生成一張', 'Generate another'), () => retry(job), { disabled: blocked(), dataset: { focusKey: 'preview-retry' } }) : null,
-      button(word('複用描述', 'Reuse prompt'), () => reuse(job), { dataset: { focusKey: 'preview-reuse' } })),
+      button(word('複用描述', 'Reuse prompt'), () => reuse(job), { dataset: { focusKey: 'preview-reuse' } }),
+      deleteButton(job, 'preview-delete')),
     ['failed', 'cancelled'].includes(job.status) ? el('p', { class: 'note', text: word('「再生成一張」會建立新的請求，可能再次使用額度。', 'Generate another creates a new request and may use allowance again.') }) : null));
 }
 
@@ -675,12 +698,48 @@ function renderJobs(force = false) {
       el('p', { class: 'note' }, el('span', { text: operationLabel(job) }), el('span', { class: 'count', text: job.output ? `${job.output.width} × ${job.output.height} ${job.output.format}` : new Date(job.createdAt).toLocaleString(zh ? 'zh-TW' : 'en') })),
       note ? el('p', { class: job.status === 'failed' ? 'note danger' : job.warnings.length ? 'note attention' : 'note', text: note }) : null,
       el('div', { class: 'actions' },
-        job.output ? button(word('下載', 'Download'), () => perform(() => sdk.images.export(job.id)), { disabled: busy, dataset: { focusKey: `download-${job.id}` } }) : null,
+        job.output ? button(word('下載', 'Download'), () => perform(() => hostCall('export', [job.id])), { disabled: busy, dataset: { focusKey: `download-${job.id}` } }) : null,
         job.output && editTargets().length ? button(word('修圖', 'Edit'), () => editWork(job), { dataset: { focusKey: `edit-${job.id}` } }) : null,
-        job.status === 'interrupted' ? button(word('確認結果', 'Check outcome'), () => perform(async () => { upsert(await sdk.images.refresh(job.id)); await reload(); }), { disabled: busy, dataset: { focusKey: `check-${job.id}` } }) : null,
+        job.status === 'interrupted' ? button(word('確認結果', 'Check outcome'), () => perform(async () => { upsert(await hostCall('refresh', [job.id])); await reload(); }), { disabled: busy, dataset: { focusKey: `check-${job.id}` } }) : null,
         ['failed', 'cancelled'].includes(job.status) ? button(word('再生成一張', 'Generate another'), () => retry(job), { disabled: blocked(), dataset: { focusKey: `retry-${job.id}` } }) : null,
-        button(word('複用描述', 'Reuse prompt'), () => reuse(job), { dataset: { focusKey: `reuse-${job.id}` } }))));
+        button(word('複用描述', 'Reuse prompt'), () => reuse(job), { dataset: { focusKey: `reuse-${job.id}` } }),
+        deleteButton(job, `delete-${job.id}`))));
   }
+}
+
+// Deletion exists only on hosts whose SDK provides it, and only for finished work.
+const canDelete = (job) => typeof sdk?.images?.delete === 'function' && ['succeeded', 'failed', 'cancelled'].includes(job.status);
+function deleteButton(job, focusKey) {
+  return canDelete(job) ? button(word('刪除', 'Delete'), () => void deleteWork(job), { class: 'quiet danger', disabled: blocked(), dataset: { focusKey } }) : null;
+}
+const confirmDialog = $('confirm-dialog');
+// The sandboxed frame has no allow-forms, so a form[method=dialog] would never close; buttons close it directly.
+for (const choice of confirmDialog.querySelectorAll('[data-close]')) choice.addEventListener('click', () => confirmDialog.close(choice.dataset.close));
+function confirmDeletion() {
+  return new Promise((resolve) => {
+    confirmDialog.addEventListener('close', () => resolve(confirmDialog.returnValue === 'delete'), { once: true });
+    confirmDialog.returnValue = '';
+    confirmDialog.showModal();
+  });
+}
+async function deleteWork(job) {
+  // A saved image is gone for good once deleted; failed and cancelled work holds no image.
+  if (job.output && !(await confirmDeletion())) return;
+  const position = jobs.findIndex((entry) => entry.id === job.id);
+  await perform(async () => {
+    await hostCall('delete', [job.id]);
+    jobs = jobs.filter((entry) => entry.id !== job.id);
+    if (selectedId === job.id) selectedId = null;
+    if (followedId === job.id) followedId = null;
+    const url = imageUrls.get(job.id);
+    imageUrls.delete(job.id);
+    if (url) setTimeout(() => URL.revokeObjectURL(url), 0);
+    if (sourceIds.includes(job.id)) { sourceIds = sourceIds.filter((id) => id !== job.id); renderSources(); renderParameters(); }
+    say(word('已刪除。', 'Deleted.'));
+  });
+  if (jobs.some((entry) => entry.id === job.id)) return; // The deletion failed; the message says why.
+  const next = jobs[Math.min(position, jobs.length - 1)];
+  (next && document.querySelector(`[data-focus-key="view-${CSS.escape(next.id)}"]`) || $('work-search')).focus();
 }
 
 function announce() {
@@ -692,14 +751,14 @@ function announce() {
 }
 
 async function reload() {
-  jobs = (await sdk.images.list()).jobs.map(normalizeJob);
+  jobs = (await hostCall('list')).jobs.map(normalizeJob);
   if (pending && !pending.unconfirmed) return;
   const matched = matchPendingJob(pending, jobs);
   if (matched) { pending = null; follow(matched); }
 }
 
 async function loadCapabilities() {
-  try { capabilities = normalizeCapabilities(await sdk.images.getCapabilities()); capabilitiesOffline = false; }
+  try { capabilities = normalizeCapabilities(await hostCall('getCapabilities')); capabilitiesOffline = false; }
   catch { capabilities = normalizeCapabilities(null); capabilitiesOffline = true; }
   // Offline keeps the user's choice so it survives until capabilities return (CAP-06).
   if (!capabilitiesOffline) {
@@ -752,7 +811,7 @@ const ticker = setInterval(() => {
   if (job?.status === 'running' && $('elapsed')) $('elapsed').textContent = elapsed(job.createdAt);
 }, 1000);
 window.addEventListener('pagehide', () => {
-  disposed = true; clearTimeout(timer); clearInterval(ticker); thumbObserver?.disconnect();
+  disposed = true; clearTimeout(timer); clearInterval(ticker); thumbObserver?.disconnect(); calls.close();
   for (const url of imageUrls.values()) URL.revokeObjectURL(url);
   imageUrls.clear();
 });

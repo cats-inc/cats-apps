@@ -49,8 +49,8 @@ canonical 契約在
 - 修圖與合成的來源只來自已保存作品，結果是新作品並記錄來源；原圖不變。
 - 原有 Grok 作品、原始 bytes、既有 task/run/artifact 與離線讀取保留。
 - 本期不做：本機檔案匯入／拖放、遮罩或筆刷局部重繪、影片／音訊、批次、多服務同時
-  生成、佇列、排程、種子／精確像素／品質選項、自動翻譯／改寫提示詞、作品刪除與版本
-  樹 UI。不要以尚不可用的按鈕或「即將推出」標籤占據主介面。
+  生成、佇列、排程、種子／精確像素／品質選項、自動翻譯／改寫提示詞與版本樹 UI。
+  作品刪除已納入（2026-10-23 使用者決定）：見下方作品卡與 AC-14。不要以尚不可用的按鈕或「即將推出」標籤占據主介面。
 - 不修改 Chat composer 問題；那些是既有獨立 issues。這份規劃不改 App 安裝／Market
   架構，不發布或安裝任何版本，也不增加研究生成額度。
 
@@ -121,7 +121,7 @@ Claude 不列入本期生成服務；不得把未暴露工具解讀成 provider 
 | 送出按鈕 | 文案依操作：生成圖片／修改圖片／合成圖片。描述空白或超長、來源張數不符、服務不可用、送出未確認、已有執行時不可再次送出。Enter 換行；不新增自動送出捷徑 |
 | 使用說明 | 簡短說明使用所選 CLI 帳號與額度、每次一張、不自動重試；不顯示推測價格、免費承諾或虛構進度百分比 |
 | 結果區 | `object-fit: contain`，不裁切／拉伸／重編碼。保存後才在圖的邊緣顯示量測寬高尺規；生成中只畫虛線框。sample、執行中與已保存作品視覺可區辨 |
-| 作品卡 | 縮圖或工作狀態、描述摘要、服務與操作、尺寸格式或時間。成功提供預覽／下載／修圖／複用描述；失敗保留描述與原因並提供「再生成一張」；待確認提供「確認結果」 |
+| 作品卡 | 縮圖或工作狀態、描述摘要、服務與操作、尺寸格式或時間。成功提供預覽／下載／修圖／複用描述；失敗保留描述與原因並提供「再生成一張」；待確認提供「確認結果」。host 提供 `images.delete` 時，已保存、未完成、已取消可「刪除」：已保存作品先以 App 內對話框確認（原圖一併刪除、無法復原），其他直接刪除；進行中與待確認不可刪 |
 | 資訊詳情 | 描述、服務與操作、提交時代理設定、要求比例、來源（基於哪幾張）、bytes、圖片模型與媒體費用（未回報則顯示未回報）、生成回應結果。不呈現來源絕對路徑／token／session ID |
 
 比例模式在服務卡與比例列使用同一套圖示：多個實線框＝可選、單一實線方框＝服務固定、
@@ -173,6 +173,7 @@ polling 不可重複朗讀整份列表。放大預覽支援 Escape、關閉後�
 | --- | --- |
 | `images.getCapabilities()` | `schemaVersion: 2`、能力 revision；`targets` 內含 opaque target ID、provider、instance label、availability/reason；`profiles` 內含 ID/revision、operation、可用 target/config 關係、代理 label/resolved ID/effort、`inputs: { min, max }`、`aspectRatio: { mode, options? }`、`transparentBackground?: true`、limits |
 | `images.submit(input)` | exact typed payload：`requestId`, `targetId`, `profileId`, `profileRevision`, `agentConfigId`, `operation`, `prompt`, `sourceIds`（generate 時為空陣列）, `options`。options 只允許 profile 宣告的 `aspectRatio`（enum 內）與 `transparentBackground`。不可傳 raw CLI args、API URL/key、cwd、路徑或 destination |
+| `images.delete(id)` | 刪除已保存／未完成／已取消的工作：Core 紀錄、保存的原檔與 Runtime receipt（Runtime 離線時盡力而為）；進行中或待確認回 409 `image_not_deletable`；已在 Cats Work 被連結或引用回 409 `image_in_use`；刪除後同一 requestId 保留，重送回 `image_request_conflict`，從不生成。SDK 1.x 先以相容方式加入，Studio 以功能偵測決定是否顯示 |
 | `images.list/cancel/refresh` | 方法用途沿用；回傳 schema 2 jobs。`refresh` 只查原 receipt／重新收集原檔，不 POST 生成。cancel 作用於整個父子樹 |
 | Job identity/config snapshot | request/job IDs、provider/instance label、operation、profile/revision/config、提交時 requested/resolved agent model/effort、prompt、有順序的來源 `{id, sha256}`、要求的 options、timestamps。快照不可隨 catalog 更新而改寫 |
 | Job lifecycle | `submitting/running/collecting/succeeded/failed/cancelling/cancelled/interrupted`；使用者取消意圖、safe error、warnings，以及獨立的 provider `executionOutcome`（含未知） |
@@ -237,8 +238,14 @@ projections 由 A0 一起更新，保留既有 auth、CSRF、package digest 與 
 - Runtime 保留至多 500 receipts，Platform 至多 100 jobs/App/account；原圖存在可變
   data roots，與 immutable App package 分離。不得依目前 renderer 版本重寫歷史的
   agentModel、effort、圖片規格或來源。預覽與匯出同樣驗證 App/account/version 權限。
-- 被當作來源的作品仍受同樣保存上限；刪除功能不在本期，因此不處理來源被刪除的
-  連鎖行為，但撤銷或遺失必須以 `source_unavailable` 明確失敗。
+- 被當作來源的作品仍受同樣保存上限。作品刪除後，以它為來源的作品保留，「基於」顯示
+  已不在作品列表；已選為草稿來源的作品被刪除時移出選取並說明。撤銷或遺失必須以
+  `source_unavailable` 明確失敗。
+- Host bridge 一次只處理一個 image 呼叫，且同一方法 500 ms 內重複呼叫會回
+  `image_service_busy`。Studio 以單一佇列呼叫所有 `sdk.images` 方法：同一方法在上一次呼叫
+  結束後至少間隔 550 ms；預覽讀取最先、使用者操作與輪詢次之、縮圖讀取最後，捲出畫面的縮圖
+  讀取略過；離開頁面時排隊中的呼叫一律結束。使用者操作在背景輪詢期間會等待而不是被丟棄，
+  但不會在另一個使用者操作結束後被重播。
 - 新 schema 2 的 migration 分別由 Runtime／Platform owner 執行：先驗證 schema 1、
   備份、建立並驗證新檔、atomic replace、失敗保留原檔。保留 IDs、Core 關聯、prompt、
   timestamps、hash、bytes、既有 JPEG；舊作品的 operation 記為 `image.generate`、來源為
@@ -273,6 +280,7 @@ projections 由 A0 一起更新，保留既有 auth、CSRF、package digest 與 
 | AC-10 | 每個 production-enabled「服務 × 操作」有實際 bounded route 的 acceptance receipt（有適用授權時）；既有 Chat probes 和 fixtures 不冒充此證據。沒有該證據仍可做設計 fixture，但不可宣稱已上線 |
 | AC-11 | 修圖／合成 fixtures：來源張數限制、順序保存、跨服務來源、`source_unavailable`／`source_unsupported`、結果為新作品且原圖 hash 不變、來源快照不隨後續變動改寫 |
 | AC-12 | 透明背景只在宣告的 profile 出現；要求透明但結果不透明時顯示量測的「不透明」，不以要求值冒充結果 |
+| AC-14 | 刪除：已保存需確認、未完成／已取消直接刪；Core 紀錄、原檔與 Runtime receipt 移除；進行中／待確認拒絕；被 Work 連結時拒絕並說明；其他帳號／App 不可刪；刪除從不生成，重送已刪除的 requestId 也不會；舊 host 不顯示刪除 |
 | AC-13 | 新 UI 在現有 SDK 1.x host 上只出現 Grok 生成、提交 payload 與 1.x 完全相同，並通過 Platform 的實際 package 瀏覽器驗收（選擇器配合更新） |
 
 ## Dependencies and unresolved engineering gates
