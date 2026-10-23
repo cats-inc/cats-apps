@@ -11,8 +11,8 @@ export const OPERATIONS = ['image.generate', 'image.edit', 'image.compose'];
 const OPERATION_INPUTS = { 'image.generate': [0, 0], 'image.edit': [1, 1], 'image.compose': [2, Infinity] };
 const RATIO_MODES = ['choose', 'native', 'service', 'source'];
 const RATIO_PATTERN = /^(auto|\d{1,2}(\.\d)?:\d{1,2}(\.\d)?)$/;
-// Instance and target IDs are host-defined (Runtime instances are free-form keys); only bound their length and control characters.
-const validKey = (value) => typeof value === 'string' && value.length > 0 && value.length <= 100 && !/[\u0000-\u001f\u007f]/.test(value);
+// Instance and target IDs are host-defined (Runtime instances are free-form keys; targets are `<provider>/<instance>`, up to 140 characters); only bound their length and control characters.
+const validKey = (value) => typeof value === 'string' && value.length > 0 && value.length <= 140 && !/[\u0000-\u001f\u007f]/.test(value);
 const PROVIDER_NAMES = { grok: 'Grok', muse: 'Muse', antigravity: 'Antigravity', codex: 'Codex' };
 export const ACTIVE_STATUSES = ['submitting', 'running', 'collecting', 'cancelling'];
 // Submit errors that prove nothing was accepted for this request; anything else leaves the outcome unconfirmed.

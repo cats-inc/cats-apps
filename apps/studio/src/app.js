@@ -785,7 +785,10 @@ async function refresh(recheck = false) {
     if (!sdk?.images) throw new Error('image_service_unavailable');
     await reload();
     if (!loaded) selectedId ??= initialSelection(jobs);
-    if (!loaded || recheck) await loadCapabilities();
+    // A work refused for a changed or withdrawn profile means the services shown are stale: read them again.
+    const staleProfile = jobs.some((job) => job.id === followedId && job.status !== followedStatus
+      && ['image_profile_changed', 'image_profile_unavailable'].includes(job.error));
+    if (!loaded || recheck || staleProfile) await loadCapabilities();
     loaded = true;
     const { kept, removed } = pruneSources(sourceIds, jobs);
     if (removed.length) { sourceIds = kept; keepFocus(() => { renderSources(); renderParameters(); }); say(errorText('source_unavailable')); }
