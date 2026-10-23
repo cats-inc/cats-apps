@@ -28,8 +28,17 @@
     },
     {
       "id": "cats.studio",
-      "channels": { "stable": "0.3.2" },
+      "channels": { "stable": "0.4.0" },
       "versions": [
+        {
+          "version": "0.4.0",
+          "artifact": {
+            "url": "https://github.com/cats-inc/cats-apps/releases/download/studio-v0.4.0/studio-0.4.0.catsapp",
+            "size": 140319,
+            "sha256": "87188be8f8226c39e34f83ecba694553e019d8095351fa8ccda562527e4f1eb1"
+          },
+          "notes": "使用 Cats 共用圖片服務（需 App SDK 1.8）；保留已保存作品、JPEG/PNG 與服務選擇。Cat 的生圖授權獨立管理，不需安裝 Studio。"
+        },
         {
           "version": "0.3.2",
           "artifact": {
