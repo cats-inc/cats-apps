@@ -16,7 +16,14 @@ Ask and another App/MCP, isolated auth, independent revocation and real
 opaque-sandbox Copy. A fixture does not verify live Grok, Spark or Meta access.
 Documentation-only work runs diff/link checks without App builds/tests.
 
-Studio packaging is covered by `tests/studio.test.mjs` and `npm run package:studio`.
+Studio packaging is covered by `tests/studio.test.mjs` and `npm run package:studio`;
+the package test also parses the concatenated renderer module. `tests/studio-model.test.mjs`
+covers capability normalization for SDK 1.x and the proposed contract 2, exact submit
+payloads, Unicode prompt limits, source/option validation and measured job output.
+`node scripts/testing/preview-studio.mjs --fixture target|today|sdk1 [--theme dark]`
+writes a standalone preview under `dist/studio-preview/` with a fake SDK, simulated
+phases and generated PNG/JPEG bytes. Serve it from loopback to review layouts; it is a
+design fixture, not host acceptance.
 The Platform owner provides `scripts/testing/check-studio-app.mts` for the actual
 archive, SDK and host with an isolated fixture Runtime. Pass the Studio lock and
 the existing sample JPEG; this check never calls Grok. Use a separate output

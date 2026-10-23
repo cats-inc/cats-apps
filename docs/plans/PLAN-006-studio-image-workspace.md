@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | In progress — A3a（SDK 1.x 上的先選服務 UI）先行；A0～A2、A3b～A5 尚未開始 |
+| Status | In progress — A3a 已實作（未發布、未 bump）；A0～A2、A3b～A5 尚未開始 |
 | Owner | cats-apps 整合；Runtime、Platform 各自負責其 repository 的工作 |
 | Assigned To | A3a 由 Apps 實作；其餘待使用者安排 |
 | Reviewer | 待跨 repository contract review 與獨立實作 review |
@@ -136,29 +136,30 @@ gate 未完成，保持該新 profile 不可用；不得把既有 Chat probe 改
 `app.js` 只負責 DOM 與 SDK 呼叫。這讓 schema 1 production 行為與 schema 2 提案 fixtures
 共用同一個 UI，A3b 只需修改正規化層。
 
-- [ ] 能力正規化：schema 1 → 每個 Grok target 一個服務、只有生成、原生 1:1；schema 2
+- [x] 能力正規化：schema 1 → 每個 Grok target 一個服務、只有生成、原生 1:1；schema 2
   提案 → 服務、操作、比例模式與 enum、來源上下限、透明背景、代理設定、不可用原因；
   未知 schema 或格式錯誤 fail closed（沒有可用服務，作品仍可讀）。
-- [ ] 提交建構：schema 1 只送 `requestId`/`instance`/`prompt`；schema 2 依 SPEC 提案，
+- [x] 提交建構：schema 1 只送 `requestId`/`instance`/`prompt`；schema 2 依 SPEC 提案，
   只帶宣告的 options。描述以 code points 驗證，來源張數依操作驗證。
-- [ ] Job 正規化：缺 operation 視為生成；format 由 MIME 決定；寬高、比例、bytes、
+- [x] Job 正規化：缺 operation 視為生成；format 由 MIME 決定；寬高、比例、bytes、
   量測透明度（JPEG 為不透明、未量測 PNG 為未知）、warning、來源與執行結果。
-- [ ] 畫面：服務卡、操作、來源挑選、描述與靈感、比例模式、透明背景、代理設定、送出、
+- [x] 畫面：服務卡、操作、來源挑選、描述與靈感、比例模式、透明背景、代理設定、送出、
   結果預覽與量測尺規、放大、作品篩選與卡片，依 SPEC 的狀態表提供動作。
-- [ ] 草稿與 active request 分離；切服務／操作不產圖、不改既有工作。明確提交才選取新
+- [x] 草稿與 active request 分離；切服務／操作不產圖、不改既有工作。明確提交才選取新
   工作；背景 polling 不搶走使用者選中的舊作品。
-- [ ] 送出結果未確認時保留同一 requestId 與 payload；「確認送出結果」以相同 payload
+- [x] 送出結果未確認時保留同一 requestId 與 payload；「確認送出結果」以相同 payload
   重送（Platform 依 requestId 回傳原 attempt，不同 payload 為 conflict）。
-- [ ] Provider-specific safe 錯誤文案取代硬編碼 Grok 文字；`refresh`／確認結果與
+- [x] Provider-specific safe 錯誤文案取代硬編碼 Grok 文字；`refresh`／確認結果與
   「再生成一張」分開，後者只在使用者明確按下時建立新 request。
-- [ ] 作品縮圖依可見範圍延遲讀取、限制同時讀取數與 blob 快取大小，切換／離頁釋放。
-- [ ] 完成 labels/focus/Escape/dialog return、Unicode count、zh/en、keyboard、文字放大、
+- [x] 作品縮圖依可見範圍延遲讀取、限制同時讀取數與 blob 快取大小，切換／離頁釋放。
+- [x] 完成 labels/focus/Escape/dialog return、Unicode count、zh/en、keyboard、文字放大、
   reduced motion、light/dark 和 SPEC 的四種視窗尺寸；不得用 CSS 隱藏方式掩蓋不可用操作。
-- [ ] 測試：model 單元測試（兩種 schema、提交形狀、驗證、job 正規化）、package test；
+- [x] 測試：model 單元測試（兩種 schema、提交形狀、驗證、job 正規化）、package test；
   另提供只用於開發的 schema 2 fixture 預覽，不進 package。
-- [ ] Platform 的 `scripts/testing/check-studio-app.mts` 配合新選擇器更新（Platform PR），
-  以實際 package＋host 驗收 AC-13；這個 harness 從不呼叫 CLI。
-- [ ] 不 bump Studio 版本、不改 manifest compatibility、不發布；發布另依 A5。
+- [x] Platform 的 `scripts/testing/check-studio-app.mts` 配合新選擇器更新（Platform PR），
+  同時接受舊版 Studio 的 select 與新版服務按鈕，以實際 package＋host 驗收 AC-13；這個
+  harness 從不呼叫 CLI。
+- [x] 不 bump Studio 版本、不改 manifest compatibility、不發布；發布另依 A5。
 
 **Design freedom:** 色彩、圖示、字型、卡片樣式、動畫及細部 spacing 交給設計者；保留
 SPEC 的能力邊界與狀態語意。沒有依據的 cost/ETA／成功率不能作為設計裝飾。
@@ -249,5 +250,6 @@ source 工作用 member 內 `.claude/worktrees/`，不動他人的 worktree／�
 | --- | --- |
 | 2026-10-23 | 依使用者要求完成 ADR/SPEC/PLAN 規劃與交接；A0～A5 尚未實作。四家 Chat 產物證據已存在，不能替代新 bounded route acceptance |
 | 2026-10-23 | 使用者審閱互動設計稿，採用 ADR-005：先選服務、操作由 profile 宣告，納入修圖／合成；A3 拆成可先在 SDK 1.x 交付的 A3a 與接 contract 2 的 A3b |
+| 2026-10-23 | A3a 實作：`model.js` 能力正規化／提交建構／job 正規化與先選服務 UI。`npm test`、`npm run check:docs` 通過；fixture 預覽檢查四家服務、修圖／合成、透明背景、深色與 360／1078 寬。Platform `check-studio-app.mts`（選擇器相容更新）以實際 archive＋host＋fixture Runtime 驗收新 UI 與 main 的舊 UI，各 2 次送出、0 次 CLI。未 bump、未發布；schema 2 只以提案 fixtures 驗證 |
 
 *Created: 2026-10-23。首個實作動作：A3a；A0 owners contract/feasibility review 可並行。*

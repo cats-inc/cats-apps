@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Draft — 可交接的規劃基線；A3a（SDK 1.x 上的新 UI）實作中，其餘未實作、未發布 |
+| Status | Draft — 可交接的規劃基線；A3a（SDK 1.x 上的新 UI）已實作，其餘未實作；皆未發布 |
 | Owner | cats-apps；Runtime／Platform 各自擁有執行與 SDK／保存契約 |
 | Reviewer | 後續跨 repository 實作／設計 review；本次未做獨立 review |
 | Decision | [ADR-004](../decisions/004-expand-studio-with-verified-image-profiles.md)、[ADR-005](../decisions/005-provider-first-studio-image-operations.md) |

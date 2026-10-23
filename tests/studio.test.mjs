@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { gunzipSync } from 'node:zlib';
@@ -20,4 +21,13 @@ test('Studio is a separate immutable App with embedded sample and bounded SDK pe
   assert.match(html, /data:image\/jpeg;base64,/); assert.doesNotMatch(html, /\{\{APP_ASSET:|from ['"]\.\/|fetch\(|<script[^>]+src=/);
   assert.match(html, /sdk\.images\.submit/); assert.match(html, /範例作品/);
   assert.match(html, /<button id="generate"[^>]+disabled/);
+  assert.match(html, /id="services"/); assert.match(html, /normalizeCapabilities/);
+  // HTML parsing replaces NUL and mangles other raw control characters, so inline sources must use escapes.
+  assert.doesNotMatch(html, /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/);
+  // The renderer is model.js and app.js concatenated into one inline module; it must parse as a whole.
+  const script = /<script type="module">([\s\S]*)<\/script>/.exec(html)[1];
+  const scriptPath = path.join(outputDir, 'renderer.mjs');
+  await writeFile(scriptPath, script);
+  const check = spawnSync(process.execPath, ['--check', scriptPath], { encoding: 'utf8' });
+  assert.equal(check.status, 0, check.stderr);
 });
