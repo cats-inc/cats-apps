@@ -154,6 +154,41 @@ form instead of its comparator equivalent. Avoid `0.x`, which admits all 0.x
 minors, and wildcard forms that omit a required patch minimum. See the
 [host compatibility guide](https://github.com/cats-inc/cats-platform/blob/main/docs/app-packages.md#host-and-sdk-compatibility).
 
+## Studio 0.3.0 — provider-first image workspace (2026-10-23)
+
+Studio 0.3.0 ships [PLAN-006](plans/PLAN-006-studio-image-workspace.md) A3a: the
+workspace asks for a service first and then shows only the operations that service
+declares ([ADR-005](decisions/005-provider-first-studio-image-operations.md)). On
+SDK 1.x hosts that is Grok generation at the native 1:1 ratio, exactly as before:
+the submit payload is still `requestId`/`instance`/`prompt` and no new host API is
+used. Previews show the measured format, size, ratio and transparency; saved works,
+cancellation, outcome checks and downloads keep their existing semantics. Edit,
+compose and the other services stay dormant until contract 2 and their own gates.
+
+Compatibility, permissions and data are unchanged: `catsPlatform` `^0.6.0`,
+`appSdk` `^1.3.0`, permissions `ui.route`, `ui.lobby`, `media.images`. Studio owns
+no stored data; saved jobs and images remain Platform/Runtime records, so there is
+no migration. This is a new-feature minor within the 0.x line, not a breaking change.
+The builder stays exact published Platform 0.6.0.
+
+Validation before the bump: `npm test` (38), `npm run check:docs`, and Platform
+`scripts/testing/check-studio-app.mts` on the 0.3.0 candidate with the actual
+archive, host and SDK and a fixture Runtime (2 submissions, 1 cancel, 0 CLI calls).
+The tag workflow must check docs, install the pinned SDK, test and build the exact
+version. Expected App tag: `studio-v0.3.0`; verify its Actions run and downloaded
+assets after publication.
+
+- Expected asset: `studio-0.3.0.catsapp` (136,117 bytes)
+- Expected SHA-256 from the deterministic candidate: `2d5df73e7b924d63358aabc80a1ea8a1dd72922e99d76f8018c7c6e4ec3b5394`
+- Selected immutable download address: https://github.com/cats-inc/cats-apps/releases/download/studio-v0.3.0/studio-0.3.0.catsapp
+- The workflow records this bump's immutable merge commit in source provenance.
+- App trust: local-user package; no OS-signing profile. No Desktop release or pin
+  change: Desktop 0.9.1 does not bundle Studio.
+- Distribution: after the tag run is verified, a catalog pull request adds 0.3.0 with
+  the published lock's URL, size and SHA-256 and moves `channels.stable` to it, so an
+  existing Desktop 0.9.1 Market offers the update without a Desktop release. 0.2.1
+  stays listed; moving the channel back is the rollback.
+
 ## Usage 0.5.3 — Grok/Muse allowance view (2026-10-15)
 
 Usage 0.5.3 is the compatible patch selected for Desktop 0.8.2 standard-profile
