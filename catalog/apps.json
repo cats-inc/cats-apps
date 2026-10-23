@@ -19,8 +19,17 @@
     },
     {
       "id": "cats.studio",
-      "channels": { "stable": "0.2.1" },
+      "channels": { "stable": "0.3.0" },
       "versions": [
+        {
+          "version": "0.3.0",
+          "artifact": {
+            "url": "https://github.com/cats-inc/cats-apps/releases/download/studio-v0.3.0/studio-0.3.0.catsapp",
+            "size": 136117,
+            "sha256": "2d5df73e7b924d63358aabc80a1ea8a1dd72922e99d76f8018c7c6e4ec3b5394"
+          },
+          "notes": "改為先選服務的圖片工作室；目前提供 Grok 生成，並顯示實際格式、尺寸與透明度。"
+        },
         {
           "version": "0.2.1",
           "artifact": {
