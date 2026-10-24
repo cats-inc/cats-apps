@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Status: Shared-ingress candidate implemented (2026-09-29). Local Platform/Mobile/two-App integration and installed Ask Windows Electron fixtures pass. Live external tunnel/Bot, other operating systems and other providers remain pending; no release selected.
+- Status: Shared-ingress candidate implemented; installed Windows Ask → ngrok → real Grok Bot read/submit/reopen passed (2026-10-25). Managed provider recovery, other operating systems, Mobile and other providers remain separate acceptance; no release selected.
 - Owner: cats-apps for all Ask UI/services/data/MCP and package; cats-platform for component hosting/lifecycle and host capabilities; cats-runtime for optional shared execution capabilities.
 - Working identity: **Ask**, `cats.ask`, source slug `ask`; initial unpublished development package 0.1.0. No release authorized.
 - Decision: [ADR-003](../decisions/003-delegate-personal-questions-to-first-party-assistants.md).

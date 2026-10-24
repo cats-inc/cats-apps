@@ -9,11 +9,14 @@ disable revocation. The archive uses a separate output directory; published 0.5.
 bytes are unchanged. [Live CLI evidence](../../cats-runtime/docs/research/2026-10-15-grok-muse-account-quota.md)
 is separate from those browser fixtures and created no model turn.
 
-Ask's historical local Windows fixture is recorded in
-[PLAN-005](plans/PLAN-005-personal-assistant-questions-mvp.md). Shared ingress
-requires new AC-10 evidence: one origin/port/tunnel serving Platform/Mobile plus
-Ask and another App/MCP, isolated auth, independent revocation and real
-opaque-sandbox Copy. A fixture does not verify live Grok, Spark or Meta access.
+Ask's Windows fixtures and 2026-10-25 installed ngrok/real Grok Bot round trip are
+recorded in [PLAN-005](plans/PLAN-005-personal-assistant-questions-mvp.md), with
+separate hashes for the live archive and published-SDK reproducible candidate.
+The builder now pins published Platform 0.9.3 / SDK 1.8.0; all three Apps have
+actual-build/host-validation tests. Complete AC-10 still requires live evidence
+for one origin serving Mobile and multiple App/MCP mounts with independent
+revocation. This single Ask Bot acceptance does not verify Spark, Meta, other
+operating systems or managed-provider recovery.
 Documentation-only work runs diff/link checks without App builds/tests.
 
 Studio packaging is covered by `tests/studio.test.mjs` and `npm run package:studio`;
@@ -43,10 +46,10 @@ directory when rebuilding an unpublished version with changed bytes.
 and the contract vector shared with Platform; it never contacts GitHub. The publish
 workflow verifies the real release artifacts (`node scripts/build-catalog.mjs --dry-run`).
 
-`tests/sdk-build.test.mjs` builds Usage and Studio through the pinned Platform App SDK,
+`tests/sdk-build.test.mjs` builds Usage, Studio and Ask through the pinned Platform App SDK,
 checks the exact pin, the range-floor resolution for the host grammar, and that each
-archive passes the installer's validation at its declared floor and, when its ranges accept it,
-at the pinned host.
+archive passes the installer's validation at its declared floor and at the pinned host
+when the Platform minimum and bounded SDK range accept it.
 Platform tests pin the encoder itself: its golden hash, header and conformance vectors.
 
 ## Implemented Checks
