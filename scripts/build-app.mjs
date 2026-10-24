@@ -22,12 +22,15 @@ export function minimumVersion(range) {
   return floor;
 }
 
-// Validate against the declared floor, and against the SDK's own host version when the
-// declared ranges accept it; an App may still target an older host line. A floor older
-// than the first SDK release is checked with the pinned release's rules.
+// ADR-128: Platform is a minimum floor across minors; App SDK retains its bounded range.
+// Validate both the declared floor and the pinned SDK's own host when it meets those
+// contracts. A floor older than the first SDK release uses the pinned release's rules.
 export function validateHosts(bytes, compatibility) {
   const hosts = [{ platformVersion: minimumVersion(compatibility.catsPlatform), appSdkVersion: minimumVersion(compatibility.appSdk) }];
-  if (supportsVersion(SDK_PLATFORM_VERSION, compatibility.catsPlatform) && supportsVersion(APP_SDK_VERSION, compatibility.appSdk)
+  const current = SDK_PLATFORM_VERSION.split('.').map(Number);
+  const floor = hosts[0].platformVersion.split('.').map(Number);
+  const platformAccepted = (current[0] - floor[0] || current[1] - floor[1] || current[2] - floor[2]) >= 0;
+  if (platformAccepted && supportsVersion(APP_SDK_VERSION, compatibility.appSdk)
     && (hosts[0].platformVersion !== SDK_PLATFORM_VERSION || hosts[0].appSdkVersion !== APP_SDK_VERSION)) {
     hosts.push({ platformVersion: SDK_PLATFORM_VERSION, appSdkVersion: APP_SDK_VERSION });
   }

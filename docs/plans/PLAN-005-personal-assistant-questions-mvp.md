@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Status: Shared-ingress candidate implemented and independently reviewed. Local Platform/Mobile/two-App and installed Ask Windows Electron fixtures pass; live external tunnel/Bot and other-OS acceptance remain pending.
+- Status: Shared-ingress candidate implemented and independently reviewed. Installed Windows Ask/ngrok/real Grok Bot round trip passed (2026-10-25); managed-provider recovery, Mobile and other-OS acceptance remain separate.
 - Working identity: Ask / `cats.ask`; initial unpublished development package 0.1.0; no release selected.
 - Delivery: commit, push and auto-merge PR authorized on 2026-09-29; no package publication or version bump.
 - Owner: cats-apps; Platform and Runtime own their corresponding integration work.
@@ -13,8 +13,9 @@
 ## Delivery order
 
 Grok Bot + X Connector 的人工啟動／MCP 回傳已通過獨立 probe，先交付此入口。
-初版完整套件與元件宿主已有本機 fixture 證據；下一步先修正為 Platform／Mobile／
-所有 Apps 共用入口，再重驗 `cats.ask` 套件。Ask 直接擁有自己的 API／儲存／MCP；SDK 僅用於宿主能力。
+初版完整套件、元件宿主與 Platform／Mobile／所有 Apps 共用入口已實作並通過本機
+fixture；Windows Ask 的真實 Grok Bot 往返亦已通過。完整 AC-10 外部多 mount
+驗收仍待執行。Ask 直接擁有自己的 API／儲存／MCP；SDK 僅用於宿主能力。
 Gemini Spark 與 Meta AI 保留各自驗證，不因同品牌或一般 API 成功而啟用。
 
 使用者先前已授權開 worktree 實作；共用入口文件先行後，已核對 Code Canvas MCP
@@ -104,7 +105,7 @@ Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；協調 worktree �
       開發 fixture／原型先使用隔離輸出，不改現有 App 或 Desktop 版本。
 - [x] 用既有 builder 產生候選並驗證 actual archive；不以 source 頁面取代套件驗收。
 
-## A4a — Shared Platform ingress correction (next)
+## A4a — Shared Platform ingress correction (implemented; external AC-10 open)
 
 - [x] 更新 ADR／SPEC／PLAN：整個 Platform、Mobile 與所有 Apps 共用一個入口，
       `/apps/<appId>/` 路由由宿主持有；每個 App 仍是單一套件與生命週期。
@@ -117,7 +118,7 @@ Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；協調 worktree �
 - [x] 配合 host 設定遷移與 URL 變更，保留既有 Ask data／receipt；需要使用者更新
       Bot connector 時清楚顯示，不自動重新提問或重設資料。
 - [ ] 通過 AC-10：單一外部入口上的 Platform/Mobile + Ask + 第二個 App/MCP，
-      跨 App／auth 拒絕與 Ask 停用時其他服務不中斷；再做真實 Grok Bot 往返。
+      跨 App／auth 拒絕與 Ask 停用時其他服務不中斷。單 Ask 真實 Grok Bot 往返已通過。
 
 ## A5 — Acceptance and handoff
 
@@ -141,7 +142,26 @@ Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；協調 worktree �
 
 ## Resume checkpoint
 
-2026-09-29 共用入口候選：Apps 16 tests、Ask archive build、文件檢查通過。
+2026-10-25：在既有 Windows Desktop 0.9.7 安裝開發版 Ask 0.1.0，使用者自行設定
+ngrok 與 Grok Bot connector，從 Ask 建立真實問題並貼上該次執行指示。
+Grok Bot 透過 `cats_get_question`／`cats_submit_answer` 回傳，Desktop 顯示已收到回答，
+離開清單後重開仍可讀取。此為手動啟動的單次真實往返，不代表直接在 Bot 裸問可建題，
+也不是新 managed ngrok recovery 的驗收。私人問題／答案、連線 credential 與一次性
+attempt 值不寫入文件。臨時 helper 已停止，共用入口恢復原先停用設定；Ask／答案保留。
+
+該 installed/live archive 使用本機 pack 的 Platform 0.9.7／SDK 1.9.0：
+`3ad82d21b23e3261b84b7d91bdc893a5213645b4702beeae4be39bc87a9b82b9`。
+本輪修正 CI：將 builder 固定到已發布的 Platform `0.9.3`／SDK `1.8.0`，
+並依 Platform ADR-128 將 `catsPlatform` 視為最低 host 版本；`appSdk` 仍使用有界 range。
+Ask 加入與 Usage／Studio 相同的 actual-build/host-validation regression。
+這份可重現候選 hash 為
+`0f3853ca845b5435faf2f091b79049d5f960c4f3921565501d06eb1bed91e217`，
+須與前述 live bytes 分開記錄；App source、版本、manifest 與 renderer 未變更。
+可重現候選已再通過隔離 Windows Electron 的 MCP get/submit、reopen、實際剪貼簿、
+clipboard denial、opaque frame 與 host Settings 導覽。獨立審查無剩餘發現，
+44 個 Apps tests 通過。沒有升版、發布或改 Desktop App pins。
+
+歷史 checkpoint — 2026-09-29 共用入口候選：Apps 16 tests、Ask archive build、文件檢查通過。
 Platform 的真實 router fixture 通過 Mobile auth + 兩個 App/MCP，同一入口上的
 跨權限拒絕、單 App 停用與 owner session 撤銷。此為本機轉送側測試，未宣稱
 外網 tunnel 或真實 Bot 已通過此版本。Platform 另測設定備份、原子寫入失敗與重啟恢復。
