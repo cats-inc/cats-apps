@@ -157,7 +157,7 @@ test('the build writes a verifiable catalog at the published path and needs the 
 
 test('the committed catalog source and key list are well formed', async () => {
   const committed = validateCatalogSource(await readJson('../catalog/apps.json'));
-  assert.deepEqual(committed.apps.map((app) => app.id), ['cats.usage', 'cats.studio']);
+  assert.deepEqual(committed.apps.map((app) => app.id), ['cats.usage', 'cats.ask', 'cats.studio']);
   const { keys } = await readJson('../catalog/signing-keys.json');
   for (const key of keys) {
     assert.equal(key.algorithm, 'ed25519');

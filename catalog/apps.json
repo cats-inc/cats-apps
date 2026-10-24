@@ -27,6 +27,21 @@
       ]
     },
     {
+      "id": "cats.ask",
+      "channels": { "stable": "0.1.0" },
+      "versions": [
+        {
+          "version": "0.1.0",
+          "artifact": {
+            "url": "https://github.com/cats-inc/cats-apps/releases/download/ask-v0.1.0/ask-0.1.0.catsapp",
+            "size": 649128,
+            "sha256": "0f3853ca845b5435faf2f091b79049d5f960c4f3921565501d06eb1bed91e217"
+          },
+          "notes": "向已連接的個人助理提問，收回答案與來源；支援 MCP get/submit、重新開啟與複製答案。外部助理連線共用 Cats 遠端入口，請先在主程式設定遠端連線。"
+        }
+      ]
+    },
+    {
       "id": "cats.studio",
       "channels": { "stable": "0.4.1" },
       "versions": [
