@@ -2,6 +2,44 @@
 
 ## Release boundaries
 
+### Ask 0.1.0 — independently installable personal questions (2026-10-25)
+
+Ask's first immutable release reuses its existing unused 0.1.0 version. The App
+collects questions, exposes credential-scoped MCP get/submit tools for a connected
+assistant, and retains answers/sources across close/reopen. Clipboard Copy uses
+the permission-checked host bridge. Its MCP endpoint is the Platform's shared
+origin plus `/apps/cats.ask/mcp`; configure the tunnel once in host Remote access.
+The App does not own another tunnel or receive the ngrok authtoken.
+
+- Tag `ask-v0.1.0` selects the exact producer commit recorded in provenance.
+  Archive `ask-0.1.0.catsapp` is 649128 bytes and uses SHA-256
+  `0f3853ca845b5435faf2f091b79049d5f960c4f3921565501d06eb1bed91e217`.
+  Source digest: `2d67c59769c8f8c1363c0f8fc2a729656b3d2b1cca3c5deeab6a8ea0a9278e57`.
+  The public builder stays pinned to Platform 0.9.3 / SDK 1.8.0. The immutable
+  manifest retains host minimum `^0.6.1` and bounded App SDK `^1.3.0`; ADR-128
+  treats the Platform declaration as a floor across minors. Desktop 0.10.0 keeps
+  SDK 1.9.0. No unrelated App, root workspace or SDK pin is bumped.
+- App data stays schema 1 in the host's App-scoped storage. Existing question,
+  attempt, connection and answer IDs remain; this release changes neither its
+  stored format nor migration behavior and requires no reset. Local-user
+  publisher/trust and declared permissions remain unchanged. Credentials are
+  per-connection, explicitly revocable and omitted from catalog metadata.
+- The same reproducible candidate passed isolated Windows actual-archive/SDK/
+  host create, MCP get/submit, close/reopen, Unicode clipboard Copy/paste, denial,
+  opaque-frame isolation and Settings navigation. Apps CI passed 44 tests.
+  A separate installed Windows Ask archive completed a user-operated Grok Bot
+  round trip through the temporary external ngrok helper; its different archive
+  hash stays separately recorded in PLAN-005. That is not live Bot proof of the
+  new managed worker. Other assistants, independent shared-consumer acceptance
+  and native macOS/Linux remain outside this evidence.
+- Publish the immutable App through `release-app.yaml`, verify its hosted archive,
+  lock and provenance, then promote its exact URL/size/hash to the signed catalog's
+  stable channel. Ask stays optional in Marketplace, like Studio; the Desktop
+  bundle remains Usage-only. The catalog uses the existing Ed25519 signing key.
+  This promotion is a functional distribution change, not a publication-status
+  follow-up. Publication results: `ask-v0.1.0`, its release workflow, and the
+  catalog deployment/verified public signed envelope.
+
 ### Studio 0.4.1 — Cursor and service order (2026-10-24)
 
 Studio 0.4.1 recognizes the Cursor generation profile and orders services Codex,
@@ -65,13 +103,9 @@ Verify publication using existing hosted Release/Actions/registry evidence, then
 report and finish. Do not add tracked publication reports, status-only commits
 or follow-up PRs, or chase unrelated main updates after verification.
 
-Ask has an unpublished local candidate only. Its required public endpoint is
-Platform's shared origin plus `/apps/cats.ask/mcp`; Platform, remote Mobile and
-other Apps reuse the same public port/tunnel. Shared ingress and tutorial changes
-remain pending in [PLAN-005 A4a](plans/PLAN-005-personal-assistant-questions-mvp.md#a4a--shared-platform-ingress-correction-next).
-Do not deploy a separate Ask tunnel or infer a released host floor from the
-prototype. Host ingress settings/migration belong to Platform; App data remains
-Ask-owned. This documentation change does not provision ingress or publish Apps.
+Ask's shared-ingress implementation and the remaining cross-consumer acceptance
+are tracked in [PLAN-005 A4a](plans/PLAN-005-personal-assistant-questions-mvp.md#a4a--shared-platform-ingress-correction-next).
+Host ingress settings/migration belong to Platform; App data remains Ask-owned.
 
 cats-apps is a private npm workspace containing independently versioned Apps,
 not a single npm product release. Usage and Studio have separate workspaces. The root
