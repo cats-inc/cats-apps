@@ -13,31 +13,36 @@ It is a draft handoff, not an expansion of the implemented contract below.
 
 ## Approved scope
 
-使用者已核准完整實作與必要的 SDK／Runtime／Desktop 更新，並確認 Studio 是 Cats Home
-上與 Usage 並列的獨立 App。本輪固定 `cats.studio` / Studio 0.1.0，僅單張 1:1 生圖。
-原提案的修圖、圖片匯入、影片與版本 lineage 延後；App 安裝／移除 UX 另案規劃。
+The user approved the full implementation and the necessary SDK/Runtime/Desktop updates, and
+confirmed that Studio is a standalone App on Cats Home alongside Usage. This round fixes
+`cats.studio` / Studio 0.1.0, single 1:1 image generation only. The originally proposed image
+editing, image import, video and version lineage are deferred; App install/remove UX is
+planned separately.
 
-2026-09-28：安裝／移除、獨立發布與 Market 已納入
+2026-09-28: install/remove, independent publishing and Market are covered by
 [Platform SPEC-120](../../../cats-platform/docs/specs/SPEC-120-app-market-and-lifecycle.md)
-與 [Apps PLAN-004](../plans/PLAN-004-independent-app-distribution.md)。Studio 不預裝，
-未安裝時沒有 Home placeholder；停用仍保留已安裝卡片，移除後消失。此後續尚未實作。
+and [Apps PLAN-004](../plans/PLAN-004-independent-app-distribution.md). Studio is not
+preinstalled and has no Home placeholder when not installed; disabling keeps the installed
+card, and it disappears after removal. This follow-up is not yet implemented.
 
-流程為描述 → 明確按下生成 → 任務狀態 → 圖片預覽／下載 → 重開取回。
-每次只允許一次 CLI invocation、一輪模型呼叫及一次 image_gen；沒有自動重試或 fallback。
-頁面初始顯示先前 spike 的橘貓範例，清楚標示來源，不當成本次生成。
+The flow is description → explicit click to generate → task status → image preview/download →
+reopen to retrieve. Only one CLI invocation, one model call round and one image_gen are
+allowed each time; there is no automatic retry or fallback. The page initially shows the
+orange-cat sample from the earlier spike, clearly labeled with its source and not presented
+as this generation.
 
 ## Functional contract
 
 | ID | Requirement |
 | --- | --- |
-| FR-01 | 獨立 Home 入口、route `/apps/cats.studio`、返回 Home；保留 Usage |
-| FR-02 | 2000 字元以內描述、靈感範例、Grok instance 選擇、固定 1:1／1 張；沒有精確像素保證 |
-| FR-03 | 正在送出／生成／保存、成功／失敗、取消中／已取消、結果未確認皆可辨識 |
-| FR-04 | 先持久化 request，再執行；同 requestId 不會多次生成；離頁或重開只查詢既有任務 |
-| FR-05 | 保存驗證後 JPEG；预覽、放大、下載、複用描述；Runtime 離線仍可讀已保存作品 |
-| FR-06 | 失敗保留描述；明示登入、privacy、額度、逾時、磁碟與未確認結果；不聲稱免費 |
-| FR-07 | 取消持久化意圖並等待程序結束；取消網路失敗只能重送取消，不能再送生成 |
-| FR-08 | App／帳號／啟用狀態／版本與權限隔離；renderer 不取得 token、shell、URL 或本機路徑 |
+| FR-01 | Standalone Home entry, route `/apps/cats.studio`, return to Home; Usage is kept |
+| FR-02 | Description up to 2000 characters, inspiration examples, Grok instance selection, fixed 1:1 / 1 image; no exact-pixel guarantee |
+| FR-03 | Submitting / generating / saving, success / failure, cancelling / cancelled and result-unconfirmed are all distinguishable |
+| FR-04 | Persist the request first, then execute; the same requestId never generates more than once; leaving the page or reopening only queries the existing task |
+| FR-05 | Save the verified JPEG; preview, enlarge, download, reuse description; saved works remain readable while Runtime is offline |
+| FR-06 | Failure keeps the description; explicitly state login, privacy, quota, timeout, disk and unconfirmed-result cases; do not claim it is free |
+| FR-07 | Cancellation persists the intent and waits for the process to end; a cancel network failure can only resend the cancel, never resend the generation |
+| FR-08 | App / account / enabled state / version and permission isolation; the renderer obtains no token, shell, URL or local path |
 
 ## Ownership and limits
 

@@ -12,217 +12,217 @@
 
 ## Delivery order
 
-Grok Bot + X Connector 的人工啟動／MCP 回傳已通過獨立 probe，先交付此入口。
-初版完整套件、元件宿主與 Platform／Mobile／所有 Apps 共用入口已實作並通過本機
-fixture；Windows Ask 的真實 Grok Bot 往返亦已通過。完整 AC-10 外部多 mount
-驗收仍待執行。Ask 直接擁有自己的 API／儲存／MCP；SDK 僅用於宿主能力。
-Gemini Spark 與 Meta AI 保留各自驗證，不因同品牌或一般 API 成功而啟用。
+Grok Bot + X Connector, with manual launch and an MCP return, has passed an independent probe, so this entry is delivered first.
+The first full package, the component host, and the shared entry for Platform, Mobile and all Apps have been implemented and passed local
+fixtures; a real Grok Bot round trip from Windows Ask has also passed. The full AC-10 external
+multi-mount acceptance is still to be run. Ask directly owns its own API, storage and MCP; the SDK is used only for host capabilities.
+Gemini Spark and Meta AI keep their own verification, and are not enabled just because they share a brand or a general API succeeded.
 
-使用者先前已授權開 worktree 實作；共用入口文件先行後，已核對 Code Canvas MCP
-提案並完成本機候選實作。Code 內部 MCP 不經公開入口；App MCP 由共用路由轉送。
-後續執行依使用者當時的授權與帳號可用性前進，不因本計畫自行開始長期排程或部署 relay。
+The user had earlier authorized opening a worktree for implementation; after the shared-entry documents went first, the Code Canvas MCP
+proposal was checked and the local candidate implementation was completed. Code's internal MCP does not go through the public entry; App MCP is forwarded by the shared router.
+Later execution proceeds according to the user's authorization at the time and account availability; this plan does not by itself start long-running schedules or deploy a relay.
 
 ## A0 — Scope and baseline
 
-- [x] 固定提問、非同步回覆與 copy/paste MVP，記錄導覽 SDK／跨產品整合延後。
-- [x] 分開使用者在原產品的實測、官方文件及 Cats 端尚未驗證的往返。
-- [x] 查核現有 renderer／SDK，確認同文件 drill down 可用，Ask／clipboard bridge 待補。
-- [x] 建立 ADR/Spec/Plan 及索引，保留來源與下一步。
+- [x] Fix the MVP as asking, asynchronous replies and copy/paste, and record that the navigation SDK and cross-product integration are deferred.
+- [x] Separate the user's own testing in the original products, the official documentation, and the round trips on the Cats side that are not yet verified.
+- [x] Check the existing renderer and SDK: same-document drill down is confirmed available, and the Ask and clipboard bridge remain to be added.
+- [x] Create the ADR/Spec/Plan and indexes, keeping sources and next steps.
 
-完成條件：文件互相連結且狀態一致；不把未做的 spike／產品驗收標示完成。
+Done when: the documents link to each other and their statuses agree; unfinished spikes and product acceptance are not marked complete.
 
 ## A1 — Three product feasibility probes
 
-每家先完成一次最小查詢往返，再測必要的故障／批准情境；不用完整 App 美化作前置。
+Each product first completes one minimal query round trip, then tests the necessary failure and approval scenarios; polishing the full App is not a prerequisite.
 
 | Order | Probe | Required observations |
 |---|---|---|
-| 1 | Grok Bot：自己的三篇已儲存書籤，另測影片摘要 | MCP 往返收據已核對；最新儲存順序僅推論，影片理解、自動觸發與產品恢復未驗證。 |
-| 2 | Spark：使用者已成功問過的興趣／YouTube 個人化建議 | 確切帳號與產品模式、問題交付、Personal Intelligence 與 connector 同任務可用、回傳及批准步驟。 |
-| 3 | Meta AI：已儲存／自有／授權文章，另測 Reels 摘要 | 確切 Meta 入口、內容範圍及回傳方式；Muse 候選另記，不繼承其他入口證據。 |
+| 1 | Grok Bot: the user's own three saved bookmarks, plus a separate video summary test | The MCP round-trip receipts were checked; the latest saved order is only inferred, and video understanding, automatic triggering and product recovery are unverified. |
+| 2 | Spark: the interest and YouTube personalized recommendations the user has already asked successfully | The exact account and product mode, question delivery, whether Personal Intelligence and the connector work in the same task, the return, and the approval steps. |
+| 3 | Meta AI: saved, own or authorized articles, plus a separate Reels summary test | The exact Meta entry, content scope and return method; Muse candidates are recorded separately and do not inherit evidence from other entries. |
 
-- [ ] 為每家建立產品／帳號條件、觸發、個人資料能力、結果回傳、人工步驟、恢復的矩陣。
-- [ ] 先檢查正式委派入口；如採 MCP，驗證 custom connector 真正可安裝與呼叫。
-      grok.com 的 MCP 文件不作 Grok Bot 能力的替代證據。
-- [ ] 驗證 external AI 領取明確的 Cats 問題，使用既有個人脈絡，並經機器通道回傳。
-      人工登入／啟動／批准如不可少，記錄為 assisted；人工搬回答案不算整合通過。
-- [ ] 確認訊息來源／request 關聯、回覆完整性、可用收據、延遲及產品用量資訊（未知即記未知）。
-- [ ] 若需雲端端點，先固定暫時服務的持有人、受限能力、認證與回收方式；不暴露整個 Runtime。
-- [ ] 正式入口不足時，記錄具體缺口，再評估 browser DOM bridge；Desktop UI 不作預設方案。
-- [ ] 真實私人內容留在使用者授權的資料位置；追蹤文件只寫去識別結果、日期、版本及限制。
+- [ ] For each product, build a matrix of product and account conditions, trigger, personal-data capability, result return, manual steps and recovery.
+- [ ] Check the official delegation entry first; if MCP is used, verify that a custom connector can actually be installed and called.
+      The MCP documentation on grok.com is not substitute evidence for Grok Bot capabilities.
+- [ ] Verify that the external AI picks up an explicit Cats question, uses its existing personal context, and returns through a machine channel.
+      If manual login, launch or approval is unavoidable, record it as assisted; a human carrying the answer back does not count as an integration pass.
+- [ ] Confirm the message source and request correlation, reply completeness, available receipts, latency and product usage information (record unknown as unknown).
+- [ ] If a cloud endpoint is needed, first fix the owner of the temporary service, its restricted capabilities, authentication and teardown; do not expose the whole Runtime.
+- [ ] When the official entry is insufficient, record the specific gap and then evaluate a browser DOM bridge; the Desktop UI is not the default approach.
+- [ ] Real private content stays in a data location the user has authorized; tracked documents record only de-identified results, dates, versions and limits.
 
-進入 A2 的條件：至少一家具備可實作的完整往返，其他入口保留狀態及下一個實驗。
-A1 完成條件：三家都有可追溯的可行或受阻結論；只有通過 SPEC AC-01–03 才能宣稱三家完成。
-若全部無法往返，保存具體限制並回報；不以公開搜尋、手動搬運或一般模型 API 冒充成功。
+Condition to enter A2: at least one product has a fully implementable round trip, and the others keep their status and next experiment.
+A1 is complete when: all three products have a traceable feasible or blocked conclusion; only passing SPEC AC-01–03 allows claiming all three are done.
+If none can complete a round trip, save the specific limits and report them; do not pass off public search, manual carrying or a general model API as success.
 
 ## A2 — Owning-repository contracts
 
-依 A1 證據到各 owning repo 建立自己的 worktree、讀取指引並補對應 ADR/Spec/Plan。
-Platform ADR-125／SPEC-122／PLAN-115 已記錄協調契約；協調 worktree 已實作執行能力。
+Following the A1 evidence, create a worktree in each owning repo, read its guidance, and add the corresponding ADR/Spec/Plan.
+Platform ADR-125 / SPEC-122 / PLAN-115 already record the coordination contract; the coordination worktree has implemented the execution capability.
 
-- [x] Platform：固定多前端／多服務／worker manifest、同 App 直接 HTTP／串流、
-      原型 origin／授權、整體安裝更新／啟停／移除與 clipboard 能力；
-      A4a 已補共用入口與新 sandbox 的本機驗收，真實外網另驗。
-- [x] Apps：固定 Ask 自有 API／資料 schema、adapter 交付、MCP 領取／回傳、
-      狀態觀測、收據、去重與未知完成處理。Runtime 只在需要共通執行能力時參與。
-- [x] 固定 Ask request → 外部問題 → answer 的對應與回覆認證；
-      相同回覆重送不重複保存，衝突／過期／跨 connection 或 attempt 回覆有明確規則。
-      這不證明 X／其他 provider 帳號與 Cats connection 已驗證綁定。
-- [ ] 另驗證實際助理／provider 帳號對應與帳號切換；connection/attempt token
-      的成功核對不能代替外部帳號身分證據。
-- [x] 固定 host 停機時的保留／重送／輪詢責任。無持續接收端時，UX 不承諾停機後即時接收。
-- [x] 固定數值限制：問題／回答大小、等待期限、並行／佇列、保留量與 bounded logging。
-      這些必須在 executable schema／storage 實作前有數值，不保留為無限預設。
-- [ ] 明定使用者刪除／保留答案的規則；數量與逾時上限不等於資料刪除政策。
-- [ ] 判斷相容性與資料升級。若影響既有資料，先定義驗證、備份、原子替換與失敗恢復測試；
-      不以重設資料或只 bump 版本替代。版本需求先記錄，發布另依授權執行。
+- [x] Platform: fix the multi-frontend, multi-service and worker manifest, direct HTTP/streaming within the same App,
+      prototype origin and authorization, whole-App install, update, enable/disable and removal, and the clipboard capability;
+      A4a has added local acceptance for the shared entry and the new sandbox, and the real external network is verified separately.
+- [x] Apps: fix Ask's own API and data schema, adapter delivery, MCP pickup and return,
+      status observation, receipts, deduplication and handling of unknown completion. Runtime participates only when a common execution capability is needed.
+- [x] Fix the mapping of Ask request → external question → answer and the reply authentication;
+      resending an identical reply is not saved twice, and replies that conflict, are expired, or cross connection or attempt have explicit rules.
+      This does not prove that an X or other provider account is verifiably bound to a Cats connection.
+- [ ] Separately verify the mapping to the actual assistant or provider account and account switching; a successful check of the connection/attempt token
+      cannot substitute for evidence of the external account identity.
+- [x] Fix the retention, resend and polling responsibilities when the host is down. With no persistent receiver, the UX does not promise instant receipt after a shutdown.
+- [x] Fix the numeric limits: question and answer size, wait deadline, concurrency and queue, retention, and bounded logging.
+      These must have values before the executable schema and storage are implemented, and are not left as unbounded defaults.
+- [ ] Define the rules for the user deleting or retaining answers; count and timeout limits are not a data-deletion policy.
+- [ ] Judge compatibility and data upgrade. If existing data is affected, first define validation, backup, atomic replacement and failure-recovery tests;
+      do not substitute resetting data or only bumping the version. Record the version requirement first; publishing follows authorization separately.
 
-完成條件：具體契約、擁有者、限制及 fixture strategy 可供實作；至少一個 A1 入口通過。
+Done when: concrete contracts, owners, limits and a fixture strategy are available for implementation; at least one A1 entry has passed.
 
 ## A3 — Complete App hosting and Ask services
 
-- [x] Platform 先通過兩個前端、兩個服務與 worker 的單 App fixture；整體安裝與
-      更新／停用／移除，前端直接呼叫 App API，不新增 Ask domain SDK 方法。
-- [x] 先實作 request 持久化、執行交付、status/read 與完整回答保存，離開 renderer 後仍可處理。
-- [ ] 以隔離 fixture 測成功／部分／無權限／無內容、needs_user 與 unconfirmed。
-- [ ] 驗證重複送出、回覆重送、衝突／遲到回覆、停機恢復及重問建立新 attempt。
-- [ ] 驗證 disabled/version/account/connection 變更後的讀取與回覆收取政策，不洩漏其他帳號結果。
-- [x] 原型與 A4a opaque sandbox 的 Windows Electron clipboard 都已通過。
-- [ ] 將其他通過 A1 的入口依同一問答契約接入，各自保留能力差異與驗收狀態。
+- [x] Platform first passes a single-App fixture with two frontends, two services and a worker; whole-App install and
+      update, disable and removal, with the frontend calling the App API directly and no Ask domain SDK methods added.
+- [x] First implement request persistence, execution delivery, status/read and full-answer storage, so processing continues after leaving the renderer.
+- [ ] Test success, partial, no permission, no content, needs_user and unconfirmed with isolated fixtures.
+- [ ] Verify duplicate submission, reply resend, conflicting and late replies, recovery after shutdown, and that re-asking creates a new attempt.
+- [ ] Verify the read and reply-receipt policy after a change in disabled state, version, account or connection, without leaking another account's results.
+- [x] Windows Electron clipboard passes for both the prototype and the A4a opaque sandbox.
+- [ ] Connect the other entries that pass A1 under the same Q&A contract, each keeping its own capability differences and acceptance status.
 
-完成條件：App 元件與直接通訊契約通過 focused checks，已有 fixture 與真實 transport 證據。
-安裝後不需要使用者再開 terminal server 或分開安裝後端。
+Done when: the App components and the direct communication contract pass focused checks, with both fixture and real transport evidence.
+After installation the user does not need to open a terminal server or install a backend separately.
 
 ## A4 — Ask App and package
 
-- [x] 新增獨立 `apps/ask`，同套件包含全部 Ask 前後端／MCP；消費版本化 host contract。
-      自有 API 使用一般 HTTP／串流，宿主能力使用 SDK；不 import sibling 私有 source。
-- [x] 實作助理選擇、問題輸入、清單／詳情、狀態及小型複製按鈕；同文件 UI 切換。
-- [x] 保留問題、完整回答、理由與可選引用；文字安全呈現，不從回答自動執行動作。
-- [x] 開啟／重開／refresh 只讀既有紀錄；明確按下送出才提問。
-- [x] 尚未驗證或失去權限的入口顯示可理解狀態；不靜默選另一個產品。
-- [ ] 確定需要的最小 host/SDK 契約後，依 release authorization 設定新套件版本與相容範圍。
-      開發 fixture／原型先使用隔離輸出，不改現有 App 或 Desktop 版本。
-- [x] 用既有 builder 產生候選並驗證 actual archive；不以 source 頁面取代套件驗收。
+- [x] Add a standalone `apps/ask`, with one package containing all Ask frontend, backend and MCP; it consumes the versioned host contract.
+      Its own API uses ordinary HTTP/streaming, and host capabilities use the SDK; it does not import sibling private source.
+- [x] Implement assistant selection, question input, list and detail, status, and a small copy button; the UI switches within the same document.
+- [x] Keep the question, full answer, rationale and optional citations; text is rendered safely, and no action is executed automatically from an answer.
+- [x] Opening, reopening and refreshing only read existing records; a question is asked only when submit is pressed explicitly.
+- [x] Entries that are unverified or have lost authorization show an understandable status; another product is not silently chosen.
+- [ ] Once the minimum host/SDK contract needed is determined, set the new package version and compatibility range per the release authorization.
+      Development fixtures and prototypes first use isolated output and do not change the version of any existing App or Desktop.
+- [x] Produce a candidate with the existing builder and verify the actual archive; a source page does not replace package acceptance.
 
 ## A4a — Shared Platform ingress correction (implemented; external AC-10 open)
 
-- [x] 更新 ADR／SPEC／PLAN：整個 Platform、Mobile 與所有 Apps 共用一個入口，
-      `/apps/<appId>/` 路由由宿主持有；每個 App 仍是單一套件與生命週期。
-- [x] 配合 Platform PLAN-115 P4 固定 reachable base URL、view grant、shared
-      ingress status/setup 的精確 bootstrap 契約；自有 API 保持一般 fetch。
-- [x] Tutorial 移除 Ask 專屬 ngrok token/setup；顯示 Platform 共用入口狀態，
-      未設定時帶到 host 設定，完成後產生 `/apps/cats.ask/mcp` connector 指令。
-- [x] 在 opaque sandbox 驗證 fetch／Copy／drill down／重新開啟，處理 grant 撤銷，
-      不依賴 server localhost 或 Platform cookie。導航 SDK／答案深連結仍延後。
-- [x] 配合 host 設定遷移與 URL 變更，保留既有 Ask data／receipt；需要使用者更新
-      Bot connector 時清楚顯示，不自動重新提問或重設資料。
-- [ ] 通過 AC-10：單一外部入口上的 Platform/Mobile + Ask + 第二個 App/MCP，
-      跨 App／auth 拒絕與 Ask 停用時其他服務不中斷。單 Ask 真實 Grok Bot 往返已通過。
+- [x] Update the ADR/SPEC/PLAN: the whole of Platform, Mobile and all Apps share one entry,
+      the `/apps/<appId>/` route is owned by the host; each App is still a single package and lifecycle.
+- [x] Together with Platform PLAN-115 P4, fix the exact bootstrap contract for the reachable base URL, view grant and shared
+      ingress status/setup; the App's own API remains ordinary fetch.
+- [x] The tutorial removes Ask-specific ngrok token/setup; it shows the Platform shared-entry status,
+      leads to the host settings when it is not configured, and once done generates the `/apps/cats.ask/mcp` connector command.
+- [x] In the opaque sandbox, verify fetch, Copy, drill down and reopening, and handle grant revocation,
+      without relying on the server localhost or a Platform cookie. The navigation SDK and answer deep links remain deferred.
+- [x] Along with the host settings migration and URL change, keep existing Ask data and receipts; when the user must update
+      the Bot connector it is shown clearly, with no automatic re-asking or data reset.
+- [ ] Pass AC-10: Platform/Mobile + Ask + a second App/MCP on a single external entry,
+      with cross-App and auth rejection, and other services uninterrupted when Ask is disabled. The single-Ask real Grok Bot round trip has passed.
 
 ## A5 — Acceptance and handoff
 
-- [ ] 對照 SPEC AC-01–10，分別記錄三家實際往返、assist steps、內容類型與未驗證限制。
-- [ ] 使用隔離 registry/state 執行 built package 的清單／詳情、重開、失敗恢復與 clipboard 測試。
-- [ ] 針對實際 Desktop host 驗證中文、換行、連結及長回答貼上內容；其他 OS 另列未驗證。
-- [ ] 記錄程式 focused checks、fixture、真實產品往返與 installed acceptance 的不同證據。
-- [ ] 更新各 repo 狀態，完成獨立審查；不把工作分支文件或本機產物描述為已發布功能。
+- [ ] Against SPEC AC-01–10, record separately the actual round trips of the three products, assist steps, content types and unverified limits.
+- [ ] With an isolated registry and state, run list and detail, reopen, failure recovery and clipboard tests on the built package.
+- [ ] Verify Chinese text, line breaks, links and long-answer pasted content on the actual Desktop host; other OSes are listed separately as unverified.
+- [ ] Record separately the different kinds of evidence: code focused checks, fixtures, real product round trips and installed acceptance.
+- [ ] Update the status of each repo and complete the independent review; do not describe working-branch documents or local artifacts as a published feature.
 
-本計畫不要求 Market、導覽 SDK、跨產品注入或完整離線同步完成，才算本 MVP 可驗收。
+This plan does not require Market, the navigation SDK, cross-product injection or full offline sync to be done before this MVP is acceptable.
 
 ## Risks and planned responses
 
 | Risk | Response |
 |---|---|
-| 可提問但不能在同任務讀私人資料或回傳 | A1 分別驗證三個環節；保留原產品實測，不偷換資料目標。 |
-| MCP 回傳每次都要批准 | 接受可觀測的 needs_user，記錄人工頻率；不把外送回覆偽裝為唯讀工具。 |
-| 一家延遲／帳號限制卡住 | 繼續其他入口，但保持整體三家驗收未完成。 |
-| 本機關閉錯失回覆 | A2 固定保存／重送責任；回收不了保持 unconfirmed，不自動重問。 |
-| iframe 複製失敗 | 驗證 actual package，必要時補 host clipboard；明確拒絕時保留可選取本文。 |
+| Can ask but cannot read private data or return within the same task | A1 verifies the three links separately; keep the testing in the original product and do not swap the data target. |
+| MCP return needs approval every time | Accept an observable needs_user and record the manual frequency; do not disguise an outbound reply as a read-only tool. |
+| One product is blocked by latency or account limits | Continue with other entries, but keep the overall three-product acceptance unfinished. |
+| Local shutdown misses a reply | A2 fixes the storage and resend responsibility; what cannot be recovered stays unconfirmed, with no automatic re-asking. |
+| Copy fails in the iframe | Verify the actual package, add a host clipboard if needed; on an explicit denial keep the text selectable. |
 
 ## Resume checkpoint
 
-2026-10-25：在既有 Windows Desktop 0.9.7 安裝開發版 Ask 0.1.0，使用者自行設定
-ngrok 與 Grok Bot connector，從 Ask 建立真實問題並貼上該次執行指示。
-Grok Bot 透過 `cats_get_question`／`cats_submit_answer` 回傳，Desktop 顯示已收到回答，
-離開清單後重開仍可讀取。此為手動啟動的單次真實往返，不代表直接在 Bot 裸問可建題，
-也不是新 managed ngrok recovery 的驗收。私人問題／答案、連線 credential 與一次性
-attempt 值不寫入文件。臨時 helper 已停止，共用入口恢復原先停用設定；Ask／答案保留。
+2026-10-25: on an existing Windows Desktop 0.9.7 install, the development build of Ask 0.1.0, the user set up
+ngrok and the Grok Bot connector themselves, created a real question from Ask, and pasted that run's instructions.
+Grok Bot returned through `cats_get_question` / `cats_submit_answer`, Desktop showed that the answer was received,
+and it could still be read after leaving the list and reopening. This is a single real round trip started manually; it does not mean a question can be created by asking the Bot directly,
+and it is not acceptance of the new managed ngrok recovery. Private questions and answers, connection credentials and one-time
+attempt values are not written to documents. The temporary helper was stopped, the shared entry was restored to its previous disabled setting, and Ask and its answers were kept.
 
-該 installed/live archive 使用本機 pack 的 Platform 0.9.7／SDK 1.9.0：
-`3ad82d21b23e3261b84b7d91bdc893a5213645b4702beeae4be39bc87a9b82b9`。
-本輪修正 CI：將 builder 固定到已發布的 Platform `0.9.3`／SDK `1.8.0`，
-並依 Platform ADR-128 將 `catsPlatform` 視為最低 host 版本；`appSdk` 仍使用有界 range。
-Ask 加入與 Usage／Studio 相同的 actual-build/host-validation regression。
-這份可重現候選 hash 為
-`0f3853ca845b5435faf2f091b79049d5f960c4f3921565501d06eb1bed91e217`，
-須與前述 live bytes 分開記錄；App source、版本、manifest 與 renderer 未變更。
-可重現候選已再通過隔離 Windows Electron 的 MCP get/submit、reopen、實際剪貼簿、
-clipboard denial、opaque frame 與 host Settings 導覽。獨立審查無剩餘發現，
-44 個 Apps tests 通過。沒有升版、發布或改 Desktop App pins。
+That installed/live archive used the locally packed Platform 0.9.7 / SDK 1.9.0:
+`3ad82d21b23e3261b84b7d91bdc893a5213645b4702beeae4be39bc87a9b82b9`.
+This round fixes CI: the builder is pinned to the published Platform `0.9.3` / SDK `1.8.0`,
+and per Platform ADR-128 `catsPlatform` is treated as the minimum host version; `appSdk` still uses a bounded range.
+Ask adds the same actual-build/host-validation regression as Usage and Studio.
+The hash of this reproducible candidate is
+`0f3853ca845b5435faf2f091b79049d5f960c4f3921565501d06eb1bed91e217`,
+and must be recorded separately from the live bytes above; the App source, version, manifest and renderer are unchanged.
+The reproducible candidate then passed, in an isolated Windows Electron, MCP get/submit, reopen, the actual clipboard,
+clipboard denial, the opaque frame and host Settings navigation. The independent review had no remaining findings,
+and 44 Apps tests passed. No version bump, publication or change to the Desktop App pins.
 
-歷史 checkpoint — 2026-09-29 共用入口候選：Apps 16 tests、Ask archive build、文件檢查通過。
-Platform 的真實 router fixture 通過 Mobile auth + 兩個 App/MCP，同一入口上的
-跨權限拒絕、單 App 停用與 owner session 撤銷。此為本機轉送側測試，未宣稱
-外網 tunnel 或真實 Bot 已通過此版本。Platform 另測設定備份、原子寫入失敗與重啟恢復。
+Historical checkpoint — 2026-09-29 shared-ingress candidate: Apps 16 tests, Ask archive build and doc checks passed.
+Platform's real router fixture passed Mobile auth + two Apps/MCP, with
+cross-permission rejection on the same entry, single-App disable and owner session revocation. This is a local forwarding-side test and does not claim
+that the external-network tunnel or a real Bot has passed with this version. Platform also tested settings backup, atomic-write failure and restart recovery.
 
-Windows Electron 已使用 actual archive 驗證建立、close、MCP get/submit、reopen、
-Copy／貼上、Copy 拒絕提示及開啟 host 設定；opaque frame 無法讀 host DOM/cookie/storage。
-新 archive SHA-256：
-`0f3853ca845b5435faf2f091b79049d5f960c4f3921565501d06eb1bed91e217`。
-消費 build/pack 的候選 SDK tarball，未 import sibling source，release pin 未改。
-獨立審查修正設定導覽權限、連線狀態過期、一次性 ticket 重試與 host 關閉競態；
-複查無剩餘 blocker。未 commit、發布、改真實 profile 或重新查詢私人 X 內容。
-下一步為 A4a 最後一項的真實外網／Bot 驗收，再依發布授權處理 host/SDK 相容邊界。
-文件檢查：43 Markdown／161 local targets；兩 repo 的 9 份本輪修改文件另查
-59 個映射目標，全數存在；兩邊 whitespace check 通過。
+Windows Electron used the actual archive to verify create, close, MCP get/submit, reopen,
+Copy and paste, the Copy-denied prompt, and opening host settings; the opaque frame cannot read the host DOM, cookie or storage.
+New archive SHA-256:
+`0f3853ca845b5435faf2f091b79049d5f960c4f3921565501d06eb1bed91e217`.
+The build/pack consumed the candidate SDK tarball, did not import sibling source, and the release pin is unchanged.
+The independent review fixed the settings navigation permission, stale connection status, one-time ticket retry and host-close race;
+the re-review had no remaining blocker. Nothing was committed or published, no real profile was changed, and private X content was not queried again.
+The next step is the real external-network / Bot acceptance for the last item of A4a, then handle the host/SDK compatibility boundary per the publication authorization.
+Doc checks: 43 Markdown / 161 local targets; the 9 documents modified this round across the two repos were also checked against
+59 mapped targets, all present; whitespace checks passed on both sides.
 
-歷史 checkpoint — 2026-09-29 共用入口修正：當時 ADR/SPEC/PLAN 先行，A4a／Platform P4 尚未實作。
-以下為先前獨立 App origin／ingress 的歷史 fixture，不能作為 AC-10 或新 sandbox
-驗收；程式保留在原 worktrees，未發布。此次只做文件 diff／link 與獨立審查。
+Historical checkpoint — 2026-09-29 shared-ingress correction: at that time the ADR/SPEC/PLAN went first, and A4a / Platform P4 were not yet implemented.
+What follows is the historical fixture of the earlier standalone App origin / ingress, which cannot serve as AC-10 or new-sandbox
+acceptance; the code remains in the original worktrees, unpublished. This round did only the document diff/link and independent review.
 
-本次文件檢查：`check:docs` 通過（43 Markdown、161 local targets，39 個 sibling
-links 由標準檢查略過）；兩 repo 的 36 份修改文件另作映射檢查，1,244 個本地／
-sibling targets 全部存在；兩邊 whitespace check 通過。獨立審查修正 ingress
-ownership 衝突、外部帳號驗證與刪除政策的過度完成描述、憑證區分及編輯殘字；
-複查無剩餘 blocker。這些檢查不構成共用入口或新 sandbox 的實作驗收。
+This round's doc checks: `check:docs` passed (43 Markdown, 161 local targets, 39 sibling
+links skipped by the standard check); a mapping check of the 36 modified documents across the two repos found all 1,244 local and
+sibling targets present; whitespace checks passed on both sides. The independent review fixed the ingress
+ownership conflict, overstated completion wording on external account verification and the deletion policy, the credential distinction, and leftover edit text;
+the re-review had no remaining blocker. These checks do not constitute implementation acceptance of the shared entry or the new sandbox.
 
-2026-09-29 implementation: `feat/ask-mvp` / Platform `feat/app-components`。
-Apps 16 tests、Usage build、Ask archive build 與文件檢查通過。協調 SDK 由 Platform
-build 後 pack 成 tarball，再以 no-save 安裝；既有 release pin 未改。
-Windows Electron 的實際套件 create → close → MCP get/submit → reopen → Copy →
-paste 已通過（中文、換行、連結及字面 script 文字）；回覆使用隔離 fixture，
-無真實 X 內容。Archive SHA-256：
-`9e362b428837928457bbb6b3d0aa85e645fa344625d16d7cfe61c53c4933b6f6`。
-Store/transport 覆蓋重複／衝突、過期／遲到、重啟 unconfirmed、connection rotation
-及跨 attempt 拒絕。兩邊獨立審查修正後無 blocker。未 commit、發布、安裝到真實
-profile 或測試此版本的 live Bot；ngrok 真實帳號連線、macOS/Linux 與其他助理待驗證。
-最後文件檢查通過：42 Markdown、159 local targets；兩個 worktree 的修改文件另作
-跨 repo 映射連結檢查，441 個目標全部存在；兩邊 `git diff --check` 通過。
+2026-09-29 implementation: `feat/ask-mvp` / Platform `feat/app-components`.
+Apps 16 tests, the Usage build, the Ask archive build and doc checks passed. The coordination SDK was built by Platform
+and packed into a tarball, then installed with no-save; the existing release pins are unchanged.
+The actual package on Windows Electron passed create → close → MCP get/submit → reopen → Copy →
+paste (Chinese, line breaks, links and literal script text); replies used an isolated fixture,
+with no real X content. Archive SHA-256:
+`9e362b428837928457bbb6b3d0aa85e645fa344625d16d7cfe61c53c4933b6f6`.
+Store/transport coverage included duplicate and conflicting, expired and late replies, unconfirmed after restart, connection rotation
+and cross-attempt rejection. The independent reviews on both sides had no blocker after fixes. Not done: commit, publication, installing into a real
+profile, or testing the live Bot with this version; real ngrok account connection, macOS/Linux and other assistants remain to be verified.
+Final doc checks passed: 42 Markdown, 159 local targets; the modified documents in the two worktrees were also checked for
+cross-repo mapped links, all 441 targets present; `git diff --check` passed on both sides.
 
-2026-09-29 後續：Grok Bot synthetic 與 authenticated bookmarks probe 已回傳並核對收據；
-save order 僅由陣列推論、影片理解未驗證、Bot 仍由使用者啟動。Cursor CLI OAuth／
-41 個工具探索通過，但資料呼叫為 `client-not-enrolled`，不作可用 fallback。
-詳細證據見 [Runtime 研究記錄](https://github.com/cats-inc/cats-runtime/blob/main/docs/research/2026-09-29-cats-ask-mcp-probe.md)。
-實驗程式仍保留在本機 spike worktree，未隨文件提交。
-本次修正 App ownership：一個套件可含多前後端，統一管理；下一步為 A2／A3。
-文件檢查：`npm run check:docs` 通過（42 份 Markdown、159 個 local targets）；
-跨 worktree 映射檢查另涵蓋 36 份修改文件的 1,338 個目標，全部存在。獨立審查指出
-授權與 migration ownership 舊條款，修正後複查無 blocker。未執行 App build/test、
-改寫真實 registry 或發布產品；使用者後續授權文件直接 commit/push 到 main。
-這些檢查不是多元件執行驗收。
-以下保留首輪文件的歷史 checkpoint，不能當成目前尚未做 probe 的狀態。
+2026-09-29 follow-up: the Grok Bot synthetic and authenticated bookmarks probes returned and the receipts were checked;
+save order is only inferred from the array, video understanding is unverified, and the Bot is still launched by the user. Cursor CLI OAuth and
+41-tool discovery passed, but the data calls returned `client-not-enrolled`, so it is not a usable fallback.
+See the [Runtime research record](https://github.com/cats-inc/cats-runtime/blob/main/docs/research/2026-09-29-cats-ask-mcp-probe.md) for detailed evidence.
+The experimental code is still kept in the local spike worktree and was not committed with the documents.
+This round corrects App ownership: one package may contain multiple frontends and backends, managed together; the next step is A2/A3.
+Doc checks: `npm run check:docs` passed (42 Markdown files, 159 local targets);
+a cross-worktree mapping check also covered 1,338 targets across the 36 modified documents, all present. The independent review pointed out
+the old authorization and migration-ownership clauses; the re-review after the fix had no blocker. No App build/test was run,
+no real registry was rewritten, and no product was published; the user later authorized committing and pushing the documents directly to main.
+These checks are not multi-component execution acceptance.
+The historical checkpoint of the first round of documents is kept below and must not be read as the current state of no probes having been done.
 
-2026-09-29：在 `.claude/worktrees/ask-mvp-scope`、分支 `docs/ask-mvp-scope` 完成首輪文件草稿。
-下一步為 A1 的 Spark 個人化查詢往返驗證；Grok Bot 與 Meta AI 保持同等 MVP 目標。
-未建立 App、部署 relay、設定第三方 connector、呼叫個人助理或改寫使用者資料。
+2026-09-29: the first round of document drafts was completed in `.claude/worktrees/ask-mvp-scope`, branch `docs/ask-mvp-scope`.
+The next step is the Spark personalized-query round trip verification in A1; Grok Bot and Meta AI keep the same MVP target.
+No App was created, no relay deployed, no third-party connector configured, no personal assistant called, and no user data rewritten.
 
-文件驗證：
+Document validation:
 
-- `npm run check:docs` 通過：42 Markdown files、158 local targets；worktree 外 37 個 sibling links 由標準檢查略過。
-- 本輪 13 份新增／修改文件另作連結映射檢查：112 個本地與 7 個 sibling targets 全部存在；無尾端空白或缺少結尾換行。
-- `git diff --check` 通過。主 checkout 留在乾淨的 `main`。
-- 本輪為文件工作，未執行 App builds/tests、真實產品往返或獨立審查。
-- 使用者後續已授權 commit 與 PR，通過 repository checks 後自動合併；產品實作仍未開始。
+- `npm run check:docs` passed: 42 Markdown files, 158 local targets; 37 sibling links outside the worktree were skipped by the standard check.
+- A link mapping check on the 13 new or modified documents this round: 112 local and 7 sibling targets all present; no trailing whitespace or missing final newline.
+- `git diff --check` passed. The main checkout stayed on a clean `main`.
+- This round was documentation work; no App builds/tests, real product round trips or independent review were run.
+- The user later authorized the commit and PR, with auto-merge after the repository checks pass; product implementation has not started.
 
 *Created: 2026-09-29. Last updated: 2026-09-29.*

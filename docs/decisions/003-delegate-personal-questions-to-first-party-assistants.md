@@ -18,72 +18,100 @@ App-owned services under [Platform ADR-125](https://github.com/cats-inc/cats-pla
 That decision now also requires one public origin/port/tunnel for Platform,
 Mobile and all Apps. The local per-App ingress prototype must be revised.
 
-使用者需要 Gemini Spark 已具備的個人化理解與推薦，以及 Grok Bot、Meta AI
-在使用者身分／connector 授權下取得的內容。使用者已在原產品實測相關能力；
-後續 Grok Bot 書籤 probe 已通過；Spark／Meta 與正式候選套件的真實 Bot 往返尚未驗證。
-資料 API、公眾貼文搜尋及同品牌模型 API
-不能證明取得相同的個人脈絡。Grok 網頁版與 Grok Bot 必須分別辨識。
+The user wants the personalized understanding and recommendations that Gemini Spark already
+has, plus the content that Grok Bot and Meta AI obtain under the user's identity and connector
+authorization. The user has tested these capabilities in the original products; a later Grok
+Bot bookmark probe passed; real Bot round trips for Spark, Meta and the formal candidate
+package are not yet verified. Data APIs, public post search and same-brand model APIs
+cannot prove access to the same personal context. Grok web and Grok Bot must be
+identified separately.
 
-現行 Cats App 可以在單一 sandboxed HTML 文件中切換清單與詳情。可執行 SDK 1.3
-提供 Usage、圖片工作與返回 Lobby，尚無 Ask 任務或文字 clipboard 介面。
-一般 storage/action/navigation 型別的存在不表示已實作。檢查基準與官方入口資料
-記在 [feasibility baseline](../research/2026-09-29-personal-assistant-delegation-baseline.md)。
+A current Cats App can switch between a list and a detail view inside a single sandboxed
+HTML document. The executable SDK 1.3 provides Usage, image work and return to the Lobby;
+it has no Ask task or text clipboard interface. The existence of general
+storage/action/navigation types does not mean they are implemented. The inspection baseline
+and official entry-point data are recorded in the
+[feasibility baseline](../research/2026-09-29-personal-assistant-delegation-baseline.md).
 
 ## Decision
 
-1. 規劃獨立 Cats App **Ask**，工作套件 ID `cats.ask`、source slug `ask`。
-   MVP 流程為選擇個人助理 → 提問 → 查看狀態／回答 → 按小型複製按鈕。
-2. 委派對象是具體的產品、使用者連線及助理環境。Gemini Spark、Grok Bot、Meta AI
-   分開驗證；不得將 Grok 網頁版、Grok Build CLI 或通用模型 API 當成 Grok Bot fallback。
-   Meta Muse 若成為候選，另記其產品入口與驗證，不自動承接 Meta AI 能力。
-3. 採非同步任務語意，快回覆可立即顯示。外部開始執行必須有觀測依據；
-   排隊、等待助理、需要使用者操作與結果未確認不能混為「查詢中」。
-4. 優先驗證正式委派入口，或由外部助理透過受限 connector 領取問題及回傳結果。
-   MCP 是候選傳輸，不代表有喚醒能力、可與私人資料工具同時使用，或可免批准回傳。
-   觸發、查詢能力、回傳是三個各自需要通過的契約。
-5. Ask 前端透過一般 HTTP／串流呼叫同 App 的後端；Ask 自己擁有提問 API、
-   問答資料、外部助理 adapter、MCP 領取／回傳與收據。Platform 提供通用的
-   App sandbox、路由、身分隔離與程序生命週期；SDK 用於 clipboard 等宿主能力。
-   Runtime 僅提供實際需要的共通執行能力，這條 Bot 領取／回傳路線不必經過它。
-   一個 `cats.ask` 套件可含多個前端／後端，使用者只安裝、更新、管理一個 App。
-6. 問答生命週期由背景服務持有。離開 App 可重開查看；純本機 host 停機時，
-   不承諾仍能接收回覆。雲端回覆如何保留、重送與重啟後回收必須由選定 transport 證明。
-7. 先保存 request identity 再送出；同一 request 的本機重試與回覆接收須去重。
-   外部缺乏去重或查詢收據時，結果不明不得自動再次提問。不能宣稱跨供應商 exactly-once。
-8. 回答保存本文、原問題、來源產品／連線、時間與已有引用。個人化理由可以是助理判斷；
-   不強迫每句推薦附原始資料連結，也不把回答當成完整資料匯出或經核實的使用者記憶。
-9. MVP 由使用者複製／貼上到 Chat、Code、Work。導覽 SDK、答案深層連結、宿主歷史同步、
-   跨產品交付、共用答案檢索及自動長期記憶明確延後。
+1. Plan a standalone Cats App **Ask**, with working package ID `cats.ask` and source slug
+   `ask`. The MVP flow is: choose a personal assistant → ask a question → view status/answer →
+   press a small copy button.
+2. The delegation target is a specific product, user connection and assistant environment.
+   Gemini Spark, Grok Bot and Meta AI are verified separately; Grok web, the Grok Build CLI
+   or a general model API must not be treated as a Grok Bot fallback. If Meta Muse becomes a
+   candidate, record its product entry point and verification separately; it does not
+   automatically inherit Meta AI capabilities.
+3. Use asynchronous task semantics; fast replies can be shown immediately. External execution
+   starting must have observable evidence; queued, waiting for the assistant, needing user
+   action and result unconfirmed must not be conflated as "querying".
+4. Prefer verifying a formal delegation entry point, or having the external assistant claim
+   questions and return results through a restricted connector. MCP is a candidate transport;
+   it does not imply wake-up capability, that it can be used together with private-data tools,
+   or that results can be returned without approval. Triggering, query capability and return
+   are three contracts that each must pass.
+5. The Ask frontend calls the same App's backend through ordinary HTTP/streaming. Ask itself
+   owns the question API, Q&A data, external assistant adapters, MCP claim/return and receipts.
+   Platform provides the generic App sandbox, routing, identity isolation and process
+   lifecycle; the SDK is used for host capabilities such as the clipboard. Runtime provides
+   only the shared execution capabilities actually needed; this Bot claim/return route need
+   not pass through it. One `cats.ask` package can contain multiple frontends/backends, and the
+   user installs, updates and manages only one App.
+6. The Q&A lifecycle is held by a background service. Leaving the App and reopening it shows
+   the same state; when only the local host is down, receiving replies is not promised. How a
+   cloud reply is retained, resent and recovered after restart must be proven by the selected
+   transport.
+7. Save the request identity before sending; local retries and reply receipt for the same
+   request must be deduplicated. When the external side lacks deduplication or receipt lookup,
+   an unknown result must not trigger an automatic re-ask. Cross-vendor exactly-once must not
+   be claimed.
+8. An answer stores its body, the original question, the source product/connection, the time
+   and any existing citations. The personalization rationale can be the assistant's judgment;
+   every recommendation is not forced to carry a raw-data link, and an answer is not treated
+   as a complete data export or a verified user memory.
+9. In the MVP the user copies/pastes into Chat, Code or Work. The navigation SDK, deep links
+   to answers, host history sync, cross-product delivery, shared answer retrieval and
+   automatic long-term memory are explicitly deferred.
 
-10. Ask 共用 Platform 的 public origin、HTTPS port 與 tunnel，掛載於
-    `/apps/cats.ask/`；MCP 為 `/apps/cats.ask/mcp`。同一入口同時供 Platform、
-    Cats Mobile 與其他 Apps 使用，依路徑及各自認證分流。入口設定／生命週期由
-    Platform 持有；停用 Ask 只撤銷 Ask，不中斷 Mobile 或其他 App。
-    Ask tutorial 顯示共用入口狀態及自身 connector 指令，不收 ngrok token，
-    不要求獨立 domain、公開 port 或後端安裝。前端仍直接 fetch 自有 API；
-    共用 URL path 不代表瀏覽器隔離，宿主須落實 SPEC-122 的 sandbox／grant。
+10. Ask shares Platform's public origin, HTTPS port and tunnel, mounted at `/apps/cats.ask/`;
+    MCP is at `/apps/cats.ask/mcp`. The same entry point serves Platform, Cats Mobile and
+    other Apps at once, routed by path and by each one's own authentication. Platform owns the
+    entry configuration/lifecycle; disabling Ask revokes only Ask and does not interrupt
+    Mobile or other Apps. The Ask tutorial shows the shared entry status and its own connector
+    commands, does not collect an ngrok token, and does not require a separate domain, public
+    port or backend installation. The frontend still fetches its own API directly; a shared
+    URL path does not imply browser isolation, and the host must enforce the SPEC-122
+    sandbox/grant.
 
 ## Consequences
 
-- Ask 可專注驗證使用者已有的第一方能力，UI 與每家產品的接法分離。
-- 同一 App 可逐個接入三個產品，但每個入口都有獨立驗收；第一個成功不代表三家完成。
-- 使用者在原產品登入、啟動或批准的步驟可能仍存在，需呈現且納入驗收。
-- 需要 Platform 補齊 App 多元件執行與直接通訊；現有 renderer 限制不作產品邊界。
-  不要求使用者另外安裝後端、啟動 terminal server 或管理第二個套件。
-- 雲端助理若需回呼本機，需受限且可達的端點或 relay。部署方式、認證、版本及保留策略
-  在 transport spike 後固定；本次不開 tunnel、不保留連接埠、不部署服務。
-- App 內多層 drill down 可用本地 UI 狀態完成，沒有導覽 SDK 的前置依賴。
+- Ask can focus on verifying the first-party capabilities the user already has, keeping the
+  UI separate from how each product is connected.
+- The same App can onboard the three products one at a time, but each entry point has its own
+  acceptance; the first success does not mean all three are done.
+- Steps where the user signs in, starts or approves in the original product may remain; they
+  must be presented and included in acceptance.
+- Platform must add multi-component App execution and direct communication; the current
+  renderer limits are not a product boundary. The user is not required to install a backend
+  separately, start a terminal server or manage a second package.
+- If a cloud assistant needs to call back to the local machine, it needs a restricted,
+  reachable endpoint or relay. Deployment, authentication, versions and retention policy are
+  fixed after the transport spike; this change opens no tunnel, reserves no port and deploys
+  no service.
+- Multi-level drill-down inside the App can be done with local UI state, with no prerequisite
+  dependency on the navigation SDK.
 
 ## Alternatives considered
 
 | Alternative | Assessment |
 |---|---|
-| 使用原始資料 API／一般搜尋自行重建答案 | 可處理其他用途，但無法證明使用了原助理的個人化理解和授權環境，不作本 MVP 替代驗收。 |
-| 以同步 provider completion 包住所有產品 | 無法如實表示人工批准、延後觸發及不明完成狀態；採背景任務加即時呈現。 |
-| 直接控制已登入頁面的 DOM | 保留為正式入口不足時的候選，須另記身分保持、頁面變動、回覆完整性與恢復證據。 |
-| Desktop UI automation | 使用者不希望作首選；只作後續明確評估的 fallback，不預設已選定。 |
-| 讓使用者從原助理手動搬回答案 | 可供對照測試；不構成 Cats 交付問題並回收答案的整合成功。 |
-| 先建跨產品知識庫與自動注入 | 超出使用者指定的 copy/paste MVP，延後。 |
+| Rebuild answers from raw data APIs / general search | Can serve other purposes, but cannot prove the original assistant's personalized understanding and authorized environment were used; not an acceptable substitute for this MVP. |
+| Wrap every product in a synchronous provider completion | Cannot truthfully represent manual approval, deferred triggering and unknown completion state; use a background task plus immediate presentation instead. |
+| Control the DOM of a signed-in page directly | Kept as a candidate if formal entry points are insufficient; identity persistence, page changes, reply completeness and recovery evidence must be recorded separately. |
+| Desktop UI automation | The user does not want it as the first choice; only a fallback to evaluate explicitly later, not assumed selected. |
+| Have the user move answers manually from the original assistant | Can serve as a comparison test; does not count as integration success where Cats delivers the question and retrieves the answer. |
+| Build a cross-product knowledge base and automatic injection first | Beyond the user-specified copy/paste MVP; deferred. |
 
 ## References
 

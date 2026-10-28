@@ -4,276 +4,276 @@
 
 | Field | Value |
 | --- | --- |
-| Status | In progress — A3a 已實作並準備為 Studio 0.3.0；A0～A2、A3b～A5 尚未開始 |
-| Owner | cats-apps 整合；Runtime、Platform 各自負責其 repository 的工作 |
-| Assigned To | A3a 由 Apps 實作；其餘待使用者安排 |
-| Reviewer | 待跨 repository contract review 與獨立實作 review |
+| Status | In progress — A3a is implemented and being prepared as Studio 0.3.0; A0–A2 and A3b–A5 have not started |
+| Owner | cats-apps integration; Runtime and Platform each own the work in their own repository |
+| Assigned To | A3a is implemented by Apps; the rest awaits the user's scheduling |
+| Reviewer | Pending the cross-repository contract review and an independent implementation review |
 | Spec | [SPEC-006](../specs/SPEC-006-studio-image-workspace.md) |
-| Decision | [ADR-004](../decisions/004-expand-studio-with-verified-image-profiles.md)、[ADR-005](../decisions/005-provider-first-studio-image-operations.md) |
+| Decision | [ADR-004](../decisions/004-expand-studio-with-verified-image-profiles.md), [ADR-005](../decisions/005-provider-first-studio-image-operations.md) |
 
 ## Handoff reading order and scope
 
-接手者先讀 workspace／member AGENTS 與自己的 agent-specific instructions，再讀
-本 PLAN、SPEC、ADR-004、ADR-005 與 [probe summary](../research/2026-10-23-studio-cli-media-probe-summary.md)。
-原始能力／尺寸證據在 [三家實產報告](../research/2026-10-23-three-provider-image-artifact-probe.md)、
-[Grok capability probe](../research/2026-10-23-grok-media-capability-probe.md)
-及 [Grok sample](../research/2026-10-23-grok47-xhigh-studio-sample.md)；更多 provider
-調查遵循 [SOP](../research/2026-10-23-cli-media-probe-playbook.md)。
+A taker first reads the workspace and member AGENTS and their own agent-specific instructions, then this
+PLAN, the SPEC, ADR-004, ADR-005 and the [probe summary](../research/2026-10-23-studio-cli-media-probe-summary.md).
+The raw capability and size evidence is in the [three-provider real-output report](../research/2026-10-23-three-provider-image-artifact-probe.md),
+the [Grok capability probe](../research/2026-10-23-grok-media-capability-probe.md)
+and the [Grok sample](../research/2026-10-23-grok47-xhigh-studio-sample.md); further provider
+investigation follows the [SOP](../research/2026-10-23-cli-media-probe-playbook.md).
 
-目標是「先選服務，再做它能做的事」的圖片工作區：四家候選服務的生成，加上有證據的
-修圖與合成。不是一次包辦全部多模態功能，也不是只改 CSS。保留 `cats.studio`、既有
-作品與 SDK 邊界；不把 Studio renderer 改成 shell／provider API client，不新增 App-owned
-server。其他完整 Apps 的服務架構不在這次變更範圍。
+The goal is an image workspace that "picks the service first, then does what that service can do": generation by the four candidate services, plus
+photo editing and compositing where there is evidence. It is not taking on every multimodal feature at once, and not just a CSS change. It keeps `cats.studio`, existing
+works and the SDK boundary; it does not turn the Studio renderer into a shell or provider API client, and adds no App-owned
+server. The service architecture of other full Apps is outside the scope of this change.
 
 ### Already established inputs
 
-- [x] 四家有各一張可解碼原圖；模型、格式、尺寸、hash 與證據限制已記錄。
-- [x] Muse 有「圖片成功後回合 timeout」案例，且方形構圖意圖得到 3:2 圖片。
-- [x] Antigravity child 與 Codex nested exec 的實際生成呼叫已個別核對。
-- [x] Grok `image_edit` 單圖／多圖的工具定義與比例差異已讀到；Muse／Codex 的參考輸入
-  與 Codex 透明背景只有代理回報。
-- [x] 使用者審閱互動設計稿，決定先選服務、操作由 profile 宣告（ADR-005）。
+- [x] Each of the four has one decodable original image; the model, format, size, hash and evidence limits are recorded.
+- [x] Muse has a case of "a turn timeout after the image succeeded", and a square composition intent yielded a 3:2 image.
+- [x] The actual generation calls of the Antigravity child and the Codex nested exec were each checked individually.
+- [x] The tool definitions and aspect-ratio differences of Grok `image_edit` for single and multiple images were read; the reference inputs of Muse and Codex
+  and Codex's transparent background are only agent-reported.
+- [x] The user reviewed the interactive design draft and decided to pick the service first and have operations declared by the profile (ADR-005).
 
-這些不是新 Studio 的 bounded route 或 installed acceptance。沒有新增生成額度；
-任何後續 live probe／paid acceptance 先套用當時使用者的明確授權與次數限制。
+These are not the new Studio's bounded route or installed acceptance. No new generation quota was added;
+any later live probe or paid acceptance first applies the user's explicit authorization and count limits at that time.
 
 ## Shared Platform service consumer track (authorized, 2026-10-23)
 
 [Platform PLAN-121](../../../cats-platform/docs/plans/PLAN-121-shared-image-service-and-controlled-cat-generation.md)
-管理 Studio／Cat 共用圖片服務、有限 Cat grant、資產與 Telegram 送達。
-本段列 Apps consumer 責任；owner 已授權實作與必要發布，並澄清共用對象是 Studio，Usage 不改。
+manages the image service shared by Studio and Cats, the limited Cat grant, assets and Telegram delivery.
+This section lists the Apps consumer responsibilities; the owner authorized implementation and the necessary release, and clarified that the shared party is Studio and Usage is unchanged.
 
-- [x] Studio 0.4.0 改用 host-injected `media.images`（SDK floor `^1.8.0`），保留
-      contract 2 的已啟用 profiles、PNG/JPEG、既有作品與佇列；不新增 App 生圖 server。
-      Archive encoder 仍使用公開 exact Platform 0.6.0，與 browser SDK 的版本獨立。
-- [ ] 配合 Platform P1/P5，以真 built Studio＋host SDK＋隔離 fixtures 驗證提交、
-      cancel、reopen、offline/read/export、exact bytes 與 App/account 隔離。
-- [ ] 驗證 Studio 未安裝／停用／卸載不撤銷 Cat 的獨立 grant，Studio 也不自動
-      看見 Cat 私有作品；既有 Studio 工作與原圖升級後保持同一 IDs/hash。
-- [ ] 若後續要把 Cat 作品用於修圖，先定義明確 sharing/source grant，再和 A0/A2
-      協調 SDK 契約；不移除目前同 App/account source 限制。
+- [x] Studio 0.4.0 switches to the host-injected `media.images` (SDK floor `^1.8.0`), keeping
+      contract 2's enabled profiles, PNG/JPEG, existing works and queue; no App image-generation server is added.
+      The archive encoder still uses the public exact Platform 0.6.0, independent of the browser SDK's version.
+- [ ] Together with Platform P1/P5, using a real built Studio + host SDK + isolated fixtures, verify submit,
+      cancel, reopen, offline/read/export, exact bytes and App/account isolation.
+- [ ] Verify that Studio being uninstalled, disabled or removed does not revoke a Cat's independent grant, and that Studio does not automatically
+      see a Cat's private works; existing Studio work and original images keep the same IDs/hash after the upgrade.
+- [ ] If Cat works are later to be used for photo editing, first define an explicit sharing/source grant, then coordinate the SDK contract with A0/A2;
+      the current same-App/account source restriction is not removed.
 
-Runtime 的 same-instance／pool／工具重入由 Platform P0/P5 與 Runtime owner 驗證，
-此次增加來源 session 的受控讓位；修圖／合成仍走下列 A0～A5，不借用尚未完成的驗收。
+Runtime's same-instance, pool and tool re-entry are verified by Platform P0/P5 and the Runtime owner,
+and this change adds a controlled yield for the source session; photo editing and compositing still follow A0–A5 below, without borrowing acceptance that is not yet complete.
 
 ## Workstreams and dependencies
 
-| Workstream | Owner | 交付物 | 可並行／依賴 |
+| Workstream | Owner | Deliverables | Parallel / dependency |
 | --- | --- | --- | --- |
-| A0 Contract and feasibility | Runtime + Platform + Apps | owners 的 successor 文件、contract 2（含操作、來源、options）fixture/types、adapter 啟用 gate、升級／版本矩陣 | 最先；A3a 不依賴 |
-| A1 Native execution | Runtime | 每個「服務 × 操作」的 profiles、bounded runners、來源輸入、matching receipts、原檔驗證與 recovery | 依 A0；與 A2/A3b 並行；逐一啟用 |
-| A2 SDK and retained works | Platform | typed bridge、來源授權與解析、受管 PNG/JPEG、job projection、storage upgrade | 依 A0；可先用 Runtime fixtures |
-| A3a Studio UI on SDK 1.x | Apps | 先選服務的 built App；能力正規化層同時讀 schema 1 與提案 schema 2；在現有 host 上只出現 Grok 生成 | 立即開始；可獨立合併，不 bump |
-| A3b Contract 2 wiring | Apps | 接 A2 的公開 SDK major、manifest compatibility、移除提案 fixture 與實際契約的差異 | 依 A0／A2 |
-| A4 Integration and review | 三方整合者 | 真實 package/host fixtures、跨版本驗收、各「服務 × 操作」acceptance evidence | A1/A2/A3b 相容組合完成後 |
-| A5 Release preparation | 各 release owner | 原始 bump/PR 中的 notes、versions、pins、upgrade/signing/compatibility | 實作與驗收完成，且另有發布授權時 |
+| A0 Contract and feasibility | Runtime + Platform + Apps | The owners' successor documents, contract 2 (including operations, sources, options) fixtures/types, adapter enablement gate, upgrade and version matrix | First; A3a does not depend on it |
+| A1 Native execution | Runtime | For each "service × operation": profiles, bounded runners, source inputs, matching receipts, original-file validation and recovery | Depends on A0; parallel with A2/A3b; enabled one by one |
+| A2 SDK and retained works | Platform | Typed bridge, source authorization and resolution, managed PNG/JPEG, job projection, storage upgrade | Depends on A0; can start with Runtime fixtures |
+| A3a Studio UI on SDK 1.x | Apps | A built App that picks the service first; the capability normalization layer reads both schema 1 and the proposed schema 2; only Grok generation appears on the current host | Start immediately; can merge independently, no bump |
+| A3b Contract 2 wiring | Apps | Connect A2's public SDK major and manifest compatibility, and remove differences between the proposed fixtures and the actual contract | Depends on A0/A2 |
+| A4 Integration and review | Three-party integrator | Real package/host fixtures, cross-version acceptance, acceptance evidence for each "service × operation" | After the A1/A2/A3b compatible combination is done |
+| A5 Release preparation | Each release owner | Notes, versions, pins, upgrade/signing/compatibility in the original bump/PR | When implementation and acceptance are done and a release is separately authorized |
 
-A3a 可以先交付，但不能以 UI 完成宣告 A1／A2 已完成。新 provider 或新操作的
-production capability 逐一在通過 gate 後開放，不用等待其他路徑，也不可先放能按的假選項。
+A3a can be delivered first, but UI completion cannot be used to declare A1 and A2 done. The production capability of a new provider or new operation
+opens one by one after it passes its gate, without waiting for other paths, and no fake option that can be pressed may be shown first.
 
 ## A0 — Freeze contracts and prove bounded routes
 
-- [x] Runtime 與 Platform 各建立／更新其 owning ADR/SPEC/PLAN successor，回鏈本套文件（Runtime ADR-047／SPEC-038／PLAN-048、Platform ADR-137／SPEC-119）；
-  原 ADR-042／SPEC-033／PLAN-043 與 ADR-120／SPEC-119／PLAN-111 保留交付歷史。
-- [ ] 凍結 SPEC 的 capability/profile/operation/agentConfig/target 關係、`inputs`、
-  `aspectRatio` 模式與 enum、`transparentBackground`、canonical submit（含 `sourceIds`）、
-  schema 2 job/output/warning、idempotency hash、safe error codes 與 read/export 型別。
-  寫可共用的 sanitized contract vectors，避免 Apps／Platform 各自發明 enum。
-- [ ] 實際查明四條 native transport 的限制手段：工具 allowlist、媒體呼叫上限、
-  parent/child 限制、回合／deadline、取消、更新策略及 CLI version evidence。
-  先使用 fake process／保留的 sanitized records；不要為了驗證旗標自動產圖。
-- [ ] 對 Muse 的空 normalized arguments、Codex nested `exec`、Antigravity child
-  correlation 提出可信、可界定大小的事件擷取方式，不靠掃 home、讀 thinking 或 regex
-  找任意圖片路徑。建立能力不足時的不可用 reason。
-- [ ] 修圖／合成：查明各服務可接受的來源形式（Grok 附件／路徑／data URL、Muse 本機
-  `image_paths`、Codex reference paths、Antigravity 未知）、格式／大小限制，以及能否
-  把來源放在 attempt 專屬位置而不擴大 provider 讀取範圍。做不到的操作不啟用。
-- [ ] 檢查 media budget 是否真的在執行前生效。若 CLI 只能靠 prompt 或事後數工具，
-  該 route 記為尚不可啟用，先完成其他 route；不得宣稱有硬性費用限制。
-- [x] 列出 contract 2 的 SDK major、Runtime/Platform/Studio 0.x minor 邊界與 storage（決定：SDK 1.7.0 相容 minor 依 App 宣告；Runtime 下一 0.x minor）
-  migration。決定 exact versions 的 owner 和發布時機；這個階段不 bump、不發布。
-- [ ] 記錄 Usage／Ask 等現有 Apps 的 SDK／host 相容與升級策略、過舊 package 的明確
-  compatibility UX，不能因更新 Studio 而默默停用其他官方 Apps。
+- [x] Runtime and Platform each create or update their owning ADR/SPEC/PLAN successor, linking back to this set of documents (Runtime ADR-047 / SPEC-038 / PLAN-048, Platform ADR-137 / SPEC-119);
+  the original ADR-042 / SPEC-033 / PLAN-043 and ADR-120 / SPEC-119 / PLAN-111 keep the delivery history.
+- [ ] Freeze the SPEC's capability/profile/operation/agentConfig/target relationships, `inputs`,
+  `aspectRatio` modes and enum, `transparentBackground`, canonical submit (including `sourceIds`),
+  schema 2 job/output/warning, idempotency hash, safe error codes and read/export types.
+  Write shareable sanitized contract vectors so that Apps and Platform do not each invent enums.
+- [ ] Find out the actual means of restriction for the four native transports: tool allowlist, media call cap,
+  parent/child limits, turn/deadline, cancellation, update policy and CLI version evidence.
+  Use fake processes or retained sanitized records first; do not generate images automatically just to verify a flag.
+- [ ] For Muse's empty normalized arguments, Codex nested `exec` and Antigravity child
+  correlation, propose a credible, size-bounded way to capture events, without scanning home, reading thinking or using a regex
+  to find an arbitrary image path. Establish an unavailable reason for when capability is insufficient.
+- [ ] Photo editing and compositing: find out the source forms each service accepts (Grok attachment / path / data URL, Muse local
+  `image_paths`, Codex reference paths, Antigravity unknown), the format and size limits, and whether
+  sources can be placed in an attempt-specific location without widening the provider's read scope. An operation that cannot be done is not enabled.
+- [ ] Check whether the media budget really takes effect before execution. If a CLI can only rely on a prompt or counting tools afterwards,
+  that route is recorded as not yet enableable, and other routes are completed first; a hard cost limit must not be claimed.
+- [x] List contract 2's SDK major, the Runtime/Platform/Studio 0.x minor boundaries and the storage
+  migration (decision: SDK 1.7.0 compatible minor per App declaration; Runtime next 0.x minor). Decide the owner and release timing
+  of the exact versions; this stage does not bump or publish.
+- [ ] Record the SDK/host compatibility and upgrade strategy of existing Apps such as Usage and Ask, and an explicit
+  compatibility UX for packages that are too old; updating Studio must not silently disable other official Apps.
 
-**Exit:** 三方共享一份可供 fixtures 驗證的契約；每個「服務 × 操作」有可執行或尚不可
-啟用的具體理由。未解的 CLI 能力不阻止 A3a，但阻止該 route 的 live enablement。
+**Exit:** The three parties share one contract that fixtures can validate; each "service × operation" has either an executable state or a concrete reason it cannot yet be
+enabled. An unresolved CLI capability does not block A3a, but blocks live enablement of that route.
 
 ## A1 — Runtime profiles, execution and collection
 
-- [x] 將 Grok 專用 catalog/profile/service 提取為 operation-specific 執行策略，仍由
-  Runtime 管理；不另建模型目錄。首批代理設定遵循 SPEC，Grok 不得改回 Fast／Low。
-- [ ] 延續 shared selection、worker capacity、metering、singleton、shutdown 與單一
-  image active slot；對 capabilities 與 submit 使用一致 preflight，不新增 paid probe。
-- [ ] 有界媒體操作的 worker 名額：閒置的聊天 worker 會佔滿 `maxSessions` 且不回收
-  （2026-10-23 實例：10 個閒置研究對話讓 Studio 生圖立即以 busy 失敗）。設計讓有界操作
-  回收最久未用的閒置 worker 或保留名額，並加入閒置回收；先確認停止閒置 worker 後聊天
-  session 能安全續接。已先改為回報 `runtime_capacity_full`，預設名額上調到 50。
-- [ ] 實作 Grok 生成 profile，先以現有 bounded flow 作回歸基準；保留既有 collection-only
-  recovery 語意，不用新 attempt 取代舊成功或失敗的圖片。
-- [x] Muse：一個原生媒體呼叫、matching result 與 cwd-relative 圖片來源的可驗證綁定；
-  成功 result 後 timeout 能安全結束執行、驗證原 PNG，並保留 execution warning。
-- [ ] Codex：從有界 native events 取得 nested `exec` 的生成 evidence 與 output hint，
-  不把 general exec/shell 權限整包開放給媒體 profile，也不執行 provider API fallback。
-- [ ] Antigravity：只允許一次指定 image-generator child、一次媒體呼叫；管理父子
-  取消／結束與 native artifact locator，不把 Workspace 當 output directory。
-- [ ] 修圖／合成：依 A0 結果逐一實作來源輸入（attempt 專屬位置、containment、清理），
-  Grok 單圖修圖不送比例、多圖合成送 enum 內比例；每個操作有自己的 fixtures。
-- [ ] 收集合規來源到 Runtime data root，保留 provider 原檔；完整 PNG/JPEG 解碼與
-  MIME、byte/pixel/edge limits、hash、alpha 量測及來源 containment checks。
-- [ ] 實作 turn outcome／artifact outcome 分離；只在來源、次數、停止、取消檢查全部
-  通過後允許 saved-with-warning。未知或違規不能透過這條路升格。
-- [x] Runtime schema 1→2 upgrade：validate/backup/atomic replace/failure recovery/
-  repeated restart；保留 job IDs、原 JPEG 與 historical agent metadata，不重新執行。
+- [x] Extract the Grok-specific catalog/profile/service into an operation-specific execution strategy, still
+  managed by Runtime; no separate model catalog is built. The first agent settings follow the SPEC, and Grok must not revert to Fast / Low.
+- [ ] Continue shared selection, worker capacity, metering, singleton, shutdown and the single
+  image active slot; use the same preflight for capabilities and submit, and add no paid probe.
+- [ ] Worker slots for bounded media operations: idle chat workers fill `maxSessions` and are not reclaimed
+  (instance on 2026-10-23: 10 idle research conversations made Studio image generation fail immediately with busy). Design for bounded operations to
+  reclaim the least recently used idle worker or reserve slots, and add idle reclamation; first confirm that chat
+  sessions can be safely resumed after an idle worker is stopped. It has first been changed to report `runtime_capacity_full`, and the default slot count was raised to 50.
+- [ ] Implement the Grok generation profile, using the existing bounded flow as the regression baseline; keep the existing collection-only
+  recovery semantics, and do not replace an earlier successful or failed image with a new attempt.
+- [x] Muse: a verifiable binding of one native media call, the matching result and a cwd-relative image source;
+  a timeout after a successful result can safely end the execution, validate the original PNG, and keep the execution warning.
+- [ ] Codex: obtain the generation evidence and output hint of the nested `exec` from bounded native events,
+  without opening the general exec/shell permission wholesale to the media profile, and without running a provider API fallback.
+- [ ] Antigravity: allow only one specified image-generator child and one media call; manage parent-child
+  cancellation/termination and the native artifact locator, and do not treat the Workspace as an output directory.
+- [ ] Photo editing and compositing: per the A0 result, implement source input one by one (attempt-specific location, containment, cleanup),
+  with Grok single-image editing sending no aspect ratio and multi-image compositing sending an aspect ratio within the enum; each operation has its own fixtures.
+- [ ] Collect compliant sources into the Runtime data root, keeping the provider's original file; full PNG/JPEG decoding and
+  MIME, byte/pixel/edge limits, hash, alpha measurement and source containment checks.
+- [ ] Implement separation of turn outcome and artifact outcome; allow saved-with-warning only after the source, count,
+  stop and cancel checks all pass. Unknown or violating cases cannot be promoted through this path.
+- [x] Runtime schema 1→2 upgrade: validate / backup / atomic replace / failure recovery /
+  repeated restart; keep job IDs, the original JPEG and historical agent metadata, without re-executing.
 
-**Exit:** 啟用中的每個 profile 通過受管 runner/collector fixtures，並有針對其實際
-bounded route 的 acceptance 證據。若沒有新的 live-call 授權，回報 fixture 完成與 live
-gate 未完成，保持該新 profile 不可用；不得把既有 Chat probe 改名為 App acceptance。
+**Exit:** Every enabled profile passes managed runner/collector fixtures and has acceptance evidence for its actual
+bounded route. Without new live-call authorization, report fixtures done and the live
+gate not done, and keep that new profile unavailable; an existing Chat probe must not be renamed as App acceptance.
 
 ## A2 — Platform SDK, persistence and delivery
 
-- [ ] 依 A0 更新公開 SDK types、實際 injected bridge、Runtime client projections、
-  host routes 與契約 vectors；保留 `media.images` 的 scoped permission。
-- [ ] request identity 包含 profile revision、target/config、operation、有順序的來源、
-  prompt/options；先持久化再 dispatch，lost POST/double click/reload/reconnect 都只恢復
-  原 request。
-- [ ] 來源授權與解析：只接受同一 App/account 已成功保存的作品；把保存原檔與 SHA-256
-  交給 Runtime；撤銷／不存在回 `source_unavailable`；job 保存來源快照。
-- [ ] 維持 Core task/run/artifact authority、App/account/version/package digest 隔離、
-  disable/remove revocation；不額外建立 Studio job database 或可由 renderer 決定的路徑。
-- [x] 正確接收／保存／read／export PNG 與 JPEG；原檔 extension/MIME/hash 相符，匯出
-  byte-identical；不得沿用硬寫 `.jpg`／`image/jpeg` 的路徑與 header。
-- [ ] 增加 warnings、execution outcome 與量測 transparency projection；cancel 意圖在
-  保存 race 中優先。refresh/list/reopen 只能讀／收集原 attempt；磁碟滿後也不得再次生成。
-- [x] 作品刪除（SDK 1.x 相容新增 `images.delete`）：Platform 刪 Core 紀錄、原檔，再盡力請 Runtime
-  刪 receipt；進行中／待確認回 `image_not_deletable`；收集與刪除交錯時不留下孤兒檔。SDK 版號
-  隨下一次 Desktop 發版準備調整。
-- [ ] migration 位於 owner 的既有 state/store 升級機制，保留 foreign Core fields、IDs、
-  original artifacts，舊作品 operation 為生成；對失敗、重啟與 unsupported downgrade
-  提供測試／明確錯誤。
-- [ ] 更新真正 package/host smoke harness 的 fixtures，保留離線圖片與 Usage/Ask 啟用
-  相容案例；不直接對真實 profile 寫 synthetic Core records。
+- [ ] Per A0, update the public SDK types, the actually injected bridge, the Runtime client projections,
+  the host routes and the contract vectors; keep `media.images`'s scoped permission.
+- [ ] The request identity includes the profile revision, target/config, operation, ordered sources, and
+  prompt/options; persist before dispatch, and a lost POST, double click, reload or reconnect only recovers the
+  original request.
+- [ ] Source authorization and resolution: accept only works successfully saved by the same App/account; hand the saved original and SHA-256
+  to Runtime; a revoked or missing source returns `source_unavailable`; the job keeps a source snapshot.
+- [ ] Maintain Core task/run/artifact authority, App/account/version/package digest isolation, and
+  disable/remove revocation; do not create an extra Studio job database or a path the renderer can decide.
+- [x] Correctly receive, save, read and export PNG and JPEG; the original file's extension/MIME/hash match and the export is
+  byte-identical; the paths and headers hard-coded to `.jpg` / `image/jpeg` must not be kept.
+- [ ] Add warnings, execution outcome and the measured transparency projection; cancel intent takes priority in
+  a save race. refresh/list/reopen can only read or collect the original attempt; generation must not run again even after the disk fills.
+- [x] Work deletion (SDK 1.x compatible addition `images.delete`): Platform deletes the Core record and the original file, then does its best to ask Runtime to
+  delete the receipt; in-progress or pending-confirmation returns `image_not_deletable`; interleaving collection and deletion leaves no orphan files. The SDK version
+  will be adjusted with the next Desktop release preparation.
+- [ ] The migration lives in the owner's existing state/store upgrade mechanism, keeping foreign Core fields, IDs, and
+  original artifacts, with the operation of old works being generation; provide tests or explicit errors for failure, restart
+  and unsupported downgrade.
+- [ ] Update the fixtures of the real package/host smoke harness, keeping offline images and the Usage/Ask enablement
+  compatibility cases; do not write synthetic Core records directly into a real profile.
 
-**Exit:** 實際 renderer SDK 與 host 使用 fixtures 可完整走四家與各操作狀態；文件型別
-本身不算功能驗收。公開 SDK dev pin／package compatibility 在正式 release preparation 時協調。
+**Exit:** The actual renderer SDK and host can walk through the four services and each operation state using fixtures; the document types
+alone do not count as functional acceptance. The public SDK dev pin and package compatibility are coordinated during the formal release preparation.
 
 ## A3a — Studio UI on SDK 1.x
 
-能力正規化與提交建構集中在 `apps/studio/src/model.js`，可被 Node 單元測試直接 import；
-`app.js` 只負責 DOM 與 SDK 呼叫。這讓 schema 1 production 行為與 schema 2 提案 fixtures
-共用同一個 UI，A3b 只需修改正規化層。
+Capability normalization and submit construction are centralized in `apps/studio/src/model.js`, which Node unit tests can import directly;
+`app.js` is responsible only for the DOM and SDK calls. This lets schema 1 production behavior and the schema 2 proposed fixtures
+share one UI, and A3b only needs to change the normalization layer.
 
-- [x] 能力正規化：schema 1 → 每個 Grok target 一個服務、只有生成、原生 1:1；schema 2
-  提案 → 服務、操作、比例模式與 enum、來源上下限、透明背景、代理設定、不可用原因；
-  未知 schema 或格式錯誤 fail closed（沒有可用服務，作品仍可讀）。
-- [x] 提交建構：schema 1 只送 `requestId`/`instance`/`prompt`；schema 2 依 SPEC 提案，
-  只帶宣告的 options。描述以 code points 驗證，來源張數依操作驗證。
-- [x] Job 正規化：缺 operation 視為生成；format 由 MIME 決定；寬高、比例、bytes、
-  量測透明度（JPEG 為不透明、未量測 PNG 為未知）、warning、來源與執行結果。
-- [x] 畫面：服務卡、操作、來源挑選、描述與靈感、比例模式、透明背景、代理設定、送出、
-  結果預覽與量測尺規、放大、作品篩選與卡片，依 SPEC 的狀態表提供動作。
-- [x] 草稿與 active request 分離；切服務／操作不產圖、不改既有工作。明確提交才選取新
-  工作；背景 polling 不搶走使用者選中的舊作品。
-- [x] 送出結果未確認時保留同一 requestId 與 payload；「確認送出結果」以相同 payload
-  重送（Platform 依 requestId 回傳原 attempt，不同 payload 為 conflict）。
-- [x] Provider-specific safe 錯誤文案取代硬編碼 Grok 文字；`refresh`／確認結果與
-  「再生成一張」分開，後者只在使用者明確按下時建立新 request。
-- [x] 作品縮圖依可見範圍延遲讀取、限制同時讀取數與 blob 快取大小，切換／離頁釋放。
-- [x] 所有 `sdk.images` 呼叫走單一佇列（host bridge 一次一個、同方法 500 ms 間隔）；刪除以功能
-  偵測顯示，已保存作品以 App 內對話框確認（sandbox 無 allow-forms，不用表單送出）。
-- [x] 完成 labels/focus/Escape/dialog return、Unicode count、zh/en、keyboard、文字放大、
-  reduced motion、light/dark 和 SPEC 的四種視窗尺寸；不得用 CSS 隱藏方式掩蓋不可用操作。
-- [x] 測試：model 單元測試（兩種 schema、提交形狀、驗證、job 正規化）、package test；
-  另提供只用於開發的 schema 2 fixture 預覽，不進 package。
-- [x] Platform 的 `scripts/testing/check-studio-app.mts` 配合新選擇器更新（Platform PR），
-  同時接受舊版 Studio 的 select 與新版服務按鈕，以實際 package＋host 驗收 AC-13；這個
-  harness 從不呼叫 CLI。
-- [x] 不 bump Studio 版本、不改 manifest compatibility、不發布；發布另依 A5。
+- [x] Capability normalization: schema 1 → one service per Grok target, generation only, native 1:1; schema 2
+  proposal → service, operation, aspect-ratio mode and enum, source lower/upper bounds, transparent background, agent settings, unavailable reason;
+  an unknown schema or malformed format fails closed (no usable service, while works can still be read).
+- [x] Submit construction: schema 1 sends only `requestId` / `instance` / `prompt`; schema 2 follows the SPEC proposal,
+  carrying only the declared options. The description is validated by code points, and the source count is validated per operation.
+- [x] Job normalization: a missing operation is treated as generation; format is determined by MIME; width/height, aspect ratio, bytes,
+  measured transparency (JPEG is opaque, an unmeasured PNG is unknown), warning, source and execution result.
+- [x] Screens: service cards, operations, source picker, description and inspiration, aspect-ratio mode, transparent background, agent settings, submit,
+  result preview with a measurement ruler, zoom, work filters and cards, with actions provided per the SPEC's state table.
+- [x] Draft and active request are separate; switching service or operation neither generates an image nor changes existing work. A new
+  job is selected only on explicit submit; background polling does not steal the older work the user selected.
+- [x] When the submit result is unconfirmed, keep the same requestId and payload; 「確認送出結果」 ("Confirm submit result") resends with the same payload
+  (Platform returns the original attempt by requestId; a different payload is a conflict).
+- [x] Provider-specific safe error copy replaces the hard-coded Grok text; `refresh` / confirming the result is separate from
+  「再生成一張」 ("Generate another"), and the latter creates a new request only when the user explicitly presses it.
+- [x] Work thumbnails are read lazily by visible range, with a limit on concurrent reads and blob cache size, released on switching or leaving the page.
+- [x] All `sdk.images` calls go through a single queue (the host bridge handles one at a time, with a 500 ms interval for the same method); deletion is shown by feature
+  detection, and saved works are confirmed with an in-App dialog (the sandbox has no allow-forms, so form submit is not used).
+- [x] Complete labels / focus / Escape / dialog return, Unicode count, zh/en, keyboard, text enlargement, reduced motion, light/dark and the SPEC's four window sizes; an unavailable operation must not be masked by hiding it with CSS.
+- [x] Tests: model unit tests (both schemas, submit shape, validation, job normalization) and a package test;
+  also a development-only schema 2 fixture preview, which does not go into the package.
+- [x] Platform's `scripts/testing/check-studio-app.mts` is updated for the new selectors (Platform PR),
+  accepting both the old Studio's select and the new service buttons, and accepting AC-13 with the actual package + host; this
+  harness never calls a CLI.
+- [x] No Studio version bump, no manifest compatibility change, no publication; release follows A5 separately.
 
-**Design freedom:** 色彩、圖示、字型、卡片樣式、動畫及細部 spacing 交給設計者；保留
-SPEC 的能力邊界與狀態語意。沒有依據的 cost/ETA／成功率不能作為設計裝飾。
+**Design freedom:** Color, icons, fonts, card styles, animation and fine spacing are left to the designer; keep
+the SPEC's capability boundaries and state semantics. Cost/ETA/success-rate figures without a basis cannot be used as design decoration.
 
 ## A3b — Contract 2 wiring
 
-- [x] 生成子集：正規化層與提交建構已對上 host 實際 contract 2（`HOST_CONTRACT_TWO_*` fixture、
-  確切 submit 欄位），`executionOutcome` 顯示為文字，新增 `image_profile_changed`／
-  `image_profile_unavailable` 文案。修圖／合成的提案欄位處理保留到其凍結。
-- [ ] 接 A2 的公開 SDK entry 與 exact pin；Apps 不 import sibling implementation、不複製 SDK 型別。
-- [x] manifest `compatibility.appSdk` 改為 `^1.7.0`（contract 2 依 App 宣告協商）；SDK 1.6 以下的
-  host 繼續提供先前的 Studio 版本。
+- [x] Generation subset: the normalization layer and submit construction now match the host's actual contract 2 (the `HOST_CONTRACT_TWO_*` fixtures,
+  the exact submit fields), `executionOutcome` is shown as text, and copy for `image_profile_changed` /
+  `image_profile_unavailable` is added. Handling of the proposed fields for photo editing and compositing is kept until they are frozen.
+- [ ] Connect A2's public SDK entry and exact pin; Apps does not import sibling implementation or copy SDK types.
+- [x] The manifest `compatibility.appSdk` is changed to `^1.7.0` (contract 2 is negotiated per App declaration); hosts at SDK 1.6 and below
+  continue to be offered the previous Studio version.
 
 ## A4 — Acceptance and independent review
 
-- [ ] 逐條完成 SPEC AC-01～AC-13，列出 owner、命令、fixture/native 證據與未測平台。
-- [ ] 用 actual `.catsapp`＋real host/SDK＋隔離 Runtime/Core 做互動驗收，不能用
-  standalone HTML 或直接 browser localhost tab 冒充 installed Desktop 的 bridge。
-- [ ] 驗證舊作品升級後開啟、原檔匯出及 offline/reopen；同時保護 Usage／Ask 的既有行為。
-- [ ] 獨立 review 覆蓋 execution budgets、path/correlation、來源授權、migration/cancel
-  races 與 UI 狀態；作者自跑 tests 只算 validation。無 reviewer 時明確記錄，不假稱完成。
-- [ ] 若使用者安排實際安裝／live acceptance，記錄精確 App/SDK/Platform/Runtime/CLI
-  identity、允許的生成次數與結果；不在普通 UI 測試中自動消耗帳號額度。
+- [ ] Complete SPEC AC-01–AC-13 one by one, listing the owner, command, fixture/native evidence and untested platforms.
+- [ ] Do interactive acceptance with the actual `.catsapp` + real host/SDK + isolated Runtime/Core; standalone HTML or a direct browser
+  localhost tab cannot pass for the installed Desktop's bridge.
+- [ ] Verify opening old works after the upgrade, original-file export, and offline/reopen; also protect the existing behavior of Usage and Ask.
+- [ ] The independent review covers execution budgets, path/correlation, source authorization, migration/cancel
+  races and UI states; tests the author ran themselves count only as validation. With no reviewer, record that explicitly and do not falsely claim completion.
+- [ ] If the user schedules an actual install or live acceptance, record the exact App/SDK/Platform/Runtime/CLI
+  identity, the number of generations allowed and the results; do not automatically consume account quota in ordinary UI tests.
 
 ### Required fixture scenarios
 
-| Fixture | 預期結果／主要 AC |
+| Fixture | Expected result / main AC |
 | --- | --- |
-| Four profiles, one/multiple configs, unavailable target, changed revision | 正確服務卡與操作；不 silent fallback；AC-01 |
-| Lost submit response, repeated request ID, reload, changed payload/sources/options | 一個 attempt；不同 payload conflict；AC-02 |
-| Grok square JPEG, Muse 1920×1280 PNG, Codex 1254² PNG | 真實 metadata／原比例／原 bytes；AC-03 |
-| Muse successful tool → timeout | safe stop 後 succeeded + warning；不重跑；AC-04 |
-| Timeout + foreign/missing result, extra media call | 不成功、不自動 regenerate；AC-04/09 |
-| AgY child control, Codex nested exec, oversized inline image/event | 機械限制與有界 evidence；AC-05 |
-| Cancel before spawn, during child, during save, late image | cancel precedence、父子停止、無遲到成功；AC-06 |
-| schema 1 JPEG success/failure/interrupted, malformed/ENOSPC/restart | 原 IDs/hash 保留、operation 為生成、失敗恢復、不 replay；AC-07 |
-| Actual package, offline, filter/reuse, keyboard/theme/narrow | UI/bridge／既有 Apps 不回歸；AC-08 |
-| App/account/version mismatch, revoked package, path escape/bad image, foreign work as source | 拒絕且不洩漏私密資料；AC-09 |
-| Grok single edit, Grok multi-reference, Muse 50-reference cap, cross-provider source, revoked source, unsupported source format | 張數與順序、比例模式、`source_*` 錯誤、原圖不變；AC-11 |
-| Codex transparent request with opaque and with alpha result | 量測值顯示；AC-12 |
-| Current SDK 1.x host with new Studio | 只有 Grok 生成、1.x payload、harness 通過；AC-13 |
+| Four profiles, one/multiple configs, unavailable target, changed revision | Correct service cards and operations; no silent fallback; AC-01 |
+| Lost submit response, repeated request ID, reload, changed payload/sources/options | One attempt; a different payload conflicts; AC-02 |
+| Grok square JPEG, Muse 1920×1280 PNG, Codex 1254² PNG | Real metadata / original aspect ratio / original bytes; AC-03 |
+| Muse successful tool → timeout | succeeded + warning after a safe stop; no rerun; AC-04 |
+| Timeout + foreign/missing result, extra media call | Not a success, no automatic regenerate; AC-04/09 |
+| AgY child control, Codex nested exec, oversized inline image/event | Mechanical limits and bounded evidence; AC-05 |
+| Cancel before spawn, during child, during save, late image | cancel precedence, parent and child stopped, no late success; AC-06 |
+| schema 1 JPEG success/failure/interrupted, malformed/ENOSPC/restart | Original IDs/hash kept, operation is generation, failure recovery, no replay; AC-07 |
+| Actual package, offline, filter/reuse, keyboard/theme/narrow | UI/bridge and existing Apps do not regress; AC-08 |
+| App/account/version mismatch, revoked package, path escape/bad image, foreign work as source | Rejected without leaking private data; AC-09 |
+| Grok single edit, Grok multi-reference, Muse 50-reference cap, cross-provider source, revoked source, unsupported source format | Count and order, aspect-ratio mode, `source_*` errors, original image unchanged; AC-11 |
+| Codex transparent request with opaque and with alpha result | Measured value shown; AC-12 |
+| Current SDK 1.x host with new Studio | Only Grok generation, 1.x payload, harness passes; AC-13 |
 
 ## Implementation starting points
 
-以下是已存在的 source 入口，供接手者找 ownership；不是本次已修改的檔案清單。
+The following are existing source entry points, to help a taker find ownership; they are not a list of files modified in this change.
 
-| Member | 現有入口 | 預期工作 |
+| Member | Existing entry | Expected work |
 | --- | --- | --- |
-| Apps | `apps/studio/src/{app.js,model.js,style.css,index.html}` | 能力正規化、提交建構、先選服務 UI、實際 MIME/尺寸 |
-| Apps | `tests/studio.test.mjs`, `apps/studio/cats.app.json` | package regression；後續 exact compatibility／manifest |
-| Runtime | `src/core/media/{contracts.ts,ImageGenerationService.ts}` | schema/profile/operation/selection/receipt/recovery |
-| Runtime | `src/catalogs/media-profiles.json`, `src/backends/cli/media/grokImage.ts`, `src/http/routes/images.ts` | profile registry、provider strategies、來源輸入、MIME-aware routes |
-| Runtime | `tests/image-generation.test.ts` 與 provider fixtures | fake native processes、correlation、budget、來源、migration |
-| Platform | `src/runtime/images.ts`, `src/platform/apps/images.ts` | projections、來源授權、Core persistence、PNG paths、取消與升級 |
-| Platform | `packages/app-sdk`, public `src/app-sdk` entry、實際 bridge | contract 2 型別與可執行 SDK |
-| Platform | `tests/app-images.test.js`, `tests/app-sdk-*`, `scripts/testing/check-studio-app.mts` | host/account/SDK/package coverage 與 browser fixtures |
+| Apps | `apps/studio/src/{app.js,model.js,style.css,index.html}` | Capability normalization, submit construction, service-first UI, actual MIME/size |
+| Apps | `tests/studio.test.mjs`, `apps/studio/cats.app.json` | Package regression; later exact compatibility / manifest |
+| Runtime | `src/core/media/{contracts.ts,ImageGenerationService.ts}` | schema / profile / operation / selection / receipt / recovery |
+| Runtime | `src/catalogs/media-profiles.json`, `src/backends/cli/media/grokImage.ts`, `src/http/routes/images.ts` | Profile registry, provider strategies, source input, MIME-aware routes |
+| Runtime | `tests/image-generation.test.ts` and provider fixtures | Fake native processes, correlation, budget, sources, migration |
+| Platform | `src/runtime/images.ts`, `src/platform/apps/images.ts` | Projections, source authorization, Core persistence, PNG paths, cancellation and upgrade |
+| Platform | `packages/app-sdk`, public `src/app-sdk` entry, the actual bridge | Contract 2 types and the executable SDK |
+| Platform | `tests/app-images.test.js`, `tests/app-sdk-*`, `scripts/testing/check-studio-app.mts` | host/account/SDK/package coverage and browser fixtures |
 
 ## Validation and delivery rules
 
-實作者先讀各 member 的 testing guide，跑 affected scope；docs-only 只需 diff/reference
-檢查。Runtime 使用 focused Vitest 與必要 build/catalog checks，Platform 跑受影響
-SDK/image/host/migration tests，Apps 跑 Studio/package 與公開 SDK pin checks。完整
-CI／release preflight 依 owning repo 規定，不為普通文案改動重跑全部服務測試。
+Implementers first read each member's testing guide and run the affected scope; docs-only changes need only diff/reference
+checks. Runtime uses focused Vitest and the necessary build/catalog checks, Platform runs the affected
+SDK/image/host/migration tests, and Apps runs Studio/package and public SDK pin checks. The full
+CI / release preflight follows the owning repo's rules, and the full service tests are not rerun for ordinary copy changes.
 
-source 工作用 member 內 `.claude/worktrees/`，不動他人的 worktree／未提交資料。
+Source work uses the member's `.claude/worktrees/`, without touching others' worktrees or uncommitted data.
 
 ## A5 — Release preparation (separate authorization)
 
-- [ ] 在原始 bump commit/PR 一起準備確切 App/SDK/Platform/Runtime versions、source /
-  artifact pins、release notes、相容矩陣、migration/backups/recovery 與適用 signing。
-- [ ] 明確區分 source implementation、published package、Desktop selection、installed
-  version；發布 App 不代表已更新 Desktop，SDK major 不可冒充既有 minor 相容。
-- [ ] 只有使用者另行授權才 bump／publish／install；發布後依 shared release guide
-  查 hosted evidence，清理並結束，不加 status-only commit 或改寫已發布 Release。
+- [ ] In the original bump commit/PR, prepare together the exact App/SDK/Platform/Runtime versions, source /
+  artifact pins, release notes, compatibility matrix, migration/backups/recovery and applicable signing.
+- [ ] Clearly distinguish source implementation, published package, Desktop selection and installed
+  version; publishing an App does not mean Desktop was updated, and an SDK major cannot pass for compatibility with an existing minor.
+- [ ] Bump, publish or install only if the user separately authorizes it; after publication, check the hosted evidence per the shared release guide,
+  clean up and finish, without adding a status-only commit or rewriting a published Release.
 
 ## Risks and handling
 
-| Risk | 處理 |
+| Risk | Handling |
 | --- | --- |
-| CLI 無法機械限制生成／delegation | 該「服務 × 操作」不啟用；不放寬成任意聊天 agent |
-| 有檔案但沒有可信 call correlation | 保留未知，不掃目錄找一張來補成功 |
-| 來源輸入擴大 provider 讀取範圍 | 只複製本次來源到 attempt 專屬位置；做不到即不啟用修圖／合成 |
-| SDK schema 變更破壞其他 Apps | A0 相容矩陣與 A4 實際 package 驗收；release coordination |
-| migration 中斷／磁碟滿／歷史配置未知 | validate＋backup＋atomic replacement；unknown 不補成現行設定 |
-| 提案 schema 2 與凍結契約不同 | 差異只存在 Studio 的正規化層；A3b 修改並以 vectors 驗證 |
-| 視覺設計與工程各自發明成功／重試流程 | 共同使用 SPEC states、contract fixtures 與 AC IDs |
+| A CLI cannot mechanically limit generation/delegation | That "service × operation" is not enabled; it is not relaxed to an arbitrary chat agent |
+| A file exists but there is no credible call correlation | Keep it unknown; do not scan directories to find an image to fill in success |
+| Source input widens the provider's read scope | Copy only this run's source to an attempt-specific location; if that cannot be done, do not enable photo editing/compositing |
+| An SDK schema change breaks other Apps | The A0 compatibility matrix and A4 actual package acceptance; release coordination |
+| Migration interrupted / disk full / unknown historical configuration | validate + backup + atomic replacement; unknown is not filled in as the current setting |
+| The proposed schema 2 differs from the frozen contract | The difference exists only in Studio's normalization layer; A3b changes it and validates with vectors |
+| Visual design and engineering each invent success/retry flows | Share the SPEC states, contract fixtures and AC IDs |
 
 ## Progress log
 
@@ -296,12 +296,12 @@ source 工作用 member 內 `.claude/worktrees/`，不動他人的 worktree／�
 
 | Date | Update |
 | --- | --- |
-| 2026-10-23 | 依使用者要求完成 ADR/SPEC/PLAN 規劃與交接；A0～A5 尚未實作。四家 Chat 產物證據已存在，不能替代新 bounded route acceptance |
-| 2026-10-23 | 使用者審閱互動設計稿，採用 ADR-005：先選服務、操作由 profile 宣告，納入修圖／合成；A3 拆成可先在 SDK 1.x 交付的 A3a 與接 contract 2 的 A3b |
-| 2026-10-23 | A3a 實作：`model.js` 能力正規化／提交建構／job 正規化與先選服務 UI。`npm test`、`npm run check:docs` 通過；fixture 預覽檢查四家服務、修圖／合成、透明背景、深色與 360／1078 寬。Platform `check-studio-app.mts`（選擇器相容更新）以實際 archive＋host＋fixture Runtime 驗收新 UI 與 main 的舊 UI，各 2 次送出、0 次 CLI。未 bump、未發布；schema 2 只以提案 fixtures 驗證 |
-| 2026-10-23 | 使用者授權以 Studio 0.3.0 發布 A3a，並在發布後以目錄 PR 把 `channels.stable` 指到 0.3.0，用現有 Desktop 0.9.1 的 Market 驗證「不升 Desktop、單獨更新 App」。版本欄位、release notes 與預期 SHA-256 見 [deployment](../deployment.md#studio-030--provider-first-image-workspace-2026-10-23)；不改 Desktop pins |
-| 2026-10-23 | 使用者在 Desktop 0.9.1 以 Market 更新到 0.3.0 後回報：外殼與 App 重複顯示名稱／返回鈕／版本，且一次生成因 Runtime worker 名額被閒置對話佔滿而立即失敗。改為外殼負責 App 身分（Platform）、Studio 0.3.1 移除自己的標題列與頁尾並改寫忙碌文案（Apps）、Runtime 回報 `runtime_capacity_full` 並把預設名額上調到 50；名額回收列入 A1 |
-| 2026-10-23 | 使用者要求 Muse、Antigravity、Codex 出現在 Studio，先做「生成」。凍結 contract 2 生成子集並以 SDK 1.7.0 相容 minor 依 App 宣告協商（避免 SDK major 讓所有官方 App 不相容）。Runtime：profiles＋共用執行模組＋Muse 受限執行器（`--max-model-steps 1`、無平行呼叫、無 shell／web；`--disable-write` 會移除生圖工具，故寫入只限 attempt workspace），一次實際 Muse 生成驗收通過（1920×1280 PNG）。Platform：contract 2 投影、PNG 保存、schema 1 App 維持原樣。Studio：manifest `^1.7.0`；隔離 package＋host 驗收含 Muse PNG。Codex（CLI 無執行前呼叫上限）與 Antigravity（子代理）尚未啟用 |
-| 2026-10-23 | 使用者決定提供作品刪除（已保存需確認、未完成／已取消直接刪）。Runtime 刪 receipt、Platform 加 `images.delete` 與保存清理、Studio 顯示刪除；同時發現 host bridge 一次只處理一個 image 呼叫，Studio 改以單一佇列呼叫。實際 package＋host 驗收含刪除兩種情況；需下一版 Desktop 才會出現 |
+| 2026-10-23 | At the user's request, completed the ADR/SPEC/PLAN planning and handoff; A0–A5 not yet implemented. The four providers' Chat artifact evidence exists, and cannot substitute for acceptance of the new bounded routes |
+| 2026-10-23 | The user reviewed the interactive design draft and adopted ADR-005: pick the service first, operations declared by the profile, including photo editing and compositing; A3 is split into A3a, which can be delivered first on SDK 1.x, and A3b, which connects contract 2 |
+| 2026-10-23 | A3a implementation: `model.js` capability normalization / submit construction / job normalization and the service-first UI. `npm test` and `npm run check:docs` passed; the fixture preview checked the four services, photo editing and compositing, transparent background, dark mode and 360 / 1078 widths. Platform `check-studio-app.mts` (selector compatibility update) accepted the new UI and main's old UI with the actual archive + host + fixture Runtime, 2 submissions each, 0 CLI calls. No bump, no publication; schema 2 validated only with proposed fixtures |
+| 2026-10-23 | The user authorized releasing A3a as Studio 0.3.0, and after release pointing `channels.stable` to 0.3.0 via a catalog PR, to use the existing Desktop 0.9.1 Market to verify "update the App alone without upgrading Desktop". Version fields, release notes and the expected SHA-256 are in [deployment](../deployment.md#studio-030--provider-first-image-workspace-2026-10-23); Desktop pins are not changed |
+| 2026-10-23 | After updating to 0.3.0 through the Market on Desktop 0.9.1, the user reported: the shell and the App duplicated the name / back button / version, and one generation failed immediately because the Runtime worker slots were filled by idle conversations. Changed so the shell owns the App identity (Platform), Studio 0.3.1 removes its own title bar and footer and rewrites the busy copy (Apps), and Runtime reports `runtime_capacity_full` and raises the default slot count to 50; slot reclamation is listed under A1 |
+| 2026-10-23 | The user asked for Muse, Antigravity and Codex to appear in Studio, starting with "generation". Froze the contract 2 generation subset and negotiated it by App declaration as an SDK 1.7.0 compatible minor (to avoid an SDK major making all official Apps incompatible). Runtime: profiles + shared execution module + restricted Muse runner (`--max-model-steps 1`, no parallel calls, no shell/web; `--disable-write` would remove the image tool, so writes are limited to the attempt workspace), and one actual Muse generation acceptance passed (1920×1280 PNG). Platform: contract 2 projection, PNG saving, schema 1 Apps unchanged. Studio: manifest `^1.7.0`; isolated package + host acceptance included a Muse PNG. Codex (the CLI has no pre-execution call cap) and Antigravity (sub-agent) are not yet enabled |
+| 2026-10-23 | The user decided to offer work deletion (saved works need confirmation, unfinished or cancelled ones are deleted directly). Runtime deletes the receipt, Platform adds `images.delete` and save cleanup, and Studio shows delete; it was also found that the host bridge handles only one image call at a time, so Studio now calls through a single queue. Actual package + host acceptance covered both deletion cases; it appears only with the next Desktop version |
 
-*Created: 2026-10-23。首個實作動作：A3a；A0 owners contract/feasibility review 可並行。*
+*Created: 2026-10-23. First implementation action: A3a; the A0 owners contract/feasibility review can run in parallel.*

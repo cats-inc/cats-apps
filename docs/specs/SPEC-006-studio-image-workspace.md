@@ -4,319 +4,319 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Draft — 可交接的規劃基線；A3a（SDK 1.x 上的新 UI）已實作，其餘未實作；皆未發布 |
-| Owner | cats-apps；Runtime／Platform 各自擁有執行與 SDK／保存契約 |
-| Reviewer | 後續跨 repository 實作／設計 review；本次未做獨立 review |
-| Decision | [ADR-004](../decisions/004-expand-studio-with-verified-image-profiles.md)、[ADR-005](../decisions/005-provider-first-studio-image-operations.md) |
+| Status | Draft — a planning baseline ready for handoff; A3a (the new UI on SDK 1.x) is implemented, the rest is not implemented; none is published |
+| Owner | cats-apps; Runtime and Platform each own the execution and the SDK/storage contracts |
+| Reviewer | A later cross-repository implementation/design review; no independent review was done this time |
+| Decision | [ADR-004](../decisions/004-expand-studio-with-verified-image-profiles.md), [ADR-005](../decisions/005-provider-first-studio-image-operations.md) |
 | Plan | [PLAN-006](../plans/PLAN-006-studio-image-workspace.md) |
-| Baseline | [SPEC-003](SPEC-003-media-studio-vertical-slice.md) 的已交付單 Grok 圖片功能 |
+| Baseline | The delivered single-Grok image feature of [SPEC-003](SPEC-003-media-studio-vertical-slice.md) |
 
 ## Summary
 
-把 `cats.studio` 改為「先選服務，再做它能做的事」的圖片工作區：選定服務後，只出現該
-服務已啟用的操作（生成、修圖、合成），以及該操作宣告的輸入與參數。結果以大型預覽
-呈現實際格式與量測尺寸，並保存成作品；作品可以複用描述，或當下一次修圖／合成的
-來源。候選服務為 Grok、Muse、Antigravity、Codex、Cursor；每個「服務 × 操作」各自通過
-bounded execution 與收集驗收後才可使用。新 UI 先在 SDK 1.x 上交付（只會出現 Grok
-生成），contract 2 由各 owner 凍結後再接上。
+Turn `cats.studio` into an image workspace that "picks the service first, then does what that service can do": once a service is selected, only the operations
+enabled for that service (generate, edit, compose) appear, along with the inputs and parameters that operation declares. The result is shown in a large preview
+with the actual format and measured size, and saved as a work; a work can reuse its description, or serve as the source of the next edit or composite.
+The candidate services are Grok, Muse, Antigravity, Codex and Cursor; each "service × operation" can be used only after it passes
+bounded execution and collection acceptance. The new UI is delivered first on SDK 1.x (only Grok
+generation appears), and contract 2 is connected after the owners freeze it.
 
 ## Platform shared-image integration (in progress, 2026-10-23)
 
-owner 已核准「Platform 共用圖片服務＋Cat 受控生圖＋Studio 共用」實作與必要 releases，
-並明確澄清 Usage 不改。
-canonical 契約在
-[Platform ADR-136](../../../cats-platform/docs/decisions/136-share-controlled-image-capabilities-between-cats-and-studio.md)、
-[SPEC-128](../../../cats-platform/docs/specs/SPEC-128-shared-image-service-and-controlled-cat-generation.md) 與
-[PLAN-121](../../../cats-platform/docs/plans/PLAN-121-shared-image-service-and-controlled-cat-generation.md)；
-本次 Studio consumer 以 SDK 1.8 的 `media.images` 使用共用服務，準備為 Studio 0.4.0；
-publication／installed acceptance 尚未完成。
+The owner has approved the implementation and the necessary releases of "Platform shared image service + controlled Cat image generation + Studio sharing",
+and explicitly clarified that Usage is unchanged.
+The canonical contract is in
+[Platform ADR-136](../../../cats-platform/docs/decisions/136-share-controlled-image-capabilities-between-cats-and-studio.md),
+[SPEC-128](../../../cats-platform/docs/specs/SPEC-128-shared-image-service-and-controlled-cat-generation.md) and
+[PLAN-121](../../../cats-platform/docs/plans/PLAN-121-shared-image-service-and-controlled-cat-generation.md);
+this Studio consumer uses the shared service through SDK 1.8's `media.images`, and is being prepared as Studio 0.4.0;
+publication and installed acceptance are not yet complete.
 
-- Studio SDK adapter 與 Cat-scoped agent tool 共用 Platform image service，
-  Runtime 仍負責 bounded 執行。Cat 不依賴 Studio 安裝，也不冒用 Studio scope。
-- 保留既有 contract 2 profiles／JPEG／PNG；Studio 改呼叫 `media.images`，manifest
-  SDK floor 為 `^1.8.0`。提高必要 host SDK 是 Studio 0.x minor boundary，故為 0.4.0；
-  原 0.3.2 archive 與舊 host 契約保持不變。不註冊 Cat tools，也沒有 App-owned 生圖 server。
-- 共用服務不讓 Studio 自動讀到 Cat 作品。本 SPEC OP-02/03 的 App/account 來源
-  限制保持；未來使用 Cat 圖片作原圖，需要明確分享與新的 source authorization。
-- Studio 停用／卸載只撤銷 App scope 與自己發起的工作，不取消 Cat grant 或移除
-  Cat 作品。既有 Studio 工作與原圖要保留 IDs、hash 及 App/account 隔離。
-- 修圖／合成／新 options 的 A0～A2 契約工作仍由本 SPEC／PLAN-006 管理；
-  不能以 Platform 的共用服務抽取宣稱新 operation 已完成。
+- The Studio SDK adapter and the Cat-scoped agent tool share the Platform image service,
+  and Runtime remains responsible for bounded execution. Cats do not depend on Studio being installed, and do not borrow Studio's scope.
+- The existing contract 2 profiles, JPEG and PNG are kept; Studio now calls `media.images`, and the manifest
+  SDK floor is `^1.8.0`. Raising the required host SDK is a Studio 0.x minor boundary, hence 0.4.0;
+  the original 0.3.2 archive and the old host contract are unchanged. No Cat tools are registered, and there is no App-owned image-generation server.
+- The shared service does not let Studio automatically read Cat works. The App/account source restriction of OP-02/03 in this SPEC
+  is kept; using a Cat image as an original in the future needs explicit sharing and a new source authorization.
+- Disabling or uninstalling Studio revokes only the App scope and its own initiated jobs, and does not cancel a Cat grant or remove
+  Cat works. Existing Studio work and original images keep their IDs, hash and App/account isolation.
+- The A0–A2 contract work for photo editing, compositing and new options is still managed by this SPEC / PLAN-006;
+  the Platform shared-service extraction cannot be used to claim that the new operations are complete.
 
 ## Goals and non-goals
 
-- 服務、操作、代理模型／effort 與圖片實際規格有清楚而不混淆的呈現。
-- 開啟、切換服務或操作、套用範例、選原圖、複用描述、刷新、重開都不生成；只有明確的
-  生成操作（生成圖片、修改圖片、合成圖片、再生成一張）建立一個 attempt。恢復原
-  attempt 與建立另一張圖片是不同操作。
-- 修圖與合成的來源只來自已保存作品，結果是新作品並記錄來源；原圖不變。
-- 原有 Grok 作品、原始 bytes、既有 task/run/artifact 與離線讀取保留。
-- 本期不做：本機檔案匯入／拖放、遮罩或筆刷局部重繪、影片／音訊、批次、多服務同時
-  生成、佇列、排程、種子／精確像素／品質選項、自動翻譯／改寫提示詞與版本樹 UI。
-  作品刪除已納入（2026-10-23 使用者決定）：見下方作品卡與 AC-14。不要以尚不可用的按鈕或「即將推出」標籤占據主介面。
-- 不修改 Chat composer 問題；那些是既有獨立 issues。這份規劃不改 App 安裝／Market
-  架構，不發布或安裝任何版本，也不增加研究生成額度。
+- A clear, unconfused presentation of the service, operation, agent model/effort and the actual image specs.
+- Opening, switching service or operation, applying an example, picking an original, reusing a description, refreshing and reopening do not generate; only an explicit
+  generating operation (generate image, edit image, compose image, generate another) creates an attempt. Recovering the original
+  attempt and creating another image are different operations.
+- The sources for editing and compositing come only from saved works; the result is a new work that records its sources; the original image is unchanged.
+- Existing Grok works, original bytes, existing task/run/artifact and offline reading are kept.
+- Not in this phase: local file import/drag-and-drop, mask or brush inpainting, video/audio, batches, simultaneous multi-service
+  generation, queues, schedules, seed/exact-pixel/quality options, automatic translation/rewriting of prompts and a version-tree UI.
+  Work deletion is included (decided by the user on 2026-10-23): see the work card below and AC-14. Do not let unavailable buttons or "coming soon" labels occupy the main interface.
+- The Chat composer problems are not modified; those are existing independent issues. This plan does not change the App install/Market
+  architecture, does not publish or install any version, and does not add research generation quota.
 
 ## Evidence and initial execution configurations
 
-以下是初始 profile 的建議設定，不是圖片 backend 的 model ID，也不保證本機可用：
+The following are the suggested settings of the initial profiles, not the model IDs of the image backend, and local availability is not guaranteed:
 
-| Provider label | Agent configuration | 生成的比例模式 | 已觀測原檔；不可當預設值 |
+| Provider label | Agent configuration | Aspect-ratio mode for generation | Observed original file; not to be used as a default |
 | --- | --- | --- | --- |
-| Grok | `grok-4.7` + `xhigh`，非 Fast | `choose`：自動、1:1、16:9、9:16、3:2、2:3（今日 production 固定 1:1） | 1024 × 1024 JPEG |
-| Muse | `muse-spark-1.3` + `xhigh` | `service`：構圖寫在提示詞 | 1920 × 1280 PNG |
+| Grok | `grok-4.7` + `xhigh`, not Fast | `choose`: auto, 1:1, 16:9, 9:16, 3:2, 2:3 (today's production is fixed at 1:1) | 1024 × 1024 JPEG |
+| Muse | `muse-spark-1.3` + `xhigh` | `service`: the composition is written in the prompt | 1920 × 1280 PNG |
 | Antigravity | `gemini-3.8-flash-high` + `high` | `native` 1:1 | 1024 × 1024 JPEG |
 | Codex | `gpt-6.1-sol` + `xhigh` | `service` | 1254 × 1254 PNG |
-| Cursor | `glm-5p3[reasoning=max]` + `max`（GLM 5.3） | `native` 1:1 | 1024 × 1024 JPEG；先前 Chat probe，新的 runner 實產驗收另記 |
+| Cursor | `glm-5p3[reasoning=max]` + `max` (GLM 5.3) | `native` 1:1 | 1024 × 1024 JPEG; an earlier Chat probe, and acceptance of the new runner's real output is recorded separately |
 
-2026-10-24 的服務顯示順序固定為 **Codex、Antigravity、Grok、Muse、Cursor**，不沿用
-Runtime 回傳順序。同一 provider 的多個 instance 保留 host 順序；未知的未來 provider
-排在後方。首次進入選可用的 Grok，不以第一張卡片作預設；當頁切換後，背景刷新保留
-選擇。未設定 Grok 時才沿用既有可用服務 fallback。
+As of 2026-10-24 the service display order is fixed as **Codex, Antigravity, Grok, Muse, Cursor**, and does not follow
+the order Runtime returns. Multiple instances of the same provider keep the host order; unknown future providers
+are placed at the end. On first entry the available Grok is selected, and the first card is not the default; after switching within the page, background refreshes keep the
+selection. Only when Grok is not configured is the existing fallback to an available service used.
 
-Cursor 初期僅開文字產圖、零來源、固定要求 1:1；輸出格式與尺寸依實測 bytes 顯示。
-GLM 5.3 的選擇來自 [跨 CLI probe](../research/2026-10-24-chinese-model-cross-cli-reprobe.md)：
-原生產圖成功且可用 Cursor caption bridge 理解圖片。Kimi K3 的同一路徑產圖亦成功，
-但該次讀圖未成功。這不證明 GLM 原生視覺能力或 max 對圖片品質有增益；產圖 backend
-仍未知，編輯、多參考、其他比例仍需各自驗收。
+Cursor initially opens only text-to-image, with zero sources, always requesting 1:1; the output format and size are shown according to the measured bytes.
+The choice of GLM 5.3 comes from the [cross-CLI probe](../research/2026-10-24-chinese-model-cross-cli-reprobe.md):
+native image generation succeeded and the Cursor caption bridge could understand the image. Kimi K3 also succeeded in generating on the same path,
+but its image reading did not succeed that time. This does not prove GLM's native vision capability or that max gives any gain in image quality; the image-generation backend
+is still unknown, and editing, multi-reference and other aspect ratios each still need acceptance.
 
-修圖與合成的候選宣告（全部尚未實產）：
+Candidate declarations for photo editing and compositing (none yet produced for real):
 
-| Provider | 修圖（一張原圖） | 合成（多張參考） | 其他參數 |
+| Provider | Editing (one original) | Compositing (multiple references) | Other parameters |
 | --- | --- | --- | --- |
-| Grok | `image_edit` 單圖，`source`：沿用原圖比例，比例參數不適用 | `image_edit` 多圖，`choose`：另加 4:3、3:4、2:1、1:2、19.5:9、9:19.5、20:9、9:20 | 參考圖會先縮到長邊約 768 px |
-| Muse | `image_paths` 一張 | `image_paths` 2–50 張，有順序 | 無 |
-| Antigravity | 子代理描述提到修圖；引數未知 | 未發現，不提供 | 無 |
-| Codex | reference paths 一張 | 多張 reference paths | `transparent_background`（生成、修圖） |
+| Grok | `image_edit` single image, `source`: keeps the original's aspect ratio, aspect-ratio parameter not applicable | `image_edit` multiple images, `choose`: additionally 4:3, 3:4, 2:1, 1:2, 19.5:9, 9:19.5, 20:9, 9:20 | Reference images are first shrunk to a long edge of about 768 px |
+| Muse | `image_paths` one | `image_paths` 2–50, ordered | None |
+| Antigravity | The sub-agent description mentions editing; the arguments are unknown | Not found, not offered | None |
+| Codex | reference paths one | multiple reference paths | `transparent_background` (generate, edit) |
 
-Muse 的圖片完成後，回合因 30000ms idle refusal 失敗。Antigravity 只核實 child 的
-一組 `generate_image` 引數，完整 schema 未知。Codex 的呼叫在 native `exec` 內。
-詳見 [實產報告](../research/2026-10-23-three-provider-image-artifact-probe.md) 與
-[Grok capability probe](../research/2026-10-23-grok-media-capability-probe.md)。
-Claude 不列入本期生成服務；不得把未暴露工具解讀成 provider 永久不支援。
+After Muse's image was completed, the turn failed with a 30000ms idle refusal. For Antigravity only one set of the child's `generate_image` arguments was verified,
+and the full schema is unknown. Codex's call is inside a native `exec`.
+See the [real-output report](../research/2026-10-23-three-provider-image-artifact-probe.md) and the
+[Grok capability probe](../research/2026-10-23-grok-media-capability-probe.md) for details.
+Claude is not among this phase's generation services; a tool that is not exposed must not be read as the provider permanently not supporting it.
 
 ## User stories
 
-- 我先選一個已設定的服務，畫面只顯示它能做的操作；切換服務不會改動我的草稿。
-- 我能描述畫面並明確生成一張，知道正在做哪個階段。
-- 我能選一張作品當原圖修改，或依序選多張作品合成；任何服務做的作品都可以用。
-- 我能看到圖片真正的尺寸、格式與透明度，放大、下載原檔，下次開啟仍能找到它。
-- 若回應逾時但圖片已保存，我能直接使用它，不必再按一次生成。
+- I first pick a configured service, and the screen shows only the operations it can do; switching service does not change my draft.
+- I can describe the picture and explicitly generate one, and know which stage is in progress.
+- I can pick a work as the original to modify, or pick several works in order to compose; works made by any service can be used.
+- I can see the image's real size, format and transparency, zoom in, download the original file, and still find it the next time I open it.
+- If the response timed out but the image was saved, I can use it directly without pressing generate again.
 
 ## Workspace and visual handoff
 
-以下定義資訊層級與互動。設計者沿用 Cats 的 light/dark theme 和繁中／英文語系；可重排
-留白、卡片與作品縮圖，不能變更狀態語意。
+The following defines the information hierarchy and interaction. The designer follows Cats' light/dark theme and the Traditional Chinese / English locales; they may rearrange
+whitespace, cards and work thumbnails, but cannot change the state semantics.
 
 ```text
-（外殼：應用程式／Studio／副標            返回大廳；下方套件、版本、狀態、提供者）
-選擇服務
-[▣ Grok  比例可選 | 生成 修圖 合成] [⬚ Muse  由服務決定 | …] [□ Antigravity …] [⬚ Codex …]
-┌ {服務} 能做的事（約 300–380px） ┐ ┌ 結果預覽（剩餘空間）                      ┐
-│ [生成][修圖][合成]  只列已啟用的操作 │ │ 狀態、描述摘要、服務與操作                  │
-│ 原圖／參考圖（修圖、合成時）        │ │ 按原比例顯示；保存後才標實測像素尺規        │
-│ 描述（2000 code points）          │ │ 格式、尺寸、比例、透明度                    │
-│ 比例（依模式）、透明背景（若宣告）  │ │ 放大檢視、下載原檔、以此修圖、複用描述      │
-│ 代理設定（進階）                  │ │ 生成資訊按需展開                            │
-│ [生成圖片｜修改圖片｜合成圖片]      │ └─────────────────────────────────────────┘
+(Shell: App / Studio / subtitle            back to lobby; below: package, version, status, provider)
+Choose a service
+[▣ Grok  ratio selectable | generate edit compose] [⬚ Muse  decided by service | …] [□ Antigravity …] [⬚ Codex …]
+┌ What {service} can do (about 300–380px) ┐ ┌ Result preview (remaining space)          ┐
+│ [Generate][Edit][Compose]  only enabled operations │ │ Status, description summary, service and operation │
+│ Original / reference images (edit, compose)        │ │ Shown at original ratio; measured pixel ruler only after saving │
+│ Description (2000 code points)                     │ │ Format, size, ratio, transparency          │
+│ Ratio (by mode), transparent background (if declared) │ │ Zoom, download original, edit from this, reuse description │
+│ Agent settings (advanced)                          │ │ Generation info expands on demand          │
+│ [Generate image | Edit image | Compose image]      │ └─────────────────────────────────────────┘
 └──────────────────────────────┘
-作品：搜尋描述／服務篩選／狀態篩選 → 依原比例的縮圖與進行中的工作
+Works: search description / service filter / status filter → thumbnails at original ratio and in-progress jobs
 ```
 
-| 區域 | 必須呈現與行為 |
+| Area | What must be shown and how it behaves |
 | --- | --- |
-| 頁首 | 由 Desktop 的 App 外殼提供名稱、副標、返回大廳與版本；Studio 不重複，只保留給輔助技術的 `h1`。不放占據首屏的宣傳 hero |
-| 選擇服務 | 每個服務一張可按的卡：友善名稱、比例模式圖示與一句說明、已啟用的操作名稱。多個 execution instances 時加使用者可辨認的 alias；只有一個時不展示 `native` 等 raw ID。已實作但暫不可用的服務顯示不可選原因；未實作的不列出 |
-| 操作 | 只列所選服務已啟用的操作，附一句用途說明。切換操作保留描述；切到修圖時只保留第一張已選來源 |
-| 原圖／參考圖 | 從已保存作品挑選，縮圖依原比例。修圖恰好一張；合成至少兩張、顯示選取順序，上限依 profile。沒有作品時提示先生成一張。已選來源排在最前面 |
-| 描述 | 必填、2000 Unicode code points；保留換行。靈感捷徑只在生成時出現，只更新草稿並把焦點放回輸入，不呼叫模型 |
-| 比例 | `choose` 顯示按鈕（短清單）或下拉（長清單）；`native` 顯示固定比例；`service` 顯示「由服務決定」；`source` 顯示「沿用原圖比例」與原圖尺寸。每次一張。沒有像素／格式／品質的假選單 |
-| 透明背景 | 只在 profile 宣告時出現的勾選框，說明「這是要求；保存後檢測是否真的含透明像素」 |
-| 代理設定 | 進階區標「代理模型」「推理強度」，說明這不是圖片模型。只有一組核准設定顯示文字，多組才有 selector；effort 僅能選該模型允許的組合 |
-| 送出按鈕 | 文案依操作：生成圖片／修改圖片／合成圖片。描述空白或超長、來源張數不符、服務不可用、送出未確認、已有執行時不可再次送出。Enter 換行；不新增自動送出捷徑 |
-| 使用說明 | 簡短說明使用所選 CLI 帳號與額度、每次一張、不自動重試；不顯示推測價格、免費承諾或虛構進度百分比 |
-| 結果區 | `object-fit: contain`，不裁切／拉伸／重編碼。保存後才在圖的邊緣顯示量測寬高尺規；生成中只畫虛線框。sample、執行中與已保存作品視覺可區辨 |
-| 作品卡 | 縮圖或工作狀態、描述摘要、服務與操作、尺寸格式或時間。成功提供預覽／下載／修圖／複用描述；失敗保留描述與原因並提供「再生成一張」；待確認及 `invalid_image_source` 失敗提供「確認結果」。收圖失敗標「這次未完成」，不宣稱沒有產圖；來源驗證失敗說明可能已用額度，更新 Cats 後可查原請求。「確認結果」只 refresh 原 ID，不 submit。host 提供 `images.delete` 時，已保存、未完成、已取消可「刪除」：已保存作品先以 App 內對話框確認（原圖一併刪除、無法復原），其他直接刪除；進行中與待確認不可刪 |
-| 資訊詳情 | 描述、服務與操作、提交時代理設定、要求比例、來源（基於哪幾張）、bytes、圖片模型與媒體費用（未回報則顯示未回報）、生成回應結果。不呈現來源絕對路徑／token／session ID |
+| Header | The name, subtitle, back-to-lobby and version are provided by the Desktop App shell; Studio does not repeat them, keeping only an `h1` for assistive technology. No promotional hero occupying the first screen |
+| Choose a service | One pressable card per service: friendly name, a ratio-mode icon with one sentence of description, and the names of the enabled operations. With multiple execution instances add an alias users can recognize; with only one, raw IDs such as `native` are not shown. A service that is implemented but temporarily unavailable shows the reason it cannot be selected; one that is not implemented is not listed |
+| Operation | Only the operations enabled for the selected service, each with a one-sentence purpose. Switching operation keeps the description; switching to editing keeps only the first selected source |
+| Original / reference images | Picked from saved works, with thumbnails at the original ratio. Editing takes exactly one; compositing takes at least two, shows the selection order, with the upper limit set by the profile. When there are no works, prompt to generate one first. Selected sources are placed at the front |
+| Description | Required, 2000 Unicode code points; line breaks kept. Inspiration shortcuts appear only for generation, only update the draft and return focus to the input, and do not call a model |
+| Ratio | `choose` shows buttons (short list) or a dropdown (long list); `native` shows the fixed ratio; `service` shows 「由服務決定」 ("Decided by the service"); `source` shows 「沿用原圖比例」 ("Keep the original's ratio") and the original's size. One image each time. No fake menus for pixels/format/quality |
+| Transparent background | A checkbox that appears only when the profile declares it, with the explanation 「這是要求；保存後檢測是否真的含透明像素」 ("This is a request; after saving, it is checked whether the image really contains transparent pixels") |
+| Agent settings | An advanced area labeled 「代理模型」 ("Agent model") and 「推理強度」 ("Reasoning effort"), explaining that this is not an image model. With only one approved setting it shows text, with several there is a selector; effort can only choose a combination the model allows |
+| Submit button | The label depends on the operation: Generate image / Edit image / Compose image. It cannot be submitted again when the description is blank or too long, the source count does not match, the service is unavailable, a submit is unconfirmed, or an execution is already running. Enter inserts a line break; no automatic-submit shortcut is added |
+| Usage note | A brief note that the selected CLI account and quota are used, one image each time, no automatic retry; no speculative price, free promise or fictitious progress percentage is shown |
+| Result area | `object-fit: contain`, no cropping/stretching/re-encoding. The measured width/height ruler is shown at the image edge only after saving; while generating only a dashed frame is drawn. A sample, a running job and a saved work must be visually distinguishable |
+| Work card | A thumbnail or job status, description summary, service and operation, and size/format or time. A success offers preview/download/edit/reuse description; a failure keeps the description and reason and offers 「再生成一張」 ("Generate another"); a pending-confirmation or `invalid_image_source` failure offers 「確認結果」 ("Confirm result"). A failure to collect the image is labeled 「這次未完成」 ("Not completed this time") and does not claim that no image was produced; a source validation failure explains that quota may have been used and that after updating Cats the original request can be checked. 「確認結果」 only refreshes the original ID and does not submit. When the host provides `images.delete`, saved, unfinished and cancelled works can be 「刪除」 ("Delete"): saved works are first confirmed with an in-App dialog (the original is deleted as well, irreversible), the others are deleted directly; in-progress and pending-confirmation ones cannot be deleted |
+| Info detail | Description, service and operation, agent settings at submit time, requested ratio, sources (which works it is based on), bytes, image model and media cost (shown as not reported if not reported), and the generation response result. Absolute source paths / tokens / session IDs are not shown |
 
-比例模式在服務卡與比例列使用同一套圖示：多個實線框＝可選、單一實線方框＝服務固定、
-虛線框＝由服務決定。量測尺規使用與操作色不同的單一強調色，只在已保存作品上出現。
+The ratio modes use the same icon set on the service card and the ratio row: several solid frames = selectable, a single solid square frame = fixed by the service,
+a dashed frame = decided by the service. The measurement ruler uses a single accent color different from the operation color, and appears only on saved works.
 
-桌面約 960px 以上採雙欄，窄版依序呈現服務、建立、結果、作品；不出現水平溢出。
-1078 × 632 的實際 Desktop viewport 應能直接看見服務、操作與描述；較短畫面允許
-設定區捲動，不能讓按鈕或 chips 覆蓋輸入／結果。至少檢查 1280 × 800、1078 × 632、
-768 × 1024、360 × 800。舊版圖片 library 不能因新尺寸變成固定正方形裁圖。
+At about 960px and above it uses two columns, and narrow layouts show, in order, service, create, result and works; no horizontal overflow appears.
+At the actual Desktop viewport of 1078 × 632, the service, operation and description should be directly visible; shorter screens may let the
+settings area scroll, and buttons or chips must not cover the input or result. Check at least 1280 × 800, 1078 × 632,
+768 × 1024 and 360 × 800. The old image library must not become fixed-square cropped images because of the new size.
 
-所有控制項有 label／keyboard focus；服務與操作按鈕使用 `aria-pressed`。對比、dark
-theme、文字放大和 reduced motion 必須可用。狀態使用溫和的 live announcement；每次
-polling 不可重複朗讀整份列表。放大預覽支援 Escape、關閉後焦點返回觸發按鈕。Blob URL
-在切換／離頁時釋放；縮圖依可見範圍延遲載入，不一次解碼全部 100 張原檔。
+All controls have a label and keyboard focus; service and operation buttons use `aria-pressed`. Contrast, dark
+theme, text enlargement and reduced motion must work. Status uses gentle live announcements; each
+polling must not read out the whole list again. The zoomed preview supports Escape, and after closing focus returns to the trigger button. Blob URLs
+are released on switching or leaving the page; thumbnails load lazily by visible range, and all 100 originals are not decoded at once.
 
 ## Capability and selection requirements
 
 | ID | Requirement |
 | --- | --- |
-| CAP-01 | Runtime 是可執行 profiles、操作與代理選項的唯一來源；Studio 不另存 provider/model 白名單、不複製聊天 model catalog |
-| CAP-02 | profile 綁 operation、provider/native transport、允許的 agent configurations、輸入張數、options、限制、工具／delegation 規則、收集／解碼版本及 evidence reference |
-| CAP-03 | 未實作／無法限制的「服務 × 操作」不可列出；已實作但未安裝、未設定、停用、暫不可用可顯示清楚不可選原因 |
-| CAP-04 | capability GET 只讀設定／已知可用性，不執行模型、不登入、不查憑證、不產圖。`available` 表示可接受提交，不保證額度或 entitlement |
-| CAP-05 | 選擇值必須是 target、profile、operation、agent config 的有效組合。`grok/native` 不能出現在「圖片模型」欄位；Antigravity child 的 Model tier 不是 Imagen/Veo 選項 |
-| CAP-06 | capability 變更或服務失聯保留草稿、來源與可辨認的選擇，不悄悄換服務、操作、model、effort 或 Fast。按下送出時重新驗證；設定過期就拒絕並要求重新選擇 |
-| CAP-07 | 首次沒有偏好時選可用 Grok 的生成；不可用則要求選擇其他可用服務，不自動呼叫替代服務。沒有可用服務時仍可看保存作品 |
-| CAP-08 | 表單只提交 profile 宣告的 options：`aspectRatio` 必須在該操作的 enum 內，`native`／`service`／`source` 模式時省略；`transparentBackground` 只在宣告時提交。不提交 size／model 等猜測欄位 |
+| CAP-01 | Runtime is the only source of executable profiles, operations and agent options; Studio does not store its own provider/model allowlist and does not copy the chat model catalog |
+| CAP-02 | A profile binds operation, provider/native transport, the allowed agent configurations, input count, options, limits, tool/delegation rules, collection/decoding version and an evidence reference |
+| CAP-03 | A "service × operation" that is not implemented or cannot be restricted must not be listed; one that is implemented but not installed, not configured, disabled or temporarily unavailable may show a clear reason it cannot be selected |
+| CAP-04 | The capability GET only reads configuration and known availability; it does not run a model, log in, check credentials or generate an image. `available` means a submission can be accepted, and does not guarantee quota or entitlement |
+| CAP-05 | The selected values must be a valid combination of target, profile, operation and agent config. `grok/native` must not appear in an "image model" field; the Model tier of an Antigravity child is not an Imagen/Veo option |
+| CAP-06 | A capability change or a lost service keeps the draft, sources and recognizable selection, and does not quietly switch service, operation, model, effort or Fast. It is revalidated when submit is pressed; a stale setting is rejected and a new selection is requested |
+| CAP-07 | With no preference on first use, the generation of an available Grok is selected; if unavailable, the user is asked to pick another available service, and no substitute service is called automatically. With no available service the saved works can still be viewed |
+| CAP-08 | The form submits only the options the profile declares: `aspectRatio` must be within the operation's enum and is omitted in `native`/`service`/`source` modes; `transparentBackground` is submitted only when declared. Guessed fields such as size/model are not submitted |
 
 ## Operations and sources
 
 | ID | Requirement |
 | --- | --- |
-| OP-01 | 操作詞彙：`image.generate`（0 張來源）、`image.edit`（恰好 1 張）、`image.compose`（2 張以上，上限依 profile）。其他操作不在本期 |
-| OP-02 | 來源是同一 App／account 已成功保存的作品 ID；renderer 不傳路徑、URL 或 bytes。順序有意義，提交與保存都保持順序 |
-| OP-03 | Platform 驗證每個來源的 App/account/version 權限與存在性，取得保存的原檔與 SHA-256；不存在或被撤銷時回 `source_unavailable` |
-| OP-04 | Runtime 依 profile 把來源轉成服務接受的輸入形式，放在本次 attempt 的受管位置，做 containment／大小／格式檢查；不符合宣告時回 `source_unsupported`，不偷偷轉檔或縮圖 |
-| OP-05 | 結果永遠是新作品；原圖不修改、不覆蓋。Job 保存操作與有順序的 `{id, sha256}` 來源快照 |
-| OP-06 | 冪等性：同一 requestId 的 canonical payload 包含 operation、來源 ID 順序與 options；任一不同即 conflict |
-| OP-07 | 跨服務來源允許；能否使用由目標 profile 的輸入限制決定，不由產出服務決定 |
-| OP-08 | 每個「服務 × 操作」各自需要 AC-10 的 bounded-route acceptance；修圖／合成不繼承生成的證據 |
+| OP-01 | Operation vocabulary: `image.generate` (0 sources), `image.edit` (exactly 1), `image.compose` (2 or more, upper limit by profile). Other operations are out of this phase |
+| OP-02 | A source is the ID of a work successfully saved by the same App/account; the renderer passes no path, URL or bytes. Order is meaningful, and both submit and storage keep the order |
+| OP-03 | Platform validates each source's App/account/version permission and existence, and obtains the saved original and SHA-256; when it does not exist or is revoked it returns `source_unavailable` |
+| OP-04 | Per the profile, Runtime converts the sources into the input form the service accepts, placed in a managed location for this attempt, with containment / size / format checks; when it does not match the declaration it returns `source_unsupported`, with no silent conversion or thumbnailing |
+| OP-05 | The result is always a new work; the original is not modified or overwritten. The job stores the operation and an ordered snapshot of `{id, sha256}` sources |
+| OP-06 | Idempotency: the canonical payload of the same requestId includes the operation, the order of source IDs and the options; any difference is a conflict |
+| OP-07 | Cross-service sources are allowed; whether one can be used is decided by the target profile's input limits, not by the producing service |
+| OP-08 | Each "service × operation" separately needs AC-10's bounded-route acceptance; editing and compositing do not inherit the generation evidence |
 
 ## Proposed contract 2 — owner handoff, not an existing SDK
 
-2026-10-23 凍結「生成」子集，以 App SDK 1.7.0 的相容 minor 提供，不是 SDK major：
-manifest `appSdk` 下限 ≥1.7.0 的 App 看到 contract 2，其他 App 維持 schema 1 投影
-（[Platform ADR-137](../../../cats-platform/docs/decisions/137-negotiate-image-contract-2-by-app-sdk-floor.md)、
-[Runtime SPEC-038](../../../cats-runtime/docs/specs/SPEC-038-image-generation-contract-2.md)）。
-已凍結：target `<provider>/<instance>`、生成 profile（`inputs` 0..0、`aspectRatio` 為
-`native` 或 `service`）、submit 的確切欄位（`sourceIds` 與 `options` 必須為空）、job 的量測
-輸出（JPEG／PNG、尺寸、`transparency`）、`executionOutcome`
-（`completed`／`stopped_after_image`）與 `image_profile_changed`／`image_profile_unavailable`。
-Host 實際投影見 `tests/fixtures/studio-image-fixtures.mjs` 的 `HOST_CONTRACT_TWO_*`。下表其餘
-欄位（修圖／合成、來源、比例選擇、透明背景）仍是提案，尚未凍結。
+On 2026-10-23 the "generation" subset was frozen, provided as a compatible minor of App SDK 1.7.0 and not an SDK major:
+an App whose manifest `appSdk` floor is ≥1.7.0 sees contract 2, and other Apps keep the schema 1 projection
+([Platform ADR-137](../../../cats-platform/docs/decisions/137-negotiate-image-contract-2-by-app-sdk-floor.md),
+[Runtime SPEC-038](../../../cats-runtime/docs/specs/SPEC-038-image-generation-contract-2.md)).
+Frozen: target `<provider>/<instance>`, the generation profile (`inputs` 0..0, `aspectRatio` being
+`native` or `service`), the exact fields of submit (`sourceIds` and `options` must be empty), the job's measured
+output (JPEG/PNG, size, `transparency`), `executionOutcome`
+(`completed` / `stopped_after_image`) and `image_profile_changed` / `image_profile_unavailable`.
+The host's actual projection is in the `HOST_CONTRACT_TWO_*` of `tests/fixtures/studio-image-fixtures.mjs`. The remaining
+fields in the table below (editing/compositing, sources, ratio choice, transparent background) are still proposals and not yet frozen.
 
-| Data / operation | 必要內容 |
+| Data / operation | Required content |
 | --- | --- |
-| `images.getCapabilities()` | `schemaVersion: 2`、能力 revision；`targets` 內含 opaque target ID、provider、instance label、availability/reason；`profiles` 內含 ID/revision、operation、可用 target/config 關係、代理 label/resolved ID/effort、`inputs: { min, max }`、`aspectRatio: { mode, options? }`、`transparentBackground?: true`、limits |
-| `images.submit(input)` | exact typed payload：`requestId`, `targetId`, `profileId`, `profileRevision`, `agentConfigId`, `operation`, `prompt`, `sourceIds`（generate 時為空陣列）, `options`。options 只允許 profile 宣告的 `aspectRatio`（enum 內）與 `transparentBackground`。不可傳 raw CLI args、API URL/key、cwd、路徑或 destination |
-| `images.delete(id)` | 刪除已保存／未完成／已取消的工作：Core 紀錄、保存的原檔與 Runtime receipt（Runtime 離線時盡力而為）；進行中或待確認回 409 `image_not_deletable`；已在 Cats Work 被連結或引用回 409 `image_in_use`；刪除後同一 requestId 保留，重送回 `image_request_conflict`，從不生成。SDK 1.x 先以相容方式加入，Studio 以功能偵測決定是否顯示 |
-| `images.list/cancel/refresh` | 方法用途沿用；回傳 schema 2 jobs。`refresh` 只查原 receipt／重新收集原檔，不 POST 生成。cancel 作用於整個父子樹 |
-| Job identity/config snapshot | request/job IDs、provider/instance label、operation、profile/revision/config、提交時 requested/resolved agent model/effort、prompt、有順序的來源 `{id, sha256}`、要求的 options、timestamps。快照不可隨 catalog 更新而改寫 |
-| Job lifecycle | `submitting/running/collecting/succeeded/failed/cancelling/cancelled/interrupted`；使用者取消意圖、safe error、warnings，以及獨立的 provider `executionOutcome`（含未知） |
-| Output | 至多一張：verified `image/jpeg` 或 `image/png`、bytes、width、height、SHA-256、量測的 transparency（opaque/has-transparency/unknown）。圖片模型與媒體費用可為 null；未回報不當作零 |
-| `images.read(id)` | verified original ArrayBuffer + actual MIME；不回傳檔案路徑、provider URL、raw transcript 或憑證 |
-| `images.export(id)` | host 決定安全檔名及 JPEG/PNG 副檔名；輸出與保存原檔 byte-identical，不因預覽大小重新壓縮 |
+| `images.getCapabilities()` | `schemaVersion: 2`, the capability revision; `targets` contains opaque target ID, provider, instance label, availability/reason; `profiles` contains ID/revision, operation, the available target/config relationship, agent label/resolved ID/effort, `inputs: { min, max }`, `aspectRatio: { mode, options? }`, `transparentBackground?: true`, limits |
+| `images.submit(input)` | An exact typed payload: `requestId`, `targetId`, `profileId`, `profileRevision`, `agentConfigId`, `operation`, `prompt`, `sourceIds` (an empty array for generate), `options`. Options allow only the profile-declared `aspectRatio` (within the enum) and `transparentBackground`. Raw CLI args, API URL/key, cwd, path or destination cannot be passed |
+| `images.delete(id)` | Delete a saved / unfinished / cancelled job: the Core record, the saved original and the Runtime receipt (best effort when Runtime is offline); in-progress or pending confirmation returns 409 `image_not_deletable`; one already linked or referenced in Cats Work returns 409 `image_in_use`; after deletion the same requestId is retained, a resend returns `image_request_conflict` and never generates. SDK 1.x adds it first in a compatible way, and Studio decides whether to show it by feature detection |
+| `images.list/cancel/refresh` | Method purposes are unchanged; returns schema 2 jobs. `refresh` only queries the original receipt / re-collects the original file and does not POST a generation. cancel acts on the whole parent-child tree |
+| Job identity/config snapshot | request/job IDs, provider/instance label, operation, profile/revision/config, requested/resolved agent model/effort at submit time, prompt, ordered sources `{id, sha256}`, requested options, timestamps. The snapshot must not be rewritten by catalog updates |
+| Job lifecycle | `submitting/running/collecting/succeeded/failed/cancelling/cancelled/interrupted`; the user's cancel intent, safe error, warnings, and a separate provider `executionOutcome` (including unknown) |
+| Output | At most one image: verified `image/jpeg` or `image/png`, bytes, width, height, SHA-256, measured transparency (opaque / has-transparency / unknown). The image model and media cost may be null; not reported is not treated as zero |
+| `images.read(id)` | The verified original ArrayBuffer + actual MIME; no file path, provider URL, raw transcript or credentials are returned |
+| `images.export(id)` | The host decides a safe file name and the JPEG/PNG extension; the output is byte-identical to the saved original and is not recompressed for the preview size |
 
-新增 safe error codes 提案：`source_unavailable`、`source_unsupported`、`source_count_invalid`、
-`option_unsupported`。Platform 先持久化完整 canonical request，再以 App/account/requestId
-派生固定 Runtime ID。相同 ID、相同 canonical payload 回傳原 attempt；任何設定／描述／
-來源／options 改變皆 conflict。trim 外圍空白，保留內部文字與換行；不得偷偷翻譯、改寫
-或改配置後重送。Runtime HTTP／internal types 採相同語意；具體 routes 與 typed
-projections 由 A0 一起更新，保留既有 auth、CSRF、package digest 與 account/App/version 授權。
+Proposed new safe error codes: `source_unavailable`, `source_unsupported`, `source_count_invalid`,
+`option_unsupported`. Platform first persists the full canonical request, then derives a fixed Runtime ID from App/account/requestId.
+The same ID with the same canonical payload returns the original attempt; any change to the settings, description,
+sources or options is a conflict. Surrounding whitespace is trimmed, inner text and line breaks are kept; it must not silently translate, rewrite
+or change the configuration and resend. Runtime HTTP/internal types use the same semantics; the concrete routes and typed
+projections are updated together by A0, keeping the existing auth, CSRF, package digest and account/App/version authorization.
 
 ## Execution, collection and recovery
 
 | ID | Requirement |
 | --- | --- |
-| EX-01 | 每個 explicit request 只允許一個 native parent attempt、一次媒體生成、零自動重試／fallback；Antigravity 允許一個 `image-generator` child，禁止 child 再委派。適用於每個操作 |
-| EX-02 | 生成前必須能強制工具、delegation、媒體次數與 deadline。不得只以提示詞、事後驗收或「第一張收到了就算成功」充當機械限制。能力不足的「服務 × 操作」保持不可用並記錄原因 |
-| EX-03 | 延續一個全域 image active slot、每 App/account 一個 active job、無 queue，並接既有 selection／pool／metering／shutdown。Antigravity child 算在父 attempt 的工作與取消邊界內 |
-| EX-04 | 初始上限：prompt 2000 code points、全 attempt 含 child/收集 5 分鐘、受管事件輸出 2 MiB、單圖 8 MiB／4,000,000 pixels／單邊 4096。來源各自套用同樣的單圖上限。這是接受上限，不是可選生成尺寸；不因超標自動轉檔／縮圖再冒充原檔 |
-| EX-05 | 記錄原生 session/tool call/result 的 exact correlation，包含 parent-child chain 或 nested exec。filename、mtime、assistant 自述、cwd 目錄猜測均不足以證明來源；不得廣掃 provider home 或讀 model thinking |
-| EX-06 | 對 matching result 指定來源做 realpath／containment、regular file、symlink/hardlink、讀取前後穩定性、大小與完整解碼檢查；收集 roots 由可信 profile/runtime 決定，renderer 不可控制。不可從任意 assistant 路徑讀檔 |
-| EX-07 | 檢查格式 signature、完整 PNG/JPEG decode、尺寸、bytes/hash、單圖數量、alpha 量測。native 媒體模型只在實際回報時記錄；代理設定與 media cost 分開，保留未知 |
-| EX-08 | 不同 provider 的 idle/progress 行為由 media profile 處理；不可為此全域放寬 Chat timeout。圖片結果完成後 final prose 缺失不應觸發另一張生成 |
-| EX-09 | 只在原執行已安全結束、無取消、工具與來源合規、驗證與 atomic persistence 成功後發布作品。回合 failed 但原圖符合上述條件，可 job succeeded + executionOutcome failed + warning `response_timeout_after_image` |
-| EX-10 | 缺 matching evidence、超出工具數、來源不明、解碼失敗或取消時不套 EX-09。未知結果保持 interrupted；refresh/reopen 只能讀原 attempt，不補跑 CLI |
-| EX-11 | 輸入來源只從 Platform 提供的保存原檔複製到本次 attempt 的受管輸入位置；attempt 結束後清理，不把 provider 讀取權擴大到其他作品或目錄 |
+| EX-01 | Each explicit request allows only one native parent attempt, one media generation, zero automatic retries/fallbacks; Antigravity allows one `image-generator` child, and the child is forbidden from delegating further. Applies to every operation |
+| EX-02 | Before generation, tools, delegation, media call count and deadline must be enforceable. A prompt, after-the-fact acceptance or "counts as success once the first image arrives" must not stand in for a mechanical limit. A "service × operation" with insufficient capability stays unavailable and the reason is recorded |
+| EX-03 | Continue one global image active slot, one active job per App/account, no queue, and connect the existing selection / pool / metering / shutdown. The Antigravity child counts within the parent attempt's work and cancellation boundary |
+| EX-04 | Initial limits: prompt 2000 code points, the whole attempt including child/collection 5 minutes, managed event output 2 MiB, single image 8 MiB / 4,000,000 pixels / 4096 per edge. Sources each apply the same single-image limits. These are acceptance limits, not selectable generation sizes; an oversize is not automatically converted/shrunk and then passed off as the original |
+| EX-05 | Record the exact correlation of the native session / tool call / result, including the parent-child chain or nested exec. File name, mtime, assistant self-report and cwd directory guesses are insufficient to prove the source; the provider home must not be scanned broadly and model thinking must not be read |
+| EX-06 | For the source specified by the matching result do realpath / containment, regular file, symlink/hardlink, stability before and after reading, size and full-decode checks; collection roots are decided by the trusted profile/runtime and the renderer cannot control them. Files must not be read from an arbitrary assistant path |
+| EX-07 | Check the format signature, full PNG/JPEG decode, size, bytes/hash, single-image count and alpha measurement. The native media model is recorded only when actually reported; agent settings and media cost are kept separate, keeping unknown |
+| EX-08 | The idle/progress behavior of different providers is handled by the media profile; the Chat timeout must not be loosened globally for this. A missing final prose after the image result completes should not trigger another generation |
+| EX-09 | Publish a work only after the original execution has safely ended, with no cancellation, tools and sources compliant, and validation and atomic persistence successful. If the turn failed but the original image meets the above conditions, the job may be succeeded + executionOutcome failed + warning `response_timeout_after_image` |
+| EX-10 | EX-09 is not applied when matching evidence is missing, the tool count is exceeded, the source is unknown, decoding fails or it is cancelled. An unknown result stays interrupted; refresh/reopen can only read the original attempt and does not rerun the CLI |
+| EX-11 | Input sources are copied only from the saved original provided by Platform to the managed input location of this attempt; cleaned up after the attempt ends, and the provider's read access is not widened to other works or directories |
 
-2 MiB 是受管結構化事件／text budget，不應直接把 large inline base64 混入無界日誌。
-若某 CLI 在傳輸層內嵌圖片，adapter 必須有可證明有界的 binary 處理及獨立 8 MiB
-限制；做不到即不啟用，不能直接提高 stdout cap 或截斷到無法建立 tool correlation。
-原生 provider transcript 可存在其自有目錄，但 collector 只讀原 attempt 的有界必要
-部分，不能把整份 system context／thinking／帳號資料保存成 Studio receipt。
+2 MiB is the managed structured event / text budget, and large inline base64 should not be mixed directly into an unbounded log.
+If a CLI embeds the image in the transport layer, the adapter must have provably bounded binary handling and a separate 8 MiB
+limit; if that cannot be done it is not enabled, and the stdout cap must not be raised directly or truncated to the point where tool correlation cannot be established.
+The native provider transcript may live in its own directory, but the collector reads only the bounded necessary part of the original attempt,
+and must not save the whole system context / thinking / account data as a Studio receipt.
 
 ## UI states and actions
 
-| 情境 | 顯示與允許動作 |
+| Scenario | What is shown and which actions are allowed |
 | --- | --- |
-| 尚無作品 | 已標明來源的既有 Grok sample 或空預覽；換提示詞不修改 sample，不視為新生成。修圖／合成的來源區提示先生成一張 |
-| 正在送出 | 顯示所選服務、操作與描述快照；禁止第二次送出；遺失 response 保留同一 requestId，只能以相同 payload 確認 |
-| 生成中 | 可顯示 elapsed time／實際階段及取消；不顯示虛構完成百分比或剩餘秒數 |
-| 正在保存 | 說明正在保存圖片，不當作需要再生成；取消仍優先於尚未發布的成功 |
-| 已保存 | 顯示實際格式／寬高／比例／透明度與量測尺規，預覽／放大／下載原檔／以此修圖／複用描述可用 |
-| 已保存且回應逾時 | 圖片正常可用；一則非阻擋警示「圖片已保存，但生成回應逾時。」詳情保留執行結果，沒有自動重試 |
-| 失敗、沒有可用圖片 | 保留描述和 provider-specific safe 原因；使用者明確按「再生成一張」才建立新 requestId，可能再次使用額度 |
-| 結果待確認 | 顯示「確認結果」；只讀取原 attempt。禁止把相同 request 視為未送出並自動重建 |
-| 正在取消／已取消 | 等父子程序結束；取消網路失敗可重送取消，不能重送生成；不承諾退還額度 |
-| 來源不可用 | 已選來源被撤銷或不再存在時移出選取並說明；不以其他作品替代 |
-| Runtime 離線／服務不可用 | 草稿保留、新生成停用、既有已保存圖仍可讀／下載；capability refresh 不觸發帳號 probe |
-| 保存失敗／磁碟滿 | 保留原 receipt 與可恢復來源；確認結果只做 collection，不再生成 |
+| No works yet | The existing Grok sample with its source labeled, or an empty preview; changing the prompt does not modify the sample and is not treated as a new generation. The source area for editing/compositing prompts to generate one first |
+| Submitting | Shows a snapshot of the selected service, operation and description; a second submit is forbidden; a lost response keeps the same requestId and can only be confirmed with the same payload |
+| Generating | May show elapsed time / the actual stage and cancel; no fictitious completion percentage or remaining seconds |
+| Saving | Explains that the image is being saved, and it is not treated as needing another generation; cancel still takes priority over a success not yet published |
+| Saved | Shows the actual format / width and height / ratio / transparency and the measurement ruler; preview / zoom / download original / edit from this / reuse description are available |
+| Saved and response timed out | The image is normally usable; one non-blocking warning, 「圖片已保存，但生成回應逾時。」 ("The image was saved, but the generation response timed out."). The detail keeps the execution result, with no automatic retry |
+| Failed, no usable image | Keeps the description and a provider-specific safe reason; only when the user explicitly presses 「再生成一張」 ("Generate another") is a new requestId created, which may use quota again |
+| Result pending confirmation | Shows 「確認結果」 ("Confirm result"); only reads the original attempt. The same request must not be treated as unsent and rebuilt automatically |
+| Cancelling / cancelled | Wait for the parent and child processes to end; if the cancel network call fails the cancel can be resent, but the generation cannot; no quota refund is promised |
+| Source unavailable | When a selected source is revoked or no longer exists it is removed from the selection with an explanation; no other work substitutes for it |
+| Runtime offline / service unavailable | The draft is kept, new generation is disabled, existing saved images can still be read/downloaded; a capability refresh does not trigger an account probe |
+| Save failure / disk full | Keep the original receipt and recoverable sources; confirming the result only does collection and does not generate again |
 
-建立與草稿是不同狀態：執行中的 config/prompt/來源不可變；可編輯下一份草稿，但 active／
-未確認 attempt 解決前仍禁止另一筆提交。使用者選了舊作品後，背景 polling 不得偷換
-預覽；明確提交新工作時才把結果區切到該工作，避免新描述搭配舊圖片。篩選作品或
-返回頁面不取消既有執行。篩選是目前 App/account 至多 100 jobs 的本地視圖，不假稱
-有無限歷史；保存上限延續既有政策，不自動刪舊作品。
+Creating and drafting are different states: the config/prompt/sources of a running execution are immutable; the next draft can be edited, but while an active or
+unconfirmed attempt is unresolved another submission is still forbidden. After the user selects an older work, background polling must not swap
+the preview; only when a new job is explicitly submitted does the result area switch to that job, to avoid a new description paired with an old image. Filtering works or
+returning to the page does not cancel an existing execution. Filtering is a local view of at most 100 jobs of the current App/account and does not pretend to
+have unlimited history; the retention limit continues the existing policy and old works are not deleted automatically.
 
 ## Persistence, compatibility and security
 
-- Runtime 保留至多 500 receipts，Platform 至多 100 jobs/App/account；原圖存在可變
-  data roots，與 immutable App package 分離。不得依目前 renderer 版本重寫歷史的
-  agentModel、effort、圖片規格或來源。預覽與匯出同樣驗證 App/account/version 權限。
-- 被當作來源的作品仍受同樣保存上限。作品刪除後，以它為來源的作品保留，「基於」顯示
-  已不在作品列表；已選為草稿來源的作品被刪除時移出選取並說明。撤銷或遺失必須以
-  `source_unavailable` 明確失敗。
-- Host bridge 一次只處理一個 image 呼叫，且同一方法 500 ms 內重複呼叫會回
-  `image_service_busy`。Studio 以單一佇列呼叫所有 `sdk.images` 方法：同一方法在上一次呼叫
-  結束後至少間隔 550 ms；預覽讀取最先、使用者操作與輪詢次之、縮圖讀取最後，捲出畫面的縮圖
-  讀取略過；離開頁面時排隊中的呼叫一律結束。使用者操作在背景輪詢期間會等待而不是被丟棄，
-  但不會在另一個使用者操作結束後被重播。
-- 新 schema 2 的 migration 分別由 Runtime／Platform owner 執行：先驗證 schema 1、
-  備份、建立並驗證新檔、atomic replace、失敗保留原檔。保留 IDs、Core 關聯、prompt、
-  timestamps、hash、bytes、既有 JPEG；舊作品的 operation 記為 `image.generate`、來源為
-  空。不明格式 fail closed，不清空資料。重啟冪等；舊 running/interrupted 不重新生成。
-- 歷史配置無法還原時標 unknown／historical，不把目前 Grok 4.7/xhigh pin 套到先前
-  Fast/Low 作品。原先 collection-only recovery 仍只能恢復同一張既有圖。
-- （2026-10-23 更新：改以 SDK 1.7.0 相容 minor 依 App 宣告協商，見上方 contract 2 段落；
-  SDK major 會讓所有宣告 `^1.x` 的官方 App 不相容。）本設計改變公開 request／capability／output 型別；Runtime、
-  Platform、Studio 仍在 0.x，breaking public/persisted requirements 需下一 minor。
-  owner 在 release preparation 決定確切版本／artifact pins／App compatibility
-  ranges，連同 Usage／Ask 的可啟用相容矩陣一起驗收；不可只更新 Studio 然後讓舊
-  Apps 因 SDK 不相容消失。此規劃不執行 bump／發布／安裝，也不靠舊 API alias 猜測執行。
-- Studio 的能力正規化層讀 schema 1 與 schema 2；schema 1 只會產生 Grok 生成、原生
-  1:1，提交時只送 SDK 1.x 的三個欄位。未知 schema fail closed（沒有可用服務），
-  已保存作品仍可讀取。
-- 沿用 opaque iframe、nonce-bound bridge、scoped grants、host-managed downloads。
-  Studio 不取得 shell、provider credentials、絕對來源路徑或任意 provider network。
-  prompt、服務標籤與回傳原因都以文字安全呈現，不執行其中的 HTML、script 或連結指令。
+- Runtime keeps at most 500 receipts and Platform at most 100 jobs per App/account; originals live in mutable
+  data roots, separate from the immutable App package. The historical agentModel, effort, image specs or sources
+  must not be rewritten according to the current renderer version. Preview and export validate the same App/account/version permissions.
+- A work used as a source is still subject to the same retention limit. After a work is deleted, works that used it as a source are kept, and "based on" shows
+  that it is no longer in the works list; when a work selected as a draft source is deleted it is removed from the selection with an explanation. Revocation or loss must fail explicitly with
+  `source_unavailable`.
+- The host bridge handles only one image call at a time, and a repeated call to the same method within 500 ms returns
+  `image_service_busy`. Studio calls all `sdk.images` methods through a single queue: the same method is spaced at least 550 ms after the previous call
+  ends; preview reads go first, user actions and polling next, thumbnail reads last, and thumbnail
+  reads scrolled out of view are skipped; queued calls are all ended on leaving the page. A user action waits during background polling rather than being dropped,
+  and is not replayed after another user action ends.
+- The migration to the new schema 2 is executed by the Runtime / Platform owners respectively: first validate schema 1,
+  back up, create and validate the new file, atomic replace, and keep the original file on failure. Keep IDs, Core links, prompt,
+  timestamps, hash, bytes and the existing JPEGs; the operation of old works is recorded as `image.generate` with empty
+  sources. An unknown format fails closed and does not clear data. Restarts are idempotent; old running/interrupted jobs are not regenerated.
+- When the historical configuration cannot be restored it is marked unknown / historical, and the current Grok 4.7/xhigh pin is not applied to earlier
+  Fast/Low works. The original collection-only recovery can still only recover the same existing image.
+- (Update 2026-10-23: switched to negotiating an SDK 1.7.0 compatible minor by App declaration, see the contract 2 section above;
+  an SDK major would make every official App that declares `^1.x` incompatible.) This design changes the public request / capability / output types; Runtime,
+  Platform and Studio are still on 0.x, so breaking public/persisted requirements need the next minor.
+  The owner decides the exact versions / artifact pins / App compatibility
+  ranges during release preparation, and accepts them together with the enablement compatibility matrix of Usage and Ask; it is not allowed to update only Studio and let old
+  Apps disappear because of SDK incompatibility. This plan does not run a bump / publish / install, and does not guess at execution through old API aliases.
+- Studio's capability normalization layer reads schema 1 and schema 2; schema 1 yields only Grok generation, native
+  1:1, and at submit time sends only the three SDK 1.x fields. An unknown schema fails closed (no usable service),
+  and saved works can still be read.
+- The opaque iframe, nonce-bound bridge, scoped grants and host-managed downloads are kept.
+  Studio gets no shell, provider credentials, absolute source paths or arbitrary provider network.
+  Prompts, service labels and returned reasons are all rendered safely as text, and no HTML, script or link command in them is executed.
 
 ## Acceptance criteria
 
-| ID | 可觀察的完成條件 |
+| ID | Observable completion condition |
 | --- | --- |
-| AC-01 | 四組 capability fixtures 呈現正確服務卡、已啟用操作、代理設定及比例模式；沒有圖片模型假選單，未實作／不可限制的「服務 × 操作」不出現也無法提交 |
-| AC-02 | 一次明確送出只產生一個 canonical attempt；double click、重開、refresh、斷線及重送相同 ID 不增加 CLI/media calls；改 payload（含來源或 options）同 ID 得 conflict |
-| AC-03 | 1024² JPEG、1920×1280 PNG、1254² PNG 皆完整預覽、放大、讀出正確 MIME／尺寸並 byte-identical 匯出，不裁切或錯標 JPEG |
-| AC-04 | Muse fixture：成功 tool result 後 turn timeout，原執行結束 → 保存原圖且顯示 warning；缺 correlation／額外生成時不能被判成功；全程零自動重試 |
-| AC-05 | Antigravity 的 parent→指定 child→單圖及 Codex nested exec 有 fixture coverage；未知／多 child、額外生成、其他工具／模型無法繞過預先限制 |
-| AC-06 | 取消在生成／收集／保存 race 中均優先，父子程序停止前不假稱取消完成；取消後遲到圖不能成為成功作品 |
-| AC-07 | 舊 Grok schema 1 jobs／原檔升級後可讀、IDs與hash不變、operation 為生成；malformed、寫入失敗、重啟及不支援 downgrade 有測試，不重跑原 job |
-| AC-08 | 真正 built package＋host SDK 在隔離 registry/Core/Runtime fixtures 驗證服務選擇、操作切換、offline/reopen/filter/reuse/error/cancel/narrow/light/dark/keyboard，以及 Usage/Ask 相容性 |
-| AC-09 | 跨 App/account/version、停用／移除、path escape、偽 MIME／損壞／超大圖片、外來 session／tool result、他人作品當來源均拒絕；不洩漏 path／credentials／raw transcripts |
-| AC-10 | 每個 production-enabled「服務 × 操作」有實際 bounded route 的 acceptance receipt（有適用授權時）；既有 Chat probes 和 fixtures 不冒充此證據。沒有該證據仍可做設計 fixture，但不可宣稱已上線 |
-| AC-11 | 修圖／合成 fixtures：來源張數限制、順序保存、跨服務來源、`source_unavailable`／`source_unsupported`、結果為新作品且原圖 hash 不變、來源快照不隨後續變動改寫 |
-| AC-12 | 透明背景只在宣告的 profile 出現；要求透明但結果不透明時顯示量測的「不透明」，不以要求值冒充結果 |
-| AC-14 | 刪除：已保存需確認、未完成／已取消直接刪；Core 紀錄、原檔與 Runtime receipt 移除；進行中／待確認拒絕；被 Work 連結時拒絕並說明；其他帳號／App 不可刪；刪除從不生成，重送已刪除的 requestId 也不會；舊 host 不顯示刪除 |
-| AC-13 | 新 UI 在現有 SDK 1.x host 上只出現 Grok 生成、提交 payload 與 1.x 完全相同，並通過 Platform 的實際 package 瀏覽器驗收（選擇器配合更新） |
+| AC-01 | Four sets of capability fixtures show the correct service cards, enabled operations, agent settings and ratio modes; there are no fake image-model menus, and a "service × operation" that is not implemented or cannot be restricted neither appears nor can be submitted |
+| AC-02 | One explicit submit produces exactly one canonical attempt; double click, reopen, refresh, disconnection and resending the same ID do not increase CLI/media calls; changing the payload (including sources or options) with the same ID gets a conflict |
+| AC-03 | 1024² JPEG, 1920×1280 PNG and 1254² PNG are all fully previewed, zoomed, read with the correct MIME/size and exported byte-identically, without cropping or mislabeling as JPEG |
+| AC-04 | Muse fixture: a turn timeout after a successful tool result, the original execution ends → the original image is saved and a warning is shown; with missing correlation / extra generation it cannot be judged a success; zero automatic retries throughout |
+| AC-05 | Antigravity's parent→specified child→single image and Codex nested exec have fixture coverage; an unknown / multiple children, extra generation, or other tools/models cannot bypass the pre-set limits |
+| AC-06 | Cancel takes priority in generation / collection / save races, cancellation is not falsely reported complete before the parent and child processes stop; a late image after cancel cannot become a successful work |
+| AC-07 | Old Grok schema 1 jobs/originals are readable after the upgrade, IDs and hash unchanged, operation is generate; malformed, write failure, restart and unsupported downgrade have tests, and the original job is not rerun |
+| AC-08 | The real built package + host SDK, with isolated registry/Core/Runtime fixtures, verifies service selection, operation switching, offline/reopen/filter/reuse/error/cancel/narrow/light/dark/keyboard, and Usage/Ask compatibility |
+| AC-09 | Cross App/account/version, disable/remove, path escape, fake MIME / corrupt / oversize image, foreign session/tool result, and another person's work as a source are all rejected; no path/credentials/raw transcripts are leaked |
+| AC-10 | Each production-enabled "service × operation" has an acceptance receipt for its actual bounded route (when an applicable authorization exists); existing Chat probes and fixtures do not pass for this evidence. Without that evidence a design fixture can still be made, but it must not be claimed to be live |
+| AC-11 | Editing/compositing fixtures: source count limits, order preserved, cross-service sources, `source_unavailable` / `source_unsupported`, the result is a new work and the original's hash is unchanged, the source snapshot is not rewritten by later changes |
+| AC-12 | Transparent background appears only on a profile that declares it; when transparency is requested but the result is opaque, the measured 「不透明」 ("Opaque") is shown, and the requested value does not pass for the result |
+| AC-14 | Deletion: saved works need confirmation, unfinished/cancelled ones are deleted directly; the Core record, original file and Runtime receipt are removed; in-progress / pending confirmation is refused; refused with an explanation when linked by Work; another account/App cannot delete; deletion never generates, nor does resending a deleted requestId; an old host does not show delete |
+| AC-13 | On the existing SDK 1.x host the new UI shows only Grok generation, the submit payload is exactly identical to 1.x, and it passes Platform's actual package browser acceptance (selectors updated to match) |
 
 ## Dependencies and unresolved engineering gates
 
-Runtime 的 successor contract／adapter proofs、Platform 的 successor SDK／storage
-migration、公開 SDK 的 exact pin 與新 App manifest 必須一起交付。既有 owner baseline：
-[Runtime SPEC-033](../../../cats-runtime/docs/specs/SPEC-033-bounded-image-generation.md)、
-[Platform SPEC-119](../../../cats-platform/docs/specs/SPEC-119-app-image-generation.md)。
+Runtime's successor contract / adapter proofs, Platform's successor SDK / storage
+migration, the exact pin of the public SDK and the new App manifest must be delivered together. Existing owner baselines:
+[Runtime SPEC-033](../../../cats-runtime/docs/specs/SPEC-033-bounded-image-generation.md),
+[Platform SPEC-119](../../../cats-platform/docs/specs/SPEC-119-app-image-generation.md).
 
-A0 必須查明 Muse／Codex 的生成前機械限制與有界結果擷取、Antigravity parent/child
-控制及取消，以及這些能力是否存在於目標 CLI transport。修圖／合成另需查明各服務可
-接受的來源形式（附件、路徑、data URL）、格式與大小限制，以及來源能否放在 attempt
-專屬位置而不擴大 provider 的讀取範圍。現有研究沒有證明答案；不得為了照表開放而省略
-這些 gate。本機檔案匯入需要 Platform 另立 host-side picker 權限決策，不在本 SPEC 範圍。
+A0 must find out Muse's and Codex's pre-generation mechanical limits and bounded result capture, Antigravity's parent/child
+control and cancellation, and whether these capabilities exist in the target CLI transport. Editing and compositing additionally need to find out the source forms each service
+accepts (attachment, path, data URL), the format and size limits, and whether sources can be placed in an attempt-specific
+location without widening the provider's read scope. The existing research does not prove the answers; these gates must not be omitted just to open things up as in the table.
+Local file import needs a separate host-side picker permission decision from Platform, and is outside this SPEC.
 
-*Created: 2026-10-23。Revised: 2026-10-23（ADR-005：先選服務、修圖／合成）。Related plan: [PLAN-006](../plans/PLAN-006-studio-image-workspace.md)。*
+*Created: 2026-10-23. Revised: 2026-10-23 (ADR-005: pick the service first, editing/compositing). Related plan: [PLAN-006](../plans/PLAN-006-studio-image-workspace.md).*

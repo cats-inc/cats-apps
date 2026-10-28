@@ -2,106 +2,138 @@
 
 ## Status
 
-Proposed — 2026-10-23。使用者審閱 Studio 互動設計稿後，要求改為「先選服務，再做它能做的
-事」，並把修圖納入同一個工作區。本決策修訂 [ADR-004](004-expand-studio-with-verified-image-profiles.md)
-的 Decision 1（只做文生圖）與 Decision 5（比例只有原生 1:1 或自動），其餘 ADR-004
-決策維持。行為定義在 [SPEC-006](../specs/SPEC-006-studio-image-workspace.md)，工作順序在
-[PLAN-006](../plans/PLAN-006-studio-image-workspace.md)。不授權新的付費生成、版本 bump 或發布。
+Proposed — 2026-10-23. After reviewing the Studio interaction design draft, the user asked
+to "choose the service first, then do what it can do" and to include image editing in the
+same workspace. This decision amends Decision 1 (text-to-image only) and Decision 5 (ratio
+is only native 1:1 or automatic) of [ADR-004](004-expand-studio-with-verified-image-profiles.md);
+the other ADR-004 decisions stand. Behavior is defined in
+[SPEC-006](../specs/SPEC-006-studio-image-workspace.md) and work order in
+[PLAN-006](../plans/PLAN-006-studio-image-workspace.md). It does not authorize new paid
+generation, version bumps or publication.
 
 ## Context
 
-四家候選服務能做的事不同，證據等級也不同（見
-[probe summary](../research/2026-10-23-studio-cli-media-probe-summary.md)）：
+The four candidate services can do different things, with different evidence levels (see the
+[probe summary](../research/2026-10-23-studio-cli-media-probe-summary.md)):
 
-| 服務 | 生成 | 修圖（一張原圖） | 合成（多張參考） | 比例 |
+| Service | Generate | Edit (one source image) | Compose (multiple references) | Ratio |
 | --- | --- | --- | --- | --- |
-| Grok | 已實產 | `image_edit` 已定義，未實產 | `image_edit` 多圖已定義，未實產 | 生成 6 種、多圖 14 種；單圖修圖沿用原圖比例 |
-| Muse | 已實產 | `image_paths` 僅回報 | `image_paths` 最多 50 張，僅回報 | 無結構化欄位 |
-| Antigravity | 已實產（子代理） | 子代理描述提到，引數未知 | 未發現 | 只觀測到 1:1 |
-| Codex | 已實產 | reference paths 僅回報 | 僅回報 | 無結構化欄位；`transparent_background` 僅回報 |
+| Grok | Produced | `image_edit` defined, not produced | `image_edit` with multiple images defined, not produced | 6 for generation, 14 for multi-image; single-image edit keeps the source ratio |
+| Muse | Produced | `image_paths` only reported | `image_paths` up to 50, only reported | No structured field |
+| Antigravity | Produced (sub-agent) | Mentioned in sub-agent description, arguments unknown | Not found | Only 1:1 observed |
+| Codex | Produced | Reference paths only reported | Only reported | No structured field; `transparent_background` only reported |
 
-ADR-004 以「操作」為固定前提（只有文生圖），服務只是下拉選項。若把修圖加進同一個
-表單而不先決定服務，畫面必須顯示一半服務做不到的控制項，或在送出後才拒絕。比例、
-參考張數與透明背景也都是「服務 × 操作」才確定的屬性，不能共用一組選項。
+ADR-004 took the operation as fixed (text-to-image only), with the service as just a dropdown
+option. If editing is added to the same form without deciding the service first, the screen
+must show controls that half of the services cannot honor, or reject only after submission.
+Ratio, reference count and transparent background are also properties determined by
+"service × operation", and cannot share one set of options.
 
 ## Decision
 
-1. **選擇順序是服務 → 操作 → 該操作的輸入。** 服務是 provider + execution instance；
-   選定後只顯示該服務已啟用的操作。沒有任何服務支援的操作不出現；某服務不支援的
-   操作不以停用按鈕或「即將推出」佔位。
-2. **操作是 profile 的一部分。** 首批操作詞彙為 `image.generate`（無原圖）、
-   `image.edit`（恰好一張原圖）與 `image.compose`（兩張以上、有順序的參考）。每個
-   profile 宣告自己的操作、輸入張數上下限、可提交的 options 與限制。Studio 只渲染
-   宣告的內容，不保存 provider 專屬分支或模型白名單（延續 ADR-004 Decision 2）。
-3. **比例依操作宣告，分四種模式。** `choose`（列出 profile 的比例 enum）、`native`
-   （服務固定）、`service`（由服務決定，構圖寫在描述）、`source`（沿用原圖）。
-   Grok 生成與多圖合成使用各自的 enum；單圖修圖為 `source`。比例 enum 擴充仍需
-   該操作自己的驗證。
-4. **原圖與參考只來自已保存作品。** Renderer 只傳作品 ID；Platform 依 App／account／
-   version 授權並取得保存的原檔，Runtime 依 profile 轉成該服務可接受的輸入，放在
-   本次 attempt 的受管位置並做 containment 檢查。不接受任意路徑、URL 或拖放匯入；
-   本機檔案匯入需要 Platform 另立 host-side picker 權限決策。
-5. **跨服務使用作品是允許的，但不偷偷轉檔。** 任何服務產出的作品都可以當另一服務的
-   原圖，前提是符合該 profile 宣告的輸入格式與大小。不符合時以安全原因拒絕；只有
-   profile 明確宣告並驗證過的轉換才可以執行。
-6. **結果永遠是新作品，並記錄來源。** Job 記錄操作與有順序的來源 ID 及其 SHA-256；
-   原圖不被修改或覆蓋。冪等性比對包含操作、來源與 options，任何改變都是 conflict。
-   這是單層「基於」關係，不是版本樹 UI。
-7. **透明背景只在 profile 宣告時提供，結果以量測為準。** 要求透明與實際含透明像素
-   是不同事實；保存後顯示量測值（不透明／含透明像素／未知）。
-8. **每個「服務 × 操作」各自通過門檻。** 修圖與合成不繼承生成的 bounded-route
-   acceptance。EX-01 的「一次媒體呼叫、零重試」適用於每個操作；未證明能在生成前限制
-   的操作保持不可用。
-9. **Studio UI 先在 SDK 1.x 上交付。** Studio 以一個能力正規化層讀取 schema 1
-   （Grok、生成、原生 1:1）與提案中的 schema 2。對 SDK 1.x host 只會出現 Grok 生成，
-   行為與現有 Platform／Runtime 契約相容；schema 2 路徑以 fixtures 驗證，等 SDK
-   major 與各 owner 的 A0 凍結後再接上。影片等其他媒體操作仍另案，但沿用同一個
-   operation／profile 框架。
+1. **The selection order is service → operation → that operation's inputs.** A service is
+   provider + execution instance; once selected, only the operations enabled for that service
+   are shown. An operation no service supports does not appear; an operation a given service
+   does not support is not shown as a disabled button or a "coming soon" placeholder.
+2. **The operation is part of the profile.** The first operation vocabulary is
+   `image.generate` (no source image), `image.edit` (exactly one source image) and
+   `image.compose` (two or more ordered references). Each profile declares its own
+   operations, input count bounds, submittable options and limits. Studio renders only what
+   is declared and keeps no provider-specific branches or model allowlist (continuing ADR-004
+   Decision 2).
+3. **Ratio is declared per operation, in four modes.** `choose` (lists the profile's ratio
+   enum), `native` (fixed by the service), `service` (decided by the service, composition
+   written in the description), `source` (follows the source image). Grok generation and
+   multi-image composition use their own enums; single-image edit is `source`. Extending a
+   ratio enum still needs that operation's own verification.
+4. **Source and reference images come only from saved works.** The renderer passes only work
+   IDs; Platform authorizes by App/account/version and obtains the saved original file;
+   Runtime converts it per profile into an input the service accepts, places it in the managed
+   location for this attempt and performs a containment check. Arbitrary paths, URLs and
+   drag-and-drop import are not accepted; local file import requires a separate Platform
+   decision on host-side picker permission.
+5. **Using a work across services is allowed, but without silent conversion.** A work
+   produced by any service can be the source image for another service, provided it meets the
+   input format and size declared by that profile. When it does not, it is rejected for safety
+   reasons; only conversions explicitly declared and verified by the profile may run.
+6. **The result is always a new work, with its source recorded.** The job records the
+   operation and the ordered source IDs with their SHA-256; the source image is not modified
+   or overwritten. Idempotency comparison includes operation, sources and options; any change
+   is a conflict. This is a single-level "based on" relation, not a version-tree UI.
+7. **Transparent background is offered only when the profile declares it, and the result is
+   judged by measurement.** Requesting transparency and actually containing transparent
+   pixels are different facts; after saving, the measured value is shown (opaque / contains
+   transparent pixels / unknown).
+8. **Each "service × operation" passes its own gate.** Editing and composing do not inherit
+   generation's bounded-route acceptance. EX-01's "one media call, zero retries" applies to
+   every operation; an operation not proven limitable before generation stays unavailable.
+9. **The Studio UI ships first on SDK 1.x.** Studio reads schema 1 (Grok, generate, native
+   1:1) and the proposed schema 2 through a capability normalization layer. For an SDK 1.x
+   host only Grok generation appears, compatible with the existing Platform/Runtime
+   contracts; the schema 2 path is verified with fixtures and is wired in after the SDK major
+   and each owner's A0 freeze. Video and other media operations remain separate, but reuse the
+   same operation/profile framework.
 
 ## Consequences
 
 ### Positive
 
-- 使用者先看到服務真正能做的事，不會填完表單才被拒絕。
-- 新操作或新 provider 由 Runtime profile 宣告即可出現，Studio 不加 provider 分支。
-- 修圖、合成與跨服務接力使用同一套作品、來源與冪等規則。
-- UI 改版可以先在目前的 SDK 1.x 上發布，不必等待四家 adapter。
+- Users first see what the service can really do, and are not rejected after filling in the
+  form.
+- A new operation or new provider appears by Runtime profile declaration, with no provider
+  branch added to Studio.
+- Editing, composing and cross-service relay use the same work, source and idempotency rules.
+- The UI revision can ship first on the current SDK 1.x, without waiting for the four
+  adapters.
 
 ### Negative
 
-- contract 2 範圍變大：操作、來源、options 與量測透明度都要跨三個 repository 凍結。
-- 每個新操作都需要自己的 bounded-route 證據，啟用速度比只做生成慢。
-- 來源轉成各服務輸入（附件、路徑、data URL）是 Runtime 的新收集／隔離工作。
-- 現有 Platform 的 Studio 瀏覽器驗收腳本依賴舊 UI 選擇器，需要配合更新。
+- Contract 2 grows in scope: operations, sources, options and measured transparency must all
+  be frozen across three repositories.
+- Each new operation needs its own bounded-route evidence, so enabling is slower than
+  generation only.
+- Converting sources into each service's input (attachment, path, data URL) is new
+  collection/isolation work for Runtime.
+- The existing Platform Studio browser acceptance scripts depend on old UI selectors and need
+  matching updates.
 
 ### Neutral
 
-- 生成仍是預設操作；沒有偏好時仍選可用的 Grok（SPEC-006 CAP-07）。
-- 單次觀測的尺寸仍不是預設值或保證；比例模式描述控制方式，不描述結果。
+- Generation remains the default operation; without a preference, an available Grok is still
+  selected (SPEC-006 CAP-07).
+- A single observed size is still not a default or guarantee; ratio modes describe how
+  control works, not the result.
 
 ## Alternatives Considered
 
-### Alternative 1: 操作優先（先選生成或修圖，再選服務）
+### Alternative 1: Operation first (choose generate or edit, then the service)
 
-- **Pros**: 符合「我要修圖」的直覺；操作入口固定。
-- **Cons**: 選完操作後可用服務會變少或變成零；比例、張數、透明度仍要依服務重排。
-- **Why rejected**: 使用者明確要求先選 provider；能力差異集中在服務層，先選服務才不需要顯示做不到的選項。
+- **Pros**: Matches the "I want to edit an image" intuition; fixed operation entry.
+- **Cons**: After choosing the operation, the available services may shrink or become zero;
+  ratio, count and transparency still have to be rearranged by service.
+- **Why rejected**: The user explicitly asked to choose the provider first; capability
+  differences concentrate at the service layer, so choosing the service first avoids showing
+  options that cannot be done.
 
-### Alternative 2: 單一萬用表單，送出後由服務拒絕不支援的欄位
+### Alternative 2: One universal form, with the service rejecting unsupported fields after submission
 
-- **Pros**: 前端最簡單。
-- **Cons**: 違反「不顯示未驗證功能」；拒絕可能發生在已使用額度之後。
-- **Why rejected**: 與 ADR-004 的能力白名單與 EX-02 生成前限制衝突。
+- **Pros**: Simplest frontend.
+- **Cons**: Violates "do not show unverified features"; rejection can happen after quota has
+  been used.
+- **Why rejected**: Conflicts with ADR-004's capability allowlist and EX-02 pre-generation
+  limits.
 
-### Alternative 3: 開放本機檔案匯入當原圖
+### Alternative 3: Open local file import as the source image
 
-- **Pros**: 修圖用途更廣。
-- **Cons**: 需要新的 host 權限、檔案大小／格式驗證與隱私邊界；renderer 不能取得路徑。
-- **Why rejected**: 這期以已保存作品為來源；匯入另立 Platform 決策。
+- **Pros**: Broader editing uses.
+- **Cons**: Needs new host permission, file size/format validation and a privacy boundary;
+  the renderer cannot obtain paths.
+- **Why rejected**: This phase uses saved works as sources; import gets a separate Platform
+  decision.
 
 ## References
 
-- [ADR-004](004-expand-studio-with-verified-image-profiles.md)、[SPEC-006](../specs/SPEC-006-studio-image-workspace.md)、[PLAN-006](../plans/PLAN-006-studio-image-workspace.md)
+- [ADR-004](004-expand-studio-with-verified-image-profiles.md), [SPEC-006](../specs/SPEC-006-studio-image-workspace.md), [PLAN-006](../plans/PLAN-006-studio-image-workspace.md)
 - [Grok capability probe](../research/2026-10-23-grok-media-capability-probe.md)
 - [Eight-session probe](../research/2026-10-23-eight-session-cli-media-probe.md)
 - [Three-provider artifact probe](../research/2026-10-23-three-provider-image-artifact-probe.md)
@@ -109,4 +141,4 @@ ADR-004 以「操作」為固定前提（只有文生圖），服務只是下拉
 ---
 
 *Decision proposed: 2026-10-23*
-*Decision makers: owner（設計審閱與方向）*
+*Decision makers: owner (design review and direction)*

@@ -11,155 +11,155 @@
 
 ## Summary
 
-提供一個 Cats App，向使用者已有的 Gemini Spark、Grok Bot、Meta AI 提問，
-取得該產品在使用者身分與授權範圍下能產生的回答，並提供複製按鈕。
-使用者自行將回答貼到 Chat、Code、Work 或其他地方。
+Provide a Cats App that asks the Gemini Spark, Grok Bot and Meta AI the user already has,
+obtains the answer that product can produce under the user's identity and authorized scope, and offers a copy button.
+The user pastes the answer into Chat, Code, Work or elsewhere on their own.
 
 ## Confirmed user context
 
-以下保留使用者的產品需求；Grok Bot 書籤往返已有 probe 證據，其他能力分別驗證：
+The following keeps the user's product requirements; the Grok Bot bookmark round trip already has probe evidence, and the other capabilities are verified separately:
 
-- Gemini Spark 能依據對使用者的了解，提供興趣、偏好及 YouTube 推薦等高階建議。
-  Google Workspace 原始資料 API 不代表同等的個人化能力。
-- Meta 的目標包括已儲存貼文、自己的內容、有權限閱讀的文章與 Reels 摘要。
-- Grok Bot 設定 X Connector 後，能理解這個使用者的發文歷史並處理相關內容。
-  使用者確認 Grok 網頁版的 X connector 無法達成相同目標；兩者不得視為等價入口。
-  使用者後續澄清自己未發文，實際驗收改查三篇已儲存書籤；不宣稱測過自有發文歷史。
-- 核心價值包含第一方 AI 的個人化理解、使用者授權內容及其整理判斷能力。
-  公開貼文搜尋或單純模型 API 的成功，不足以驗證本 MVP。
+- Gemini Spark can offer high-level suggestions such as interests, preferences and YouTube recommendations based on what it knows about the user.
+  The Google Workspace raw-data APIs do not represent the same personalization capability.
+- Meta's goals include saved posts, the user's own content, articles the user has permission to read, and Reels summaries.
+- With the X Connector configured, Grok Bot can understand this user's posting history and handle related content.
+  The user confirmed that the X connector in the Grok web version cannot achieve the same goal; the two must not be treated as equivalent entries.
+  The user later clarified that they have not posted, so actual acceptance instead queries three saved bookmarks; it does not claim to have tested their own posting history.
+- The core value includes the first-party AI's personalized understanding, the user-authorized content, and its ability to organize and judge it.
+  Success with public post search or a plain model API is not enough to validate this MVP.
 
 ## Target products and content
 
 | Product | Cats integration acceptance |
 |---|---|
-| Gemini Spark | 由 Cats 提問，仍能使用原產品的個人化能力，回傳包含推薦理由的回答。 |
-| Grok Bot + X Connector | 在正確 Bot／X 授權環境查詢；發文歷史、私人／儲存內容及影片各依實際可用範圍驗收。 |
-| Meta AI | 記錄確切產品入口與可用內容範圍；已儲存貼文、自己的內容、授權文章及 Reels 逐項觀測。 |
+| Gemini Spark | Asked from Cats, it can still use the original product's personalization, and returns an answer that includes the reasons for its recommendations. |
+| Grok Bot + X Connector | Query in the correct Bot/X authorization environment; posting history, private/saved content and video are each accepted according to the scope actually available. |
+| Meta AI | Record the exact product entry and the available content scope; saved posts, own content, authorized articles and Reels are each observed individually. |
 
-Grok 網頁版、Grok Build CLI、一般模型 API 不作 Grok Bot 的等價替代。
-Meta Muse 若成為候選，需獨立入口證據，不因品牌相同自動承接 Meta AI 的能力。
+The Grok web version, the Grok Build CLI and a general model API are not equivalent substitutes for Grok Bot.
+If Meta Muse becomes a candidate it needs independent entry evidence, and does not automatically inherit Meta AI's capabilities because of the shared brand.
 
 ## Functional requirements
 
 | ID | Requirement |
 |---|---|
-| FR-01 | 獨立 App 入口，呈現助理選擇、問題輸入、問答清單、詳情與小型複製按鈕。清單與詳情在同一已載入文件內切換。 |
-| FR-02 | 助理選項以產品及使用者連線辨識，呈現未設定／未驗證、可使用、需要操作或不支援；一般 provider 可用不代表個人助理可用。 |
-| FR-03 | 明確送出才建立執行；保存 request identity 後交付。開 App、切頁、重開、查詢狀態及複製不自動再次提問。 |
-| FR-04 | 支援非同步狀態與重新讀取。沒有外部確認時顯示等待，不推測已開始；登入、批准等要求顯示具體下一步。 |
-| FR-05 | 保存完整回答文字／Markdown、原問題、產品／連線、時間及已提供的引用。保留推薦理由與不確定性；來源欄位允許缺省。 |
-| FR-06 | 區分有回答、部分回答、查無內容與無權限。助理回覆「無法存取」可記錄，但不能算該私人內容能力驗收通過。 |
-| FR-07 | 使用者按下複製後，複製所選回答的本文及其中連結；成功確認後才顯示已複製，失敗保留可選取文字並明示未成功。 |
-| FR-08 | App 離頁／關閉後，背景任務不依賴 renderer 存活；重開讀取已保存狀態／回答。host 停機期間能否回收依 transport 證據呈現。 |
-| FR-09 | 每個 attempt 固定目標與問題。再次提問建立明確的新 attempt；相同回覆的重送去重，不覆蓋另一筆問題或另一個帳號的答案。 |
-| FR-10 | Platform 執行 App/owner hosting 與宿主能力授權；Ask 後端執行 connection/attempt/question 權限與回覆驗證；Runtime 僅授權實際使用的 Runtime 能力。回覆本文只作資料顯示，不執行其中腳本、指令或自動發布。 |
+| FR-01 | A standalone App entry presenting assistant selection, question input, a Q&A list, detail, and a small copy button. The list and detail switch within the same loaded document. |
+| FR-02 | Assistant options are identified by product and user connection, and present not configured/unverified, available, action needed, or unsupported; a general provider being available does not mean the personal assistant is available. |
+| FR-03 | An execution is created only on explicit submit; delivery happens after the request identity is saved. Opening the App, switching pages, reopening, querying status and copying do not ask again automatically. |
+| FR-04 | Support asynchronous status and re-reading. With no external confirmation, show waiting and do not presume it has started; requirements such as login and approval show the concrete next step. |
+| FR-05 | Save the full answer text/Markdown, the original question, the product/connection, the time and any citations provided. Keep the recommendation rationale and uncertainty; the source field may be omitted. |
+| FR-06 | Distinguish answered, partially answered, no content found and no permission. An assistant reply of "cannot access" can be recorded, but cannot count as passing acceptance of that private-content capability. |
+| FR-07 | After the user presses copy, copy the body of the selected answer and the links in it; show copied only after success is confirmed, and on failure keep the text selectable and state clearly that it did not succeed. |
+| FR-08 | After the App is left or closed, the background task does not depend on the renderer staying alive; reopening reads the saved status/answer. Whether replies can be recovered while the host is down is presented according to the transport evidence. |
+| FR-09 | Each attempt fixes its target and question. Asking again creates an explicit new attempt; an identical resent reply is deduplicated and does not overwrite another question or another account's answer. |
+| FR-10 | Platform performs App/owner hosting and host-capability authorization; the Ask backend performs connection/attempt/question permission and reply validation; Runtime authorizes only the Runtime capabilities actually used. Reply text is displayed only as data; scripts, commands or automatic publishing in it are not executed. |
 
 ## Minimal UX
 
-1. 第一個可用入口為 Ask Grok Bot，首頁同時列出既有提問。
-2. 點擊後在 App 內 drill down：上方為可收合的首次連線 tutorial，下方為 composer。
-   教學協助使用者在 Bot 設定 Cats connector；不要求另外安裝或管理 Ask 後端。
-3. 按「建立提問」保存 request，顯示「複製 Bot 執行指令」。使用者貼到 Bot 啟動；
-   Bot 領取指定問題、使用 X Connector，再透過 Ask MCP 回傳。Submit 不假稱喚醒 Bot。
-4. 詳情呈現原問題、狀態、完整回答與限制，以及複製回答。重開讀取同一紀錄。
-5. 再次查詢由使用者明確送出。Gemini Spark／Meta 待各自驗證再啟用；不作靜默 fallback。
+1. The first usable entry is Ask Grok Bot, and the home page also lists existing questions.
+2. Clicking drills down inside the App: at the top is a collapsible first-connection tutorial, below it the composer.
+   The tutorial helps the user set up the Cats connector in the Bot; it does not require installing or managing an Ask backend separately.
+3. Pressing "Create question" (建立提問) saves the request and shows "Copy Bot run instruction" (複製 Bot 執行指令). The user pastes it into the Bot to start it;
+   the Bot picks up the specified question, uses the X Connector, and returns through the Ask MCP. Submit does not falsely claim to wake the Bot.
+4. The detail shows the original question, status, full answer and limits, plus copy answer. Reopening reads the same record.
+5. Querying again is explicitly submitted by the user. Gemini Spark and Meta are enabled once each is verified; there is no silent fallback.
 
-來源連結至少保留為可選取、可複製的文字；外部連結開啟介面不是本次前置依賴。
-影片／Reels 以助理回傳的文字摘要為驗收內容，不新增影片下載或播放器。
+Source links are at least kept as selectable, copyable text; an interface for opening external links is not a prerequisite for this round.
+Video and Reels are accepted by the text summary the assistant returns; no video download or player is added.
 
 ## Proposed records and state semantics
 
-以下是概念契約，Ask API/schema、必要的宿主 SDK 能力、大小／並行限制及儲存方式在 PLAN-005 A2 固定。
+The following is a conceptual contract; the Ask API/schema, the required host SDK capabilities, size and concurrency limits and the storage method are fixed in PLAN-005 A2.
 
 | Record | Required meaning |
 |---|---|
-| Connection | owner、具體產品、助理／帳號環境的非敏感識別、可用狀態、已驗證能力及觀測時間；建立連線不代表已驗證所有資料權限。 |
-| Question / attempt | 穩定 request ID、問題本文、固定 connection、狀態、時間、可用時的外部收據、需要使用者操作的原因；明確重問才產生新 attempt。 |
-| Answer | 所屬 attempt、回答本文、回答時間／接收時間、來源產品／連線、可選引用、完整／部分／無權限／無內容等結果。 |
+| Connection | The owner, the specific product, a non-sensitive identifier of the assistant/account environment, availability status, verified capabilities and observation time; creating a connection does not mean all data permissions are verified. |
+| Question / attempt | A stable request ID, question text, the fixed connection, status, time, the external receipt when available, and the reason user action is needed; only an explicit re-ask produces a new attempt. |
+| Answer | The attempt it belongs to, answer text, answer/receipt time, source product/connection, optional citations, and a result such as complete/partial/no permission/no content. |
 
 | State | Required observation |
 |---|---|
-| queued | 本機已保存問題，尚未確認交付。 |
-| awaiting_assistant | 問題已可供外部助理取得或已交付，尚未觀測執行開始。 |
-| running | 選定 transport 確認該 attempt 正在執行；無此證據的 adapter 可跳過此狀態。 |
-| needs_user | 明確需要登入、啟動、批准或其他人工作業；保留前一階段供完成後續接。 |
-| succeeded | 回覆已核對 attempt/connection 並持久保存；另記結果是否真的含所需內容。 |
-| failed | 有明確的終止失敗證據，且保留問題與可理解原因。 |
-| unconfirmed | 逾時、斷線或重啟後無法確認外部是否完成；可查詢／回收同一次執行，禁止偷偷重送。 |
+| queued | The question is saved locally; delivery is not yet confirmed. |
+| awaiting_assistant | The question can be obtained by the external assistant or has been delivered; the start of execution has not been observed. |
+| running | The chosen transport confirms the attempt is executing; an adapter without this evidence may skip this state. |
+| needs_user | Explicitly needs login, launch, approval or other manual work; keep the earlier stage so it can resume after completion. |
+| succeeded | The reply was checked against the attempt/connection and durably saved; separately record whether the result really contains the required content. |
+| failed | There is explicit evidence of terminal failure, and the question and an understandable reason are kept. |
+| unconfirmed | After a timeout, disconnection or restart it cannot be confirmed whether the external side finished; the same execution can be queried or recovered, and silent resending is forbidden. |
 
-允許 queued → awaiting_assistant → succeeded，無需虛構 running。
-needs_user 完成後依收據續接；unconfirmed 收到有效遲到回覆可轉為 succeeded。
-重複的相同回覆保持原結果；衝突回覆保留原結果並回報，不以最後寫入任意覆蓋。
-遲到回覆只能完成原 attempt，不能填到使用者後來重問的新 attempt。
+queued → awaiting_assistant → succeeded is allowed, with no need to invent running.
+After needs_user is completed, resume according to the receipt; unconfirmed can become succeeded on receiving a valid late reply.
+An identical repeated reply keeps the original result; a conflicting reply keeps the original result and is reported, and the last write does not arbitrarily overwrite.
+A late reply can only complete its original attempt, and cannot fill a new attempt the user asked later.
 
 ## Host and Runtime integration requirements
 
-- Ask 是單一安裝與更新單位，可含多個 frontend/service/worker。全部元件由 App
-  套件宣告與交付，Desktop 統一啟停、修復與移除；後端不是第二個安裝項目。
-- Ask 前端直接用一般 HTTP／串流操作自己的連線、提問、清單與答案 API。
-  Platform 提供 sandbox 隔離、共用入口路由、身分／權限與啟動資訊，不為每個 Ask
-  operation 增加 SDK 方法。平台可做透明路由，但不擁有 Ask API 的 domain schema。
-  SDK 留給 clipboard、宿主導覽及其他 Cats 能力；其方法與授權由 Platform 固定。
-- 複製必須在真實 sandboxed App 驗證。必要時提供由使用者點擊觸發、只寫文字的
-  host clipboard bridge；不需要讀取剪貼簿或放寬一般網路／同源權限。
-- 問答資料由 Ask 後端持有，放在套件 bytes 以外的 App data directory。Ask 負責
-  schema／migration，Platform 協調整個 App 的更新、備份與啟用。共通 Runtime
-  儲存可依實際需要採用，不能因為需要持久化就將 Ask domain 搬到 Runtime。
-  私人答案不寫入 Cats 產品知識文件。
-- 外部登入與資料 connector 留在對方產品。Ask 前端能存取自身宣告 API，無需取得
-  外部 provider token 或宿主權限；對外回覆通道限制到指定 owner/connection/attempt。
-- Ask adapter 負責產品入口與執行收據。正式 API、MCP 領取／回傳、事件或排程只是
-  候選。三家分別固定啟動、可讀資料、回收及人工批准的能力矩陣。
-- Platform、Cats Mobile 與所有 Apps 共用一個 public origin／HTTPS port／tunnel。
-  Platform 持有入口設定、路由與 tunnel 生命週期；Ask 掛載 `/apps/cats.ask/`，
-  私有 API 為 `/apps/cats.ask/api/...`，MCP 為 `/apps/cats.ask/mcp`。內部服務可
-  使用動態 loopback port／IPC，不能將 localhost URL 交給遠端瀏覽器或 Mobile。
-  停用／更新／移除 Ask 只撤銷自己的路由及 grant，不停止共用 tunnel 或其他 App。
-  Runtime 原有 MCP 不作 Ask 公開入口；沒有分開安裝 backend／tunnel App 的流程。
-- 共用入口的 private API 仍需 owner/App/generation grant，使用一般 fetch 與
-  `credentials: omit`；MCP 使用 Ask connection／attempt 認證，不能交換使用。
-  Host shell 驗證 viewer，App 文件採 opaque sandbox；path prefix 不構成隔離。
-  Platform 負責 CORS／CSRF／frame bridge／URL 邊界，依 Platform SPEC-122 驗收。
-  遠端開 App 不賦予安裝或管理原生元件的權限；Desktop 管理邊界保持獨立。
-- Tutorial 只顯示 host 提供的共用入口狀態及 Ask endpoint，必要時開啟 Platform
-  remote-access 設定。App 不收取、保存或管理 ngrok／Tailscale 帳號憑證。
-  公開 URL 改變時顯示重新設定 Bot connector 的步驟；保留問題、答案與收據，
-  不自動重問。Platform 負責原型 ingress 設定的驗證、備份、原子遷移及失敗恢復。
-- 系統需區分本機 request 去重與外部執行去重。確認不了外部收據時，保留 unconfirmed；
-  使用者明確重問才建立可能產生新用量的 attempt。
-- 私人回答不進追蹤中的測試 fixture、研究附件或日誌；驗收報告保留去識別的結論。
+- Ask is a single install and update unit and may contain multiple frontends/services/workers. All components are declared and delivered
+  by the App package, and Desktop enables, disables, repairs and removes them together; the backend is not a second install item.
+- The Ask frontend directly uses ordinary HTTP/streaming to operate its own connection, question, list and answer APIs.
+  Platform provides sandbox isolation, shared-entry routing, identity/permissions and startup information, and does not add an SDK method for each Ask
+  operation. The platform can route transparently, but does not own Ask API's domain schema.
+  The SDK is reserved for the clipboard, host navigation and other Cats capabilities; their methods and authorization are fixed by Platform.
+- Copy must be verified in a real sandboxed App. If needed, provide a host clipboard bridge that is triggered by a user click and only writes text;
+  it does not need to read the clipboard or loosen general network/same-origin permissions.
+- Q&A data is held by the Ask backend, in the App data directory outside the package bytes. Ask is responsible for
+  schema/migration, and Platform coordinates the update, backup and enablement of the whole App. The common Runtime
+  storage may be used if actually needed, but the Ask domain must not be moved into Runtime just because persistence is needed.
+  Private answers are not written into Cats product knowledge documents.
+- External login and data connectors stay in the other product. The Ask frontend can access its own declared API without obtaining
+  an external provider token or host permission; the outbound reply channel is limited to the specified owner/connection/attempt.
+- The Ask adapter is responsible for the product entry and execution receipt. Official API, MCP pickup/return, events or schedules are only
+  candidates. For the three products, fix separately the capability matrix of launch, readable data, recovery and manual approval.
+- Platform, Cats Mobile and all Apps share one public origin / HTTPS port / tunnel.
+  Platform owns the entry settings, routing and tunnel lifecycle; Ask mounts `/apps/cats.ask/`,
+  the private API is `/apps/cats.ask/api/...`, and the MCP is `/apps/cats.ask/mcp`. Internal services may
+  use a dynamic loopback port / IPC, and a localhost URL must not be given to a remote browser or Mobile.
+  Disabling, updating or removing Ask revokes only its own routes and grants, and does not stop the shared tunnel or other Apps.
+  Runtime's existing MCP is not Ask's public entry; there is no flow for installing a backend or tunnel App separately.
+- The shared entry's private API still needs an owner/App/generation grant, using ordinary fetch with
+  `credentials: omit`; MCP uses Ask connection/attempt authentication, and the two cannot be exchanged.
+  The host shell verifies the viewer, and the App document uses an opaque sandbox; a path prefix does not constitute isolation.
+  Platform is responsible for the CORS / CSRF / frame bridge / URL boundary, accepted per Platform SPEC-122.
+  Opening the App remotely does not grant the right to install or manage native components; the Desktop management boundary stays independent.
+- The tutorial only shows the shared-entry status provided by the host and the Ask endpoint, opening the Platform
+  remote-access settings when necessary. The App does not collect, store or manage ngrok/Tailscale account credentials.
+  When the public URL changes, show the steps for reconfiguring the Bot connector; keep questions, answers and receipts,
+  and do not re-ask automatically. Platform is responsible for validation, backup, atomic migration and failure recovery of the prototype ingress settings.
+- The system must distinguish local request deduplication from external execution deduplication. When the external receipt cannot be confirmed, keep unconfirmed;
+  only an explicit re-ask by the user creates an attempt that may incur new usage.
+- Private answers do not enter tracked test fixtures, research attachments or logs; the acceptance report keeps de-identified conclusions.
 
 ## Deferred scope
 
-- 答案的 Cats 深層連結，以及 App 內部頁面和宿主上一頁／下一頁同步。
-  後續由 cats-platform 評估導覽 SDK；使用者明確要求本 MVP 不做。
-- 「用於 Chat／Code／Work」、跨產品自動帶入、共用答案搜尋工具、通知後自動續跑，
-  以及將答案自動加入長期記憶。MVP 採使用者自行複製／貼上。
-- 完整斷網排隊／同步、持續運作的雲端代管承諾、進階分類、答案比較與使用者定期排程管理。
-  若 transport 需要對方排程領取問題，可作整合設定，不擴張為 App 的排程產品功能。
-- 對來源社群發布、按讚、修改收藏或刪除內容；本 MVP 查詢與回傳答案即可。
-- 新影片播放器／下載器、Market 或 Desktop 發布。Platform 通用 App 多元件執行
-  是本 App 的必要前置，依 Platform SPEC-122 交付；不再以延後 server/worker 為由
-  要求使用者分開啟動後端。
+- Cats deep links to answers, and syncing the App's internal pages with the host back/forward.
+  Cats-platform will evaluate a navigation SDK later; the user explicitly asked that this MVP not do it.
+- "Use in Chat/Code/Work", automatic cross-product carry-over, a shared answer search tool, automatic continuation after notification,
+  and automatically adding answers to long-term memory. The MVP has the user copy and paste on their own.
+- Full offline queuing/sync, a commitment to continuously running cloud hosting, advanced classification, answer comparison and user-managed periodic schedules.
+  If the transport needs the other side to pick up questions on a schedule, that can be an integration setting, without expanding into a scheduling product feature of the App.
+- Publishing to the source social platform, liking, modifying bookmarks or deleting content; this MVP only queries and returns answers.
+- A new video player/downloader, Market or Desktop publication. Platform's general App multi-component execution
+  is a required prerequisite for this App, delivered per Platform SPEC-122; deferring the server/worker is no longer a reason
+  to require the user to start a backend separately.
 
 ## Acceptance
 
 | ID | Acceptance evidence |
 |---|---|
-| AC-01 | 實際 Cats request → Gemini Spark → Cats 回覆，包含使用者認可的個人化推薦與理由；記錄人工步驟，不要求與歷史推薦逐字一致。 |
-| AC-02 | 實際 Grok Bot + X Connector 查詢與回收，使用者可核對自己的內容／歷史；記錄所測內容種類，沒有 Grok 網頁／模型 API 替換。 |
-| AC-03 | 實際 Meta AI 指定入口往返，核對所測授權內容／Reels 摘要；列出已驗證與未取得的範圍。 |
-| AC-04 | 尚未通過往返的入口仍標示未驗證或不可用；任一家成功不標示三家完成。 |
-| AC-05 | 使用真實 built package 與隔離 host 測試清單 → 詳情 → 返回、離頁後完成及重開讀取。 |
-| AC-06 | Desktop 中按複製後貼到測試文字區，中文、換行、連結與長回答保持一致；clipboard 拒絕時不顯示成功。 |
-| AC-07 | 重送 request、重複／遲到／衝突回覆、斷線與重啟不混答、不默默重新提問；無收據時保持 unconfirmed。 |
-| AC-08 | 錯 owner/connection/attempt 與撤銷權限的呼叫被拒絕；惡意回答只作資料顯示。 |
-| AC-09 | 確認實際最小 host/SDK/Runtime 相容契約，安裝不呼叫 provider；測試只用隔離 registry/state。 |
-| AC-10 | 同一公開 origin／port／tunnel 同時服務 Platform、遠端 Mobile、Ask 及另一個 App/MCP。Ask URL 不含 server localhost；停用 Ask 不影響其他服務；跨 App token 與未授權私有 API 被拒絕，於新 sandbox 重新驗證 Copy。 |
+| AC-01 | An actual Cats request → Gemini Spark → Cats reply that includes personalized recommendations the user recognizes, with reasons; record the manual steps; it need not match past recommendations verbatim. |
+| AC-02 | An actual Grok Bot + X Connector query and recovery, where the user can check their own content/history; record the kind of content tested, with no substitution by the Grok web or a model API. |
+| AC-03 | An actual round trip through the specified Meta AI entry, checking the authorized content / Reels summary tested; list the verified and the unobtained scope. |
+| AC-04 | Entries that have not passed a round trip are still marked unverified or unavailable; success on any one product does not mark all three complete. |
+| AC-05 | With the real built package and an isolated host, test list → detail → back, completion after leaving the page, and reopen reading. |
+| AC-06 | In Desktop, after pressing copy and pasting into a test text area, Chinese text, line breaks, links and long answers stay identical; when the clipboard refuses, success is not shown. |
+| AC-07 | Request resend, duplicate/late/conflicting replies, disconnection and restart do not mix answers or silently re-ask; with no receipt it stays unconfirmed. |
+| AC-08 | Calls with the wrong owner/connection/attempt and with revoked permission are rejected; a malicious answer is displayed only as data. |
+| AC-09 | Confirm the actual minimum host/SDK/Runtime compatibility contract, install does not call a provider; tests use only an isolated registry/state. |
+| AC-10 | One public origin / port / tunnel serves Platform, remote Mobile, Ask and another App/MCP at the same time. The Ask URL contains no server localhost; disabling Ask does not affect other services; cross-App tokens and unauthorized private APIs are rejected, and Copy is re-verified in the new sandbox. |
 
-AC-01–03 需分別記錄真實帳號的最小往返證據；fixture 成功只能證明程式處理，不能代替。
-登入、產品端批准或人工啟動可標示為 assisted；人工搬運回答不能算回收通道成功。
-任何入口仍未通過時，應回報其狀態與下一個實驗；不得將部分完成描述為完整三家支援。
+AC-01–03 each need minimal round-trip evidence from a real account; a fixture success only proves the program handling and cannot substitute.
+Login, product-side approval or manual launch may be marked assisted; a human carrying the answer back cannot count as the recovery channel succeeding.
+While any entry has still not passed, report its status and next experiment; partial completion must not be described as full support for all three.
 
 ## Shared-ingress candidate checkpoint (2026-09-29)
 
@@ -218,14 +218,14 @@ Gemini Spark and Meta AI remain unavailable pending their separate real proofs.
 
 ## Compatibility and open decisions
 
-新 SDK 能力優先採相容新增，保留現有 App 契約。若需破壞既有公開或持久資料契約，
-在 owning repo 記錄所需版本邊界；資料升級需驗證、備份、原子替換及失敗恢復。
-初始實作版本見上節；這次共用入口文件修訂不設定或更動套件版本、不發布。
-宿主發布最低版本在實作與安裝證據出現後才固定。
+New SDK capabilities are preferably added compatibly, preserving existing App contracts. If an existing public or persisted-data contract must be broken,
+record the needed version boundary in the owning repo; a data upgrade needs validation, backup, atomic replacement and failure recovery.
+See the section above for the initial implementation version; this shared-entry document revision neither sets nor changes a package version, and nothing is published.
+The host's minimum release version is fixed only after implementation and install evidence appear.
 
-待完成：Platform 共用入口／sandbox 與精確 bootstrap 契約、候選套件真實 Bot 往返、
-Spark／Meta 的 transport／帳號／批准驗證及實際 release 相容下限。Ask 初版資料
-schema、數值上限與 unconfirmed 策略已在上節固定；後續依 PLAN-005 驗收。
+Remaining: Platform's shared entry / sandbox and the exact bootstrap contract, a real Bot round trip for the candidate package,
+transport / account / approval verification for Spark and Meta, and the actual release compatibility floor. Ask's initial data
+schema, numeric limits and unconfirmed policy are fixed in the section above; later work is accepted per PLAN-005.
 
 ## References
 
