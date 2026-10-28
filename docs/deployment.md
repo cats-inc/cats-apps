@@ -104,7 +104,7 @@ report and finish. Do not add tracked publication reports, status-only commits
 or follow-up PRs, or chase unrelated main updates after verification.
 
 Ask's shared-ingress implementation and the remaining cross-consumer acceptance
-are tracked in [PLAN-005 A4a](plans/PLAN-005-personal-assistant-questions-mvp.md#a4a--shared-platform-ingress-correction-next).
+are tracked in [PLAN-005 A4a](plans/PLAN-005-personal-assistant-questions-mvp.md#a4a--shared-platform-ingress-correction-implemented-external-ac-10-open).
 Host ingress settings/migration belong to Platform; App data remains Ask-owned.
 
 cats-apps is a private npm workspace containing independently versioned Apps,
