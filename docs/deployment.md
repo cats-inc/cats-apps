@@ -177,10 +177,14 @@ Version numbers and release notes never replace the data-upgrade path.
 3. Commit/push using the user's authorized Git workflow. Separately create and push
    the matching `<slug>-vX.Y.Z` tag at the selected commit, for example
    `usage-v0.2.2` (illustrative, not an instruction to release that version).
+   Tagging after Repository checks pass on that commit on main saves the release
+   from repeating them.
 4. The [App release workflow](../.github/workflows/release-app.yaml) runs on that
-   tag push, checks the App manifest/package/tag agreement, builds the selected
-   App and publishes its assets. It is not triggered by a normal main push and
-   has no manual dispatch input.
+   tag push. When Repository checks already passed on the tagged commit on main,
+   it skips `check:docs` and the App tests; otherwise it runs them first. It checks
+   the App manifest/package/tag agreement, builds the selected App and publishes
+   its assets. It is not triggered by a normal main push and has no manual
+   dispatch input.
 5. Confirm workflow success and download the archive, lock and provenance. Verify
    their App ID, version, source revision and archive SHA-256 agree before reporting
    publication complete.
