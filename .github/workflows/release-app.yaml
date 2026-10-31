@@ -29,20 +29,23 @@ jobs:
           fi
           echo "slug=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
           echo "version=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
-      # Repository checks already ran check:docs and the App tests on this exact
-      # commit on main, so the release only builds and publishes it.
-      - name: Require Repository checks to have passed on this commit
+      # When Repository checks already passed on this exact commit on main, they
+      # ran check:docs and the App tests, so the release does not repeat them.
+      # Anything else, or a failed lookup, runs both here as before.
+      - name: Check whether Repository checks passed on this commit on main
+        id: ci
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
-          passed=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yaml/runs?head_sha=$GITHUB_SHA&event=push&branch=main&status=success&per_page=1" --jq '.total_count')
-          if [ "$passed" -lt 1 ]; then
-            echo "::error::Repository checks have not passed on $GITHUB_SHA on main; wait for that run, then re-run this release."
-            exit 1
-          fi
+          passed=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yaml/runs?head_sha=$GITHUB_SHA&event=push&branch=main&status=success&per_page=1" --jq '.total_count' 2>/dev/null || true)
+          if [[ "$passed" =~ ^[1-9][0-9]*$ ]]; then tested=true; else tested=false; fi
+          echo "tested=$tested" | tee -a "$GITHUB_OUTPUT"
+      - run: npm run check:docs
+        if: steps.ci.outputs.tested != 'true'
       - name: Install the pinned Platform App SDK
         run: npm ci --ignore-scripts
+      - run: npm test
+        if: steps.ci.outputs.tested != 'true'
       - name: Build exactly the tagged version
         env:
           APP_SLUG: ${{ steps.app.outputs.slug }}

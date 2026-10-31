@@ -6,9 +6,10 @@ import { delimiter, dirname, join, resolve } from 'node:path';
 import test from 'node:test';
 
 // A push to main skips App tests only when its merged pull request already passed
-// on the same tree, and a tagged release relies on that run instead of repeating
-// it. These tests run the workflows' own shell steps against a local origin and a
-// stubbed gh. The repository has no YAML parser, so steps are read by indentation.
+// on the same tree, and a tagged release skips them only when main's checks passed
+// on its commit. These tests run the workflows' own shell steps against a local
+// origin and a stubbed gh. The repository has no YAML parser, so steps are read
+// by indentation.
 const ci = readFileSync('.github/workflows/ci.yaml', 'utf8');
 const release = readFileSync('.github/workflows/release-app.yaml', 'utf8');
 const bash = process.platform === 'win32'
@@ -136,36 +137,28 @@ test('a main push reuses its merged pull request\'s green run only for that exac
     'a head without the previous main was tested on other code');
 });
 
-test('a tagged release requires main\'s Repository checks on its commit and does not rerun them', (t) => {
-  assert.doesNotMatch(release, /run: npm (?:test|run check:docs)\b/);
+test('a tagged release skips check:docs and the App tests only after main\'s Repository checks passed on its commit', (t) => {
   assert.match(release, /\n {6}contents: write\n {6}actions: read\n/);
-  const lines = release.split(/\r?\n/);
-  const at = lines.findIndex((line) => line.includes('name: Require Repository checks to have passed on this commit'));
-  assert.notEqual(at, -1);
-  const run = lines.findIndex((line, index) => index > at && /^\s+run: \|$/.test(line));
-  const indent = lines[run].search(/\S/);
-  const body = [];
-  for (const line of lines.slice(run + 1)) {
-    if (line.trim() && line.search(/\S/) <= indent) break;
-    body.push(line);
+  for (const command of ['- run: npm run check:docs', '- run: npm test']) {
+    const lines = release.split(/\r?\n/);
+    const at = lines.findIndex((line) => line.trim() === command);
+    assert.notEqual(at, -1, command);
+    assert.equal(lines[at + 1].trim(), "if: steps.ci.outputs.tested != 'true'", command);
   }
-  const margin = Math.min(...body.filter((line) => line.trim()).map((line) => line.search(/\S/)));
-  const guard = body.map((line) => line.slice(margin)).join('\n');
-  const root = mkdtempSync(join(tmpdir(), 'cats-release-guard-'));
+  const check = step(release, 'ci');
+  assert.equal(check.condition, undefined, 'the lookup itself always runs');
+  const root = mkdtempSync(join(tmpdir(), 'cats-release-check-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const bin = join(root, 'bin');
   stubGh(bin);
   const sha = 'a'.repeat(40);
-  const check = (passed) => spawnSync(bash, ['-e', '-o', 'pipefail', '-c', guard], {
-    encoding: 'utf8',
-    env: {
-      ...process.env, PATH: `${bin}${delimiter}${process.env.PATH}`, GITHUB_REPOSITORY: 'cats-inc/cats-apps',
-      GITHUB_SHA: sha, STUB_PASSED: passed, STUB_LOG: join(root, 'gh.log'),
-    },
-  }).status;
-  assert.equal(check('1'), 0);
+  const lookup = (passed) => runStep(check.run, root, {
+    PATH: `${bin}${delimiter}${process.env.PATH}`, GITHUB_REPOSITORY: 'cats-inc/cats-apps', GITHUB_SHA: sha,
+    STUB_PASSED: passed, STUB_LOG: join(root, 'gh.log'),
+  });
+  assert.equal(lookup('1'), 'tested=true');
   assert.match(readFileSync(join(root, 'gh.log'), 'utf8'),
     new RegExp(`actions/workflows/ci\\.yaml/runs\\?head_sha=${sha}&event=push&branch=main&status=success`));
-  assert.notEqual(check('0'), 0);
-  assert.notEqual(check(''), 0, 'a failed lookup refuses the release');
+  assert.equal(lookup('0'), 'tested=false', 'without a passing main run the release tests as before');
+  assert.equal(lookup(''), 'tested=false', 'a failed lookup tests as before');
 });

@@ -98,8 +98,8 @@ all of these hold:
 
 Main requires up-to-date branches, so an ordinary squash merge meets these. Any other
 push, or a failed lookup, runs everything; `check:docs` still runs every time. The tag
-workflow does not rerun `check:docs` or `npm test`: it requires a successful Repository
-checks push run on main for the tagged commit. `tests/ci-workflow.test.mjs` runs both
+workflow skips `check:docs` and `npm test` when Repository checks already passed on the
+tagged commit on main, and runs them otherwise. `tests/ci-workflow.test.mjs` runs both
 steps against a local origin with a stubbed `gh`.
 
 A pull request can also reuse a green run from main when its code outside `docs/` equals
