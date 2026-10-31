@@ -85,6 +85,23 @@ passing run saves. A pull request rebased only because main gained documentation
 its fingerprint, so its rerun still checks docs but skips tests, package builds and their
 artifacts. Any change outside `docs/`, a missing or evicted cache entry, or a manual run
 runs everything. Releases always build from the tag workflow, not these CI artifacts.
+
+Pull-request caches stay within that pull request's scope, so the push to main after a
+merge cannot find one. Instead, `changes` reuses the merged pull request's own run when
+all of these hold:
+
+- the push adds one commit on the previous main;
+- the GitHub API names that commit as a pull request's merge;
+- the request's final head, fetched from `refs/pull/<n>/head`, contains the previous
+  main and has the pushed commit's tree;
+- CI passed on that head as a `pull_request` run.
+
+Main requires up-to-date branches, so an ordinary squash merge meets these. Any other
+push, or a failed lookup, runs everything; `check:docs` still runs every time. The tag
+workflow does not rerun `check:docs` or `npm test`: it requires a successful Repository
+checks push run on main for the tagged commit. `tests/ci-workflow.test.mjs` runs both
+steps against a local origin with a stubbed `gh`.
+
 A pull request can also reuse a green run from main when its code outside `docs/` equals
 main's, which means that exact code already passed there. The skip trusts everyone who can
 push to the branch: such a person could save a marker for untested code. Pull requests from

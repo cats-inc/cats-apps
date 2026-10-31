@@ -174,13 +174,16 @@ Version numbers and release notes never replace the data-upgrade path.
    validation rules. Documentation-only edits need diff/link review, not App tests
    or builds. Keep the hosted release gates; a bump alone does not require repeating
    the same passing suite locally.
-3. Commit/push using the user's authorized Git workflow. Separately create and push
-   the matching `<slug>-vX.Y.Z` tag at the selected commit, for example
+3. Commit/push using the user's authorized Git workflow, and wait for Repository
+   checks on main to pass on the selected commit. Then separately create and push
+   the matching `<slug>-vX.Y.Z` tag at that commit, for example
    `usage-v0.2.2` (illustrative, not an instruction to release that version).
 4. The [App release workflow](../.github/workflows/release-app.yaml) runs on that
-   tag push, checks the App manifest/package/tag agreement, builds the selected
-   App and publishes its assets. It is not triggered by a normal main push and
-   has no manual dispatch input.
+   tag push. It refuses a commit without a successful Repository checks push run
+   on main and does not rerun `check:docs` or the App tests. It checks the App
+   manifest/package/tag agreement, builds the selected App and publishes its
+   assets. It is not triggered by a normal main push and has no manual dispatch
+   input; after a refusal, re-run the failed job once main's checks pass.
 5. Confirm workflow success and download the archive, lock and provenance. Verify
    their App ID, version, source revision and archive SHA-256 agree before reporting
    publication complete.
