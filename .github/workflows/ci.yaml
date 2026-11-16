@@ -10,13 +10,17 @@ permissions:
   contents: read
 
 jobs:
-  # A change confined to docs/ still runs the Markdown link check but skips App
-  # tests, the package build and its artifact. Any other path or a failed
-  # detection runs every step. tests/docs-boundary.test.mjs keeps tests,
-  # scripts and App sources from reading docs/.
+  # A change confined to docs/ and the root agent instruction files (AGENTS.md,
+  # CLAUDE.md, CODEX.md, GEMINI.md) still runs the Markdown link check but skips
+  # App tests, the package build and its artifact. An agent file counts only
+  # while it still exists; deleting or renaming one, a nested agent file, any
+  # other path or a failed detection runs every step.
+  # tests/docs-boundary.test.mjs keeps tests, scripts and App sources from
+  # reading docs/ or the root agent files.
   # Code that already passed is skipped too: the fingerprint covers every tracked
-  # file outside docs/, so a rebase that only brings in docs from main reuses the
-  # earlier green run. check:docs still runs every time. A pull request's cache is
+  # file outside docs/ and records the root agent files by path only, so a rebase
+  # that only brings in docs or agent instructions from main reuses the earlier
+  # green run. check:docs still runs every time. A pull request's cache is
   # scoped to that request, so a push to main instead reuses its merged pull
   # request's run when that run tested the same tree.
   changes:
@@ -49,9 +53,22 @@ jobs:
           esac
           code=true
           if [ -n "$base" ] && git rev-parse --verify --quiet "$base^{commit}" > /dev/null; then
-            changed=$(git diff --name-only "$base" HEAD)
+            # Without rename detection a rename lists both paths, so moving an
+            # agent file away, or any other file onto an agent file name, is code.
+            changed=$(git diff --no-renames --name-only "$base" HEAD)
             printf 'Changed files:\n%s\n' "$changed"
-            if [ -n "$changed" ] && ! grep -qv '^docs/' <<< "$changed"; then code=false; fi
+            if [ -n "$changed" ]; then
+              code=false
+              while IFS= read -r path; do
+                case "$path" in
+                  docs/*) ;;
+                  # A root agent file is documentation while it exists at HEAD.
+                  AGENTS.md | CLAUDE.md | CODEX.md | GEMINI.md)
+                    git cat-file -e "HEAD:$path" 2> /dev/null || code=true ;;
+                  *) code=true ;;
+                esac
+              done <<< "$changed"
+            fi
           fi
           echo "code=$code" | tee -a "$GITHUB_OUTPUT"
       - name: Fingerprint the code under test
@@ -59,8 +76,13 @@ jobs:
         run: |
           set -euo pipefail
           # Mode, blob and path of every tracked file outside docs/. For a pull
-          # request this is the merge result that the tests would exercise.
-          fingerprint=$(git ls-tree -r --full-tree HEAD | awk -F '\t' '$2 !~ /^docs\//' | sha256sum | cut -d ' ' -f 1)
+          # request this is the merge result that the tests would exercise. The
+          # root agent instruction files keep their mode and path, so adding or
+          # deleting one still counts, but a fixed placeholder replaces the blob.
+          fingerprint=$(git ls-tree -r --full-tree HEAD | awk -F '\t' -v OFS='\t' '
+            $2 ~ /^docs\// { next }
+            $2 ~ /^(AGENTS|CLAUDE|CODEX|GEMINI)\.md$/ { sub(/[0-9a-f]+$/, "agent-instructions", $1) }
+            { print }' | sha256sum | cut -d ' ' -f 1)
           echo "fingerprint=$fingerprint" | tee -a "$GITHUB_OUTPUT"
       - name: Look for an earlier green run of this exact code
         id: green
@@ -68,7 +90,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .ci-green
-          key: ci-green-v1-${{ steps.fingerprint.outputs.fingerprint }}
+          key: ci-green-v2-${{ steps.fingerprint.outputs.fingerprint }}
           lookup-only: true
       - name: Reuse the merged pull request's green run
         id: merged
@@ -128,7 +150,7 @@ jobs:
         run: npm run check:docs
       - name: Already tested
         if: needs.changes.outputs.skip == 'tested'
-        run: echo "This exact code outside docs/ already passed; App tests and package builds are skipped."
+        run: echo "This exact code outside docs/ and the root agent instruction files already passed; App tests and package builds are skipped."
       - name: Install the pinned Platform App SDK
         if: needs.changes.outputs.skip == ''
         run: npm ci --ignore-scripts
@@ -166,6 +188,6 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: .ci-green
-          key: ci-green-v1-${{ needs.changes.outputs.fingerprint }}
+          key: ci-green-v2-${{ needs.changes.outputs.fingerprint }}
 
 # This workflow neither publishes releases nor installs apps into a user profile.

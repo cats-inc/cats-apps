@@ -5,11 +5,12 @@ import { tmpdir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import test from 'node:test';
 
-// A push to main skips App tests only when its merged pull request already passed
-// on the same tree, and a tagged release skips them only when main's checks passed
-// on its commit. These tests run the workflows' own shell steps against a local
-// origin and a stubbed gh. The repository has no YAML parser, so steps are read
-// by indentation.
+// CI skips App tests for changes confined to docs/ and the root agent instruction
+// files, and for code whose fingerprint already passed. A push to main skips them
+// only when its merged pull request already passed on the same tree, and a tagged
+// release only when main's checks passed on its commit. These tests run the
+// workflows' own shell steps in scratch repositories, against a local origin and a
+// stubbed gh. The repository has no YAML parser, so steps are read by indentation.
 const ci = readFileSync('.github/workflows/ci.yaml', 'utf8');
 const release = readFileSync('.github/workflows/release-app.yaml', 'utf8');
 const bash = process.platform === 'win32'
@@ -61,6 +62,112 @@ function stubGh(bin) {
   ].join('\n') + '\n', { mode: 0o755 });
 }
 
+// A throwaway repository whose work tree the workflow steps run in.
+function scratchRepo(t, prefix) {
+  const root = mkdtempSync(join(tmpdir(), prefix));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const work = join(root, 'work');
+  const git = (cwd, ...args) => execFileSync('git', [
+    '-c', 'user.name=CI Test', '-c', 'user.email=ci@example.invalid',
+    '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false', ...args,
+  ], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  const write = (path, content) => {
+    mkdirSync(dirname(join(work, path)), { recursive: true });
+    writeFileSync(join(work, path), content);
+  };
+  const remove = (path) => git(work, 'rm', '--quiet', path);
+  const commit = (message) => {
+    git(work, 'add', '.');
+    git(work, 'commit', '-m', message);
+    return git(work, 'rev-parse', 'HEAD');
+  };
+  mkdirSync(work);
+  git(work, 'init', '--initial-branch=main');
+  return { root, work, git, write, remove, commit };
+}
+
+// Paths inside the scratch repositories, not files of this checkout.
+const [agents, claude, codex, gemini] = ['AGENTS.md', 'CLAUDE.md', 'CODEX.md', 'GEMINI.md']; // docs-boundary-ignore: scratch repository paths
+const [guide, movedAgents, docsAgents] = ['docs/guide.md', 'docs/agents.md', 'docs/AGENTS.md']; // docs-boundary-ignore: scratch repository paths
+const nestedAgents = 'apps/x/AGENTS.md';
+
+// Code, docs/, a nested agent file and every root agent file except GEMINI.md.
+function seedAgentRepo(t, prefix) {
+  const repo = scratchRepo(t, prefix);
+  repo.write('src/code.ts', 'code\n');
+  repo.write(guide, 'guide\n');
+  repo.write(nestedAgents, 'nested\n');
+  for (const name of [agents, claude, codex]) repo.write(name, `${name}\n`);
+  return { ...repo, base: repo.commit('base') };
+}
+
+test('documentation-only changes cover docs/ and root agent files that still exist, not deleted, moved or nested ones', (t) => {
+  const paths = step(ci, 'paths');
+  assert.equal(paths.condition, undefined, 'detection always runs');
+  const { work, git, write, remove, commit, base } = seedAgentRepo(t, 'cats-ci-paths-');
+  // Each change is one commit on base; a push compares against base, and a pull
+  // request's merge result against its first parent, which is also base here.
+  const change = (edit) => {
+    git(work, 'checkout', '--quiet', '--detach', base);
+    edit();
+    return commit('change');
+  };
+  const detect = (head, event = 'push', before = base) => {
+    git(work, 'checkout', '--quiet', '--detach', head);
+    return runStep(paths.run, work, { EVENT: event, BEFORE: before });
+  };
+  const agentsOnly = change(() => write(agents, 'edited\n'));
+  assert.equal(detect(agentsOnly), 'code=false', 'a root AGENTS.md edit is documentation');
+  assert.equal(detect(agentsOnly, 'pull_request'), 'code=false');
+  assert.equal(detect(change(() => {
+    for (const name of [agents, claude, codex, gemini]) write(name, 'edited\n');
+    write(guide, 'edited\n');
+  })), 'code=false', 'agent files, an added one among them, and docs/ together are documentation');
+  assert.equal(detect(change(() => write(guide, 'edited\n'))), 'code=false');
+  assert.equal(detect(change(() => write(docsAgents, 'new\n'))), 'code=false');
+  assert.equal(detect(change(() => remove(claude))), 'code=true', 'a deleted root CLAUDE.md is code');
+  assert.equal(detect(change(() => git(work, 'mv', agents, movedAgents))), 'code=true',
+    'moving an agent file away deletes it');
+  assert.equal(detect(change(() => git(work, 'mv', 'src/code.ts', gemini))), 'code=true',
+    'moving code onto an agent file name deletes the code');
+  assert.equal(detect(change(() => write(nestedAgents, 'edited\n'))), 'code=true',
+    'a nested apps/x/AGENTS.md is code');
+  assert.equal(detect(change(() => {
+    write(agents, 'edited\n');
+    write('src/code.ts', 'edited\n');
+  })), 'code=true');
+  assert.equal(detect(agentsOnly, 'push', '0'.repeat(40)), 'code=true', 'an unknown base runs every check');
+  assert.equal(detect(agentsOnly, 'push', ''), 'code=true');
+  assert.equal(detect(agentsOnly, 'workflow_dispatch'), 'code=true', 'a manual run runs every check');
+  assert.equal(detect(base), 'code=true', 'an empty change runs every check');
+});
+
+test('the fingerprint keeps root agent files\' path and presence but not their content', (t) => {
+  const keys = [...ci.matchAll(/key: (ci-green-v\d+)-\$\{\{/g)].map((match) => match[1]);
+  assert.deepEqual(keys, ['ci-green-v2', 'ci-green-v2'], 'restore and save use this fingerprint format\'s key');
+  const fingerprint = step(ci, 'fingerprint').run;
+  const { work, git, write, remove, commit, base } = seedAgentRepo(t, 'cats-ci-fingerprint-');
+  const print = (edit) => {
+    git(work, 'checkout', '--quiet', '--detach', base);
+    edit();
+    commit('change');
+    return runStep(fingerprint, work, {});
+  };
+  git(work, 'checkout', '--quiet', '--detach', base);
+  const original = runStep(fingerprint, work, {});
+  assert.match(original, /^fingerprint=[0-9a-f]{64}$/);
+  assert.equal(print(() => write(agents, 'edited\n')), original, 'an AGENTS.md content edit keeps the fingerprint');
+  assert.equal(print(() => {
+    write(claude, 'edited\n');
+    write(codex, 'edited\n');
+    write(guide, 'edited\n');
+  }), original);
+  assert.notEqual(print(() => remove(claude)), original, 'a deleted agent file changes it');
+  assert.notEqual(print(() => write(gemini, 'new\n')), original, 'an added agent file changes it');
+  assert.notEqual(print(() => write(nestedAgents, 'edited\n')), original, 'a nested agent file is code');
+  assert.notEqual(print(() => write('src/code.ts', 'edited\n')), original);
+});
+
 test('the plan skips docs-only changes first, then code that already passed', () => {
   const plan = step(ci, 'plan').run;
   const decide = (code, green, merged) => runStep(plan, process.cwd(), { CODE: code, GREEN: green, MERGED: merged });
@@ -76,27 +183,10 @@ test('a main push reuses its merged pull request\'s green run only for that exac
   const merged = step(ci, 'merged');
   assert.equal(merged.condition, "github.event_name == 'push' && steps.paths.outputs.code == 'true'");
   assert.match(ci, /\n {4}permissions:\n {6}contents: read\n {6}pull-requests: read\n {6}actions: read\n/);
-  const root = mkdtempSync(join(tmpdir(), 'cats-ci-merged-'));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const { root, work, git, write, commit } = scratchRepo(t, 'cats-ci-merged-');
   const origin = join(root, 'origin.git');
-  const work = join(root, 'work');
   const bin = join(root, 'bin');
-  const git = (cwd, ...args) => execFileSync('git', [
-    '-c', 'user.name=CI Test', '-c', 'user.email=ci@example.invalid',
-    '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false', ...args,
-  ], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
-  const write = (path, content) => {
-    mkdirSync(dirname(join(work, path)), { recursive: true });
-    writeFileSync(join(work, path), content);
-  };
-  const commit = (message) => {
-    git(work, 'add', '.');
-    git(work, 'commit', '-m', message);
-    return git(work, 'rev-parse', 'HEAD');
-  };
   git(root, 'init', '--bare', '--initial-branch=main', origin);
-  mkdirSync(work);
-  git(work, 'init', '--initial-branch=main');
   git(work, 'remote', 'add', 'origin', origin);
   write('src/code.ts', 'base\n');
   const base = commit('base');
