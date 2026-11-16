@@ -72,19 +72,20 @@ It also verifies explicit CLI refresh capability, native quantities/unlimited
 entitlements, provider+instance cooldown isolation and passive snapshot polling.
 The docs command alone is not application test coverage.
 
-When every changed file is under `docs/` or is a root agent instruction file
-(`AGENTS.md`, `CLAUDE.md`, `CODEX.md` or `GEMINI.md`) that still exists, CI still runs
+When every changed file is under `docs/` or is an added or modified root agent
+instruction file (`AGENTS.md`, `CLAUDE.md`, `CODEX.md` or `GEMINI.md`), CI still runs
 `npm run check:docs` but skips `npm test`, the Usage package build and its artifact.
-Deleting or renaming a root agent file, a nested one such as `apps/<slug>/AGENTS.md`,
-any other path or a failed detection runs every step. Tests, scripts and App sources
-must not read repository documentation or the root agent files' content (checking that
+Deleting, renaming or retyping a root agent file (for example into a symlink), a nested
+one such as `apps/<slug>/AGENTS.md`, any other path or a failed detection runs every
+step, and so does a failed `changes` job. Tests, scripts and App sources must not read
+repository documentation or the root agent files' content (a line that only checks that
 one exists is fine), and `tests/docs-boundary.test.mjs` enforces that; the link checker
 is the deliberate exception.
 
 Code that already passed is skipped the same way. The `changes` job fingerprints the
 mode, blob and path of every tracked file outside `docs/` (for a pull request, the merge
-result), with a fixed placeholder for the root agent files' blobs so that only their
-presence counts, and looks up the Actions cache key `ci-green-v2-<fingerprint>`, which a
+result, with paths unquoted), with a fixed placeholder for the root agent files' blobs
+so that only their mode and presence count, and looks up the Actions cache key `ci-green-v2-<fingerprint>`, which a
 fully passing run saves. A pull request rebased only because main gained documentation or
 agent instructions keeps its fingerprint, so its rerun still checks docs but skips tests,
 package builds and their artifacts. Any other change, a missing or evicted cache entry, or
@@ -103,9 +104,11 @@ all of these hold:
 
 Main requires up-to-date branches, so an ordinary squash merge meets these. Any other
 push, or a failed lookup, runs everything; `check:docs` still runs every time. The tag
-workflow skips `check:docs` and `npm test` when Repository checks already passed on the
-tagged commit on main, and runs them otherwise. `tests/ci-workflow.test.mjs` runs both
-steps against a local origin with a stubbed `gh`, and the detection and fingerprint steps
+workflow skips `check:docs` and `npm test` only when a successful Repository checks run on
+the tagged commit on main ran the App tests itself: the jobs API must report its `Test App
+build and usage presentation` step as `success`. A documentation-only or reused run skips
+that step, so the release then runs both. `tests/ci-workflow.test.mjs` runs these lookups
+against a local origin with a stubbed `gh`, and the detection and fingerprint steps
 against scratch repositories.
 
 A pull request can also reuse a green run from main when its code outside `docs/` and the

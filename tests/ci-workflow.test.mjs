@@ -57,6 +57,9 @@ function stubGh(bin) {
     'case "$2" in',
     '  */pulls) [ -n "${STUB_PULLS:-}" ] || exit 1; printf \'%s\\n\' "$STUB_PULLS" ;;',
     '  */actions/workflows/*) [ -n "${STUB_PASSED:-}" ] || exit 1; printf \'%s\\n\' "$STUB_PASSED" ;;',
+    // A run's jobs lookup prints STUB_JOBS_<run id>.
+    '  */actions/runs/*/jobs*) id=${2#*/actions/runs/}; var=STUB_JOBS_${id%%/*}',
+    '    [ -n "${!var:-}" ] || exit 1; printf \'%s\\n\' "${!var}" ;;',
     '  *) exit 1 ;;',
     'esac',
   ].join('\n') + '\n', { mode: 0o755 });
@@ -76,19 +79,25 @@ function scratchRepo(t, prefix) {
     writeFileSync(join(work, path), content);
   };
   const remove = (path) => git(work, 'rm', '--quiet', path);
-  const commit = (message) => {
-    git(work, 'add', '.');
+  // Records a file as a symlink in the index only; commit it without staging.
+  const retype = (path) => {
+    const blob = git(work, 'hash-object', '-w', path);
+    git(work, 'update-index', '--cacheinfo', `120000,${blob},${path}`);
+  };
+  const commit = (message, stage = true) => {
+    if (stage) git(work, 'add', '.');
     git(work, 'commit', '-m', message);
     return git(work, 'rev-parse', 'HEAD');
   };
   mkdirSync(work);
   git(work, 'init', '--initial-branch=main');
-  return { root, work, git, write, remove, commit };
+  return { root, work, git, write, remove, retype, commit };
 }
 
 // Paths inside the scratch repositories, not files of this checkout.
 const [agents, claude, codex, gemini] = ['AGENTS.md', 'CLAUDE.md', 'CODEX.md', 'GEMINI.md']; // docs-boundary-ignore: scratch repository paths
 const [guide, movedAgents, docsAgents] = ['docs/guide.md', 'docs/agents.md', 'docs/AGENTS.md']; // docs-boundary-ignore: scratch repository paths
+const unicodeGuide = 'docs/使用說明.md'; // docs-boundary-ignore: a scratch repository path
 const nestedAgents = 'apps/x/AGENTS.md';
 
 // Code, docs/, a nested agent file and every root agent file except GEMINI.md.
@@ -101,19 +110,19 @@ function seedAgentRepo(t, prefix) {
   return { ...repo, base: repo.commit('base') };
 }
 
-test('documentation-only changes cover docs/ and root agent files that still exist, not deleted, moved or nested ones', (t) => {
+test('documentation-only changes cover docs/ and added or modified root agent files, not deleted, moved, retyped or nested ones', (t) => {
   const paths = step(ci, 'paths');
   assert.equal(paths.condition, undefined, 'detection always runs');
-  const { work, git, write, remove, commit, base } = seedAgentRepo(t, 'cats-ci-paths-');
+  const { work, git, write, remove, retype, commit, base } = seedAgentRepo(t, 'cats-ci-paths-');
   // Each change is one commit on base; a push compares against base, and a pull
   // request's merge result against its first parent, which is also base here.
-  const change = (edit) => {
-    git(work, 'checkout', '--quiet', '--detach', base);
+  const change = (edit, stage = true) => {
+    git(work, 'checkout', '--quiet', '--force', '--detach', base);
     edit();
-    return commit('change');
+    return commit('change', stage);
   };
   const detect = (head, event = 'push', before = base) => {
-    git(work, 'checkout', '--quiet', '--detach', head);
+    git(work, 'checkout', '--quiet', '--force', '--detach', head);
     return runStep(paths.run, work, { EVENT: event, BEFORE: before });
   };
   const agentsOnly = change(() => write(agents, 'edited\n'));
@@ -125,6 +134,7 @@ test('documentation-only changes cover docs/ and root agent files that still exi
   })), 'code=false', 'agent files, an added one among them, and docs/ together are documentation');
   assert.equal(detect(change(() => write(guide, 'edited\n'))), 'code=false');
   assert.equal(detect(change(() => write(docsAgents, 'new\n'))), 'code=false');
+  assert.equal(detect(change(() => write(unicodeGuide, 'new\n'))), 'code=false', 'a non-ASCII docs/ name is documentation');
   assert.equal(detect(change(() => remove(claude))), 'code=true', 'a deleted root CLAUDE.md is code');
   assert.equal(detect(change(() => git(work, 'mv', agents, movedAgents))), 'code=true',
     'moving an agent file away deletes it');
@@ -132,6 +142,7 @@ test('documentation-only changes cover docs/ and root agent files that still exi
     'moving code onto an agent file name deletes the code');
   assert.equal(detect(change(() => write(nestedAgents, 'edited\n'))), 'code=true',
     'a nested apps/x/AGENTS.md is code');
+  assert.equal(detect(change(() => retype(agents), false)), 'code=true', 'an AGENTS.md retyped as a symlink is code');
   assert.equal(detect(change(() => {
     write(agents, 'edited\n');
     write('src/code.ts', 'edited\n');
@@ -146,14 +157,14 @@ test('the fingerprint keeps root agent files\' path and presence but not their c
   const keys = [...ci.matchAll(/key: (ci-green-v\d+)-\$\{\{/g)].map((match) => match[1]);
   assert.deepEqual(keys, ['ci-green-v2', 'ci-green-v2'], 'restore and save use this fingerprint format\'s key');
   const fingerprint = step(ci, 'fingerprint').run;
-  const { work, git, write, remove, commit, base } = seedAgentRepo(t, 'cats-ci-fingerprint-');
-  const print = (edit) => {
-    git(work, 'checkout', '--quiet', '--detach', base);
+  const { work, git, write, remove, retype, commit, base } = seedAgentRepo(t, 'cats-ci-fingerprint-');
+  const print = (edit, stage = true) => {
+    git(work, 'checkout', '--quiet', '--force', '--detach', base);
     edit();
-    commit('change');
+    commit('change', stage);
     return runStep(fingerprint, work, {});
   };
-  git(work, 'checkout', '--quiet', '--detach', base);
+  git(work, 'checkout', '--quiet', '--force', '--detach', base);
   const original = runStep(fingerprint, work, {});
   assert.match(original, /^fingerprint=[0-9a-f]{64}$/);
   assert.equal(print(() => write(agents, 'edited\n')), original, 'an AGENTS.md content edit keeps the fingerprint');
@@ -161,8 +172,10 @@ test('the fingerprint keeps root agent files\' path and presence but not their c
     write(claude, 'edited\n');
     write(codex, 'edited\n');
     write(guide, 'edited\n');
-  }), original);
+    write(unicodeGuide, 'new\n');
+  }), original, 'neither agent file content nor docs/, under any name, counts');
   assert.notEqual(print(() => remove(claude)), original, 'a deleted agent file changes it');
+  assert.notEqual(print(() => retype(agents), false), original, 'a retyped agent file changes it');
   assert.notEqual(print(() => write(gemini, 'new\n')), original, 'an added agent file changes it');
   assert.notEqual(print(() => write(nestedAgents, 'edited\n')), original, 'a nested agent file is code');
   assert.notEqual(print(() => write('src/code.ts', 'edited\n')), original);
@@ -227,8 +240,12 @@ test('a main push reuses its merged pull request\'s green run only for that exac
     'a head without the previous main was tested on other code');
 });
 
-test('a tagged release skips check:docs and the App tests only after main\'s Repository checks passed on its commit', (t) => {
+test('a tagged release skips check:docs and the App tests only after a main run of Repository checks passed those tests on its commit', (t) => {
   assert.match(release, /\n {6}contents: write\n {6}actions: read\n/);
+  // A documentation-only or reused run succeeds with its test step skipped, so the
+  // release asks the jobs API whether that step itself passed.
+  const testStep = 'Test App build and usage presentation';
+  assert.match(ci, new RegExp(`\\n {6}- name: ${testStep}\\n {8}if: [^\\n]+\\n {8}run: npm test\\n`));
   for (const command of ['- run: npm run check:docs', '- run: npm test']) {
     const lines = release.split(/\r?\n/);
     const at = lines.findIndex((line) => line.trim() === command);
@@ -242,13 +259,20 @@ test('a tagged release skips check:docs and the App tests only after main\'s Rep
   const bin = join(root, 'bin');
   stubGh(bin);
   const sha = 'a'.repeat(40);
-  const lookup = (passed) => runStep(check.run, root, {
+  assert.ok(check.run.includes(`select(.name == "${testStep}" and .conclusion == "success")`));
+  // runs: the successful main runs' ids; jobs: run id -> passed test steps.
+  const lookup = (runs, jobs = {}) => runStep(check.run, root, {
     PATH: `${bin}${delimiter}${process.env.PATH}`, GITHUB_REPOSITORY: 'cats-inc/cats-apps', GITHUB_SHA: sha,
-    STUB_PASSED: passed, STUB_LOG: join(root, 'gh.log'),
+    STUB_PASSED: runs, STUB_LOG: join(root, 'gh.log'),
+    ...Object.fromEntries(Object.entries(jobs).map(([run, passed]) => [`STUB_JOBS_${run}`, passed])),
   });
-  assert.equal(lookup('1'), 'tested=true');
-  assert.match(readFileSync(join(root, 'gh.log'), 'utf8'),
-    new RegExp(`actions/workflows/ci\\.yaml/runs\\?head_sha=${sha}&event=push&branch=main&status=success`));
-  assert.equal(lookup('0'), 'tested=false', 'without a passing main run the release tests as before');
-  assert.equal(lookup(''), 'tested=false', 'a failed lookup tests as before');
+  assert.equal(lookup('11', { 11: '1' }), 'tested=true');
+  const log = readFileSync(join(root, 'gh.log'), 'utf8');
+  assert.match(log, new RegExp(`actions/workflows/ci\\.yaml/runs\\?head_sha=${sha}&event=push&branch=main&status=success`));
+  assert.match(log, /actions\/runs\/11\/jobs/);
+  assert.equal(lookup('11', { 11: '0' }), 'tested=false', 'a run that skipped the tests does not count');
+  assert.equal(lookup('11\n12', { 11: '0', 12: '1' }), 'tested=true', 'another successful run that tested counts');
+  assert.equal(lookup('11'), 'tested=false', 'a failed jobs lookup tests as before');
+  assert.equal(lookup('null', { null: '1' }), 'tested=false', 'only numeric run ids are looked up');
+  assert.equal(lookup(''), 'tested=false', 'without a passing main run, or after a failed lookup, the release tests as before');
 });

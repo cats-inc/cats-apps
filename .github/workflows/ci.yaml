@@ -13,8 +13,9 @@ jobs:
   # A change confined to docs/ and the root agent instruction files (AGENTS.md,
   # CLAUDE.md, CODEX.md, GEMINI.md) still runs the Markdown link check but skips
   # App tests, the package build and its artifact. An agent file counts only
-  # while it still exists; deleting or renaming one, a nested agent file, any
-  # other path or a failed detection runs every step.
+  # while it is added or modified; deleting, renaming or retyping one, a
+  # nested agent file, any other path or a failed detection runs every step,
+  # and so does every consumer when the changes job did not succeed.
   # tests/docs-boundary.test.mjs keeps tests, scripts and App sources from
   # reading docs/ or the root agent files.
   # Code that already passed is skipped too: the fingerprint covers every tracked
@@ -52,23 +53,17 @@ jobs:
             *) base= ;;
           esac
           code=true
-          if [ -n "$base" ] && git rev-parse --verify --quiet "$base^{commit}" > /dev/null; then
-            # Without rename detection a rename lists both paths, so moving an
-            # agent file away, or any other file onto an agent file name, is code.
-            changed=$(git diff --no-renames --name-only "$base" HEAD)
+          # Without rename detection a rename lists both paths, so moving an agent
+          # file away, or any other file onto an agent file name, is code. A root
+          # agent file counts as documentation only when added or modified;
+          # deleting it or changing its type, such as to a symlink, is code. Any
+          # git failure keeps code=true.
+          if [ -n "$base" ] && git rev-parse --verify --quiet "$base^{commit}" > /dev/null &&
+            changed=$(git diff --no-renames --name-only "$base" HEAD) &&
+            code_changed=$(git diff --no-renames --name-only "$base" HEAD -- . ':(top,exclude)docs/' ':(top,exclude)AGENTS.md' ':(top,exclude)CLAUDE.md' ':(top,exclude)CODEX.md' ':(top,exclude)GEMINI.md') &&
+            agents_removed=$(git diff --no-renames --name-only --diff-filter=am "$base" HEAD -- ':(top)AGENTS.md' ':(top)CLAUDE.md' ':(top)CODEX.md' ':(top)GEMINI.md'); then
             printf 'Changed files:\n%s\n' "$changed"
-            if [ -n "$changed" ]; then
-              code=false
-              while IFS= read -r path; do
-                case "$path" in
-                  docs/*) ;;
-                  # A root agent file is documentation while it exists at HEAD.
-                  AGENTS.md | CLAUDE.md | CODEX.md | GEMINI.md)
-                    git cat-file -e "HEAD:$path" 2> /dev/null || code=true ;;
-                  *) code=true ;;
-                esac
-              done <<< "$changed"
-            fi
+            if [ -n "$changed" ] && [ -z "$code_changed" ] && [ -z "$agents_removed" ]; then code=false; fi
           fi
           echo "code=$code" | tee -a "$GITHUB_OUTPUT"
       - name: Fingerprint the code under test
@@ -79,7 +74,8 @@ jobs:
           # request this is the merge result that the tests would exercise. The
           # root agent instruction files keep their mode and path, so adding or
           # deleting one still counts, but a fixed placeholder replaces the blob.
-          fingerprint=$(git ls-tree -r --full-tree HEAD | awk -F '\t' -v OFS='\t' '
+          # Unquoted paths keep non-ASCII names under docs/ out of it.
+          fingerprint=$(git -c core.quotePath=false ls-tree -r --full-tree HEAD | awk -F '\t' -v OFS='\t' '
             $2 ~ /^docs\// { next }
             $2 ~ /^(AGENTS|CLAUDE|CODEX|GEMINI)\.md$/ { sub(/[0-9a-f]+$/, "agent-instructions", $1) }
             { print }' | sha256sum | cut -d ' ' -f 1)
@@ -149,42 +145,42 @@ jobs:
       - name: Check repository documentation
         run: npm run check:docs
       - name: Already tested
-        if: needs.changes.outputs.skip == 'tested'
+        if: (needs.changes.result == 'success' && needs.changes.outputs.skip || '') == 'tested'
         run: echo "This exact code outside docs/ and the root agent instruction files already passed; App tests and package builds are skipped."
       - name: Install the pinned Platform App SDK
-        if: needs.changes.outputs.skip == ''
+        if: (needs.changes.result == 'success' && needs.changes.outputs.skip || '') == ''
         run: npm ci --ignore-scripts
       - name: Test App build and usage presentation
-        if: needs.changes.outputs.skip == ''
+        if: (needs.changes.result == 'success' && needs.changes.outputs.skip || '') == ''
         run: npm test
       - name: Build versioned Usage package
-        if: needs.changes.outputs.skip == ''
+        if: (needs.changes.result == 'success' && needs.changes.outputs.skip || '') == ''
         run: npm run build
       - uses: actions/upload-artifact@v4
-        if: needs.changes.outputs.skip == ''
+        if: (needs.changes.result == 'success' && needs.changes.outputs.skip || '') == ''
         with:
           name: usage-package
           path: dist/*
           if-no-files-found: error
       - name: Build versioned Studio package
-        if: needs.changes.outputs.skip == ''
+        if: (needs.changes.result == 'success' && needs.changes.outputs.skip || '') == ''
         run: npm run package:studio
       - uses: actions/upload-artifact@v4
-        if: needs.changes.outputs.skip == ''
+        if: (needs.changes.result == 'success' && needs.changes.outputs.skip || '') == ''
         with:
           name: studio-package
           path: dist/studio-*
           if-no-files-found: error
       # Reached only when every step above passed; a failed detection records nothing.
       - name: Record this code as tested
-        if: needs.changes.outputs.skip == '' && needs.changes.outputs.fingerprint != ''
+        if: (needs.changes.result == 'success' && needs.changes.outputs.skip || '') == '' && needs.changes.outputs.fingerprint != ''
         env:
           FINGERPRINT: ${{ needs.changes.outputs.fingerprint }}
         run: |
           mkdir -p .ci-green
           echo "$FINGERPRINT $GITHUB_RUN_ID" > .ci-green/marker
       - name: Save the tested marker
-        if: needs.changes.outputs.skip == '' && needs.changes.outputs.fingerprint != ''
+        if: (needs.changes.result == 'success' && needs.changes.outputs.skip || '') == '' && needs.changes.outputs.fingerprint != ''
         uses: actions/cache/save@v4
         with:
           path: .ci-green

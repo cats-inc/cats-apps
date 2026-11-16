@@ -29,16 +29,28 @@ jobs:
           fi
           echo "slug=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
           echo "version=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
-      # When Repository checks already passed on this exact commit on main, they
-      # ran check:docs and the App tests, so the release does not repeat them.
-      # Anything else, or a failed lookup, runs both here as before.
+      # When a successful Repository checks run on this exact commit on main ran
+      # the App tests itself, it also ran check:docs, so the release does not
+      # repeat them. A run that skipped the tests, because the change was
+      # documentation-only or reused an earlier green run, does not count: its
+      # test step must have concluded success in the jobs API. Anything else, or
+      # a failed lookup, runs both here as before.
       - name: Check whether Repository checks passed on this commit on main
         id: ci
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          passed=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yaml/runs?head_sha=$GITHUB_SHA&event=push&branch=main&status=success&per_page=1" --jq '.total_count' 2>/dev/null || true)
-          if [[ "$passed" =~ ^[1-9][0-9]*$ ]]; then tested=true; else tested=false; fi
+          tested=false
+          runs=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yaml/runs?head_sha=$GITHUB_SHA&event=push&branch=main&status=success&per_page=10" --jq '.workflow_runs[].id' 2>/dev/null || true)
+          for run in $runs; do
+            [[ "$run" =~ ^[0-9]+$ ]] || continue
+            passed=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run/jobs?per_page=100" --jq '[.jobs[].steps[]? | select(.name == "Test App build and usage presentation" and .conclusion == "success")] | length' 2>/dev/null || true)
+            if [[ "$passed" =~ ^[1-9][0-9]*$ ]]; then
+              tested=true
+              echo "Repository checks run $run passed the App tests on this commit."
+              break
+            fi
+          done
           echo "tested=$tested" | tee -a "$GITHUB_OUTPUT"
       - run: npm run check:docs
         if: steps.ci.outputs.tested != 'true'

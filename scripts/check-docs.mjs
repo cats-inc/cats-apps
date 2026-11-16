@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const ignoredDirectories = new Set(['node_modules', 'build', 'dist', 'coverage']);
-const ignoredFiles = new Set(['CLAUDE.md', 'GEMINI.md', '000-template.md']);
+const ignoredFiles = new Set(['CLAUDE.md', 'GEMINI.md', '000-template.md']); // docs-boundary-ignore: names files the link check skips
 const failures = [];
 const manifest = JSON.parse(readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
 if (manifest.name !== '@cats-inc/cats-apps' || manifest.private !== true) {
