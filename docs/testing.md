@@ -105,10 +105,11 @@ all of these hold:
 Main requires up-to-date branches, so an ordinary squash merge meets these. Any other
 push, or a failed lookup, runs everything; `check:docs` still runs every time. The tag
 workflow skips `check:docs` and `npm test` only when a successful Repository checks run on
-the tagged commit on main ran the App tests itself: the jobs API must report its `Test App
-build and usage presentation` step as `success`. A documentation-only or reused run skips
-that step, so the release then runs both. `tests/ci-workflow.test.mjs` runs these lookups
-against a local origin with a stubbed `gh`, and the detection and fingerprint steps
+the tagged commit on main tested its code: the jobs API must report its `Test App build and
+usage presentation` step as `success`, or its `Already tested` step when a green marker or
+the merged pull request's run showed this exact code passed. A documentation-only run
+concludes neither, so the release then runs both. `tests/ci-workflow.test.mjs` runs these
+lookups against a local origin with a stubbed `gh`, and the detection and fingerprint steps
 against scratch repositories.
 
 A pull request can also reuse a green run from main when its code outside `docs/` and the

@@ -240,12 +240,16 @@ test('a main push reuses its merged pull request\'s green run only for that exac
     'a head without the previous main was tested on other code');
 });
 
-test('a tagged release skips check:docs and the App tests only after a main run of Repository checks passed those tests on its commit', (t) => {
+test('a tagged release skips check:docs and the App tests only after a main run of Repository checks tested its commit\'s code', (t) => {
   assert.match(release, /\n {6}contents: write\n {6}actions: read\n/);
-  // A documentation-only or reused run succeeds with its test step skipped, so the
-  // release asks the jobs API whether that step itself passed.
+  // A documentation-only run succeeds with its test step skipped, so the release
+  // asks the jobs API whether the test step passed or the run skipped it as
+  // already tested; the workflow has no separate docs-only step.
   const testStep = 'Test App build and usage presentation';
+  const testedStep = 'Already tested';
   assert.match(ci, new RegExp(`\\n {6}- name: ${testStep}\\n {8}if: [^\\n]+\\n {8}run: npm test\\n`));
+  assert.match(ci, new RegExp(`\\n {6}- name: ${testedStep}\\n {8}if: [^\\n]+ == 'tested'\\n`));
+  assert.doesNotMatch(ci, /\n {6}- name: (?:docs|documentation)-only/i);
   for (const command of ['- run: npm run check:docs', '- run: npm test']) {
     const lines = release.split(/\r?\n/);
     const at = lines.findIndex((line) => line.trim() === command);
@@ -259,7 +263,8 @@ test('a tagged release skips check:docs and the App tests only after a main run 
   const bin = join(root, 'bin');
   stubGh(bin);
   const sha = 'a'.repeat(40);
-  assert.ok(check.run.includes(`select(.name == "${testStep}" and .conclusion == "success")`));
+  assert.ok(check.run.includes(
+    `select((.name == "${testStep}" or .name == "${testedStep}") and .conclusion == "success")`));
   // runs: the successful main runs' ids; jobs: run id -> passed test steps.
   const lookup = (runs, jobs = {}) => runStep(check.run, root, {
     PATH: `${bin}${delimiter}${process.env.PATH}`, GITHUB_REPOSITORY: 'cats-inc/cats-apps', GITHUB_SHA: sha,
@@ -270,7 +275,7 @@ test('a tagged release skips check:docs and the App tests only after a main run 
   const log = readFileSync(join(root, 'gh.log'), 'utf8');
   assert.match(log, new RegExp(`actions/workflows/ci\\.yaml/runs\\?head_sha=${sha}&event=push&branch=main&status=success`));
   assert.match(log, /actions\/runs\/11\/jobs/);
-  assert.equal(lookup('11', { 11: '0' }), 'tested=false', 'a run that skipped the tests does not count');
+  assert.equal(lookup('11', { 11: '0' }), 'tested=false', 'a documentation-only run does not count');
   assert.equal(lookup('11\n12', { 11: '0', 12: '1' }), 'tested=true', 'another successful run that tested counts');
   assert.equal(lookup('11'), 'tested=false', 'a failed jobs lookup tests as before');
   assert.equal(lookup('null', { null: '1' }), 'tested=false', 'only numeric run ids are looked up');
